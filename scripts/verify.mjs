@@ -71,7 +71,7 @@ try {
   await run(npm, ['run', 'lint']);
   await run(npm, ['run', 'build']);
   await run(process.execPath, ['scripts/verify-credentials.mjs']);
-  const packed = JSON.parse(await run(npm, ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', scratch]));
+  const packed = JSON.parse(await run(npm, ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch]));
   assert.equal(packed.length, 1, 'Exactly one immutable tarball');
   const tarball = join(scratch, packed[0].filename);
   report.package = { name: pkg.name, version: pkg.version, sha256: sha256(await readFile(tarball)), integrity: packed[0].integrity };
@@ -84,7 +84,7 @@ try {
     PATH: process.env.PATH, HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: home,
     SystemRoot: process.env.SystemRoot, TEMP: scratch, TMP: scratch,
   };
-  await run(npm, ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, '--prefix', prefix, tarball], { cwd: scratch, env });
+  await run(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, '--prefix', prefix, tarball], { cwd: scratch, env });
   const installedRoot = join(prefix, 'node_modules', '@knowttl', 'gitea-axi');
   const installedPkg = await readJson(join(installedRoot, 'package.json'));
   const bin = await realpath(join(installedRoot, installedPkg.bin['gitea-axi']));

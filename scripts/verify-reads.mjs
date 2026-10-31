@@ -92,12 +92,12 @@ const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
 };
 try {
   await run('npm', ['run', 'build'], { cwd: root });
-  const [packed] = JSON.parse(await run('npm', ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', scratch], { cwd: root }));
+  const [packed] = JSON.parse(await run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch], { cwd: root }));
   report.packageSha256 = createHash('sha256').update(await readFile(join(scratch, packed.filename))).digest('hex');
   report.sourceHead = (await run('git', ['-C', root, 'rev-parse', 'HEAD'])).trim();
   report.sourceDirty = Boolean((await run('git', ['-C', root, 'status', '--porcelain'])).trim());
   const prefix = join(scratch, 'installed');
-  await run('npm', ['install', '--prefix', prefix, '--offline', '--ignore-scripts', '--no-audit', '--no-fund', join(scratch, packed.filename)]);
+  await run('npm', ['install', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(scratch, packed.filename)]);
   bin = join(prefix, 'node_modules/@knowttl/gitea-axi/dist/cli.js');
   foreign.listen(0, '127.0.0.1'); await once(foreign, 'listening');
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
