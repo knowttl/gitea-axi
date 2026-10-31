@@ -195,6 +195,16 @@ try {
       assert.equal(refusal.error.code, 'READ_ONLY');
       assert.match(refusal.error.reason, /Credential-bearing API routes are refused/);
     }
+    for (const path of ['admin/emails', 'admin/emails/search', 'admin/users']) {
+      const refusal = await invoke(['api', path], 1);
+      assert.equal(refusal.error.code, 'READ_ONLY');
+      assert.match(refusal.error.reason, /Administrative API routes are refused/);
+    }
+    for (const path of ['repos/o/r/git/commits/abc123.diff', 'repos/o/r/pulls/7.diff', 'repos/o/r/pulls/7.patch', 'repos/o/r/media/file.txt', 'repos/o/r/raw/file.txt']) {
+      const refusal = await invoke(['api', path], 1);
+      assert.equal(refusal.error.code, 'READ_ONLY');
+      assert.match(refusal.error.reason, /only JSON metadata reads are available/);
+    }
     for (const path of ['https://foreign.test/api/v1/user', '../user', '%2e%2e/user', 'user?token=canary', 'repos/sample/demo/actions/runners/registration-token', 'unknown']) await invoke(['api', path], path.includes('token=') ? 1 : path.includes('registration-token') || path === 'unknown' ? 1 : 2);
     assert.equal(requests.length, before);
     for (const [failure, code] of [['missing', 'INVALID_RESPONSE'], ['wrong-type', 'INVALID_RESPONSE'], ['malformed', 'INVALID_RESPONSE'], ['html', 'INVALID_RESPONSE'], ['401', 'AUTH_REQUIRED'], ['403', 'PERMISSION_DENIED'], ['404', 'NOT_FOUND_OR_HIDDEN'], ['429', 'RATE_LIMITED'], ['redirect', 'TRANSPORT_ERROR']]) {

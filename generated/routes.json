@@ -10,7 +10,7 @@
   {
     "path": "/api/v1/admin/cron",
     "operation": "adminCronList",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -21,7 +21,7 @@
   {
     "path": "/api/v1/admin/emails",
     "operation": "adminGetAllEmails",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -32,7 +32,7 @@
   {
     "path": "/api/v1/admin/emails/search",
     "operation": "adminSearchEmails",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -43,7 +43,7 @@
   {
     "path": "/api/v1/admin/hooks",
     "operation": "adminListHooks",
-    "effect": "credential",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -54,7 +54,7 @@
   {
     "path": "/api/v1/admin/hooks/{id}",
     "operation": "adminGetHook",
-    "effect": "credential",
+    "effect": "admin",
     "schema": {
       "$ref": "#/definitions/Hook"
     }
@@ -62,7 +62,7 @@
   {
     "path": "/api/v1/admin/orgs",
     "operation": "adminGetAllOrgs",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -73,13 +73,13 @@
   {
     "path": "/api/v1/admin/runners/registration-token",
     "operation": "adminGetRunnerRegistrationToken",
-    "effect": "credential",
+    "effect": "admin",
     "schema": null
   },
   {
     "path": "/api/v1/admin/unadopted",
     "operation": "adminUnadoptedList",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -90,7 +90,7 @@
   {
     "path": "/api/v1/admin/users",
     "operation": "adminSearchUsers",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -101,7 +101,7 @@
   {
     "path": "/api/v1/admin/users/{username}/badges",
     "operation": "adminListUserBadges",
-    "effect": "read",
+    "effect": "admin",
     "schema": {
       "type": "array",
       "items": {
@@ -693,7 +693,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/git/commits/{sha}.{diffType}",
     "operation": "repoDownloadCommitDiffOrPatch",
-    "effect": "read",
+    "effect": "download",
     "schema": {
       "type": "string"
     }
@@ -1067,7 +1067,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/media/{filepath}",
     "operation": "repoGetRawFileOrLFS",
-    "effect": "read",
+    "effect": "download",
     "schema": {
       "type": "file"
     }
@@ -1151,7 +1151,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}.{diffType}",
     "operation": "repoDownloadPullDiffOrPatch",
-    "effect": "read",
+    "effect": "download",
     "schema": {
       "type": "string"
     }
@@ -1236,7 +1236,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/raw/{filepath}",
     "operation": "repoGetRawFile",
-    "effect": "read",
+    "effect": "download",
     "schema": {
       "type": "file"
     }

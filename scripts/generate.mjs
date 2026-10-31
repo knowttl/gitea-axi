@@ -68,7 +68,9 @@ const artifacts = {
   'schemas/vendor.json': JSON.stringify({ definitions: swagger.definitions }, null, 2) + '\n',
   'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => methods.get ? [{
     path: swagger.basePath + path, operation: methods.get.operationId,
-    effect: /token|signing-key/.test(path) || Object.entries(methods.get.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' : 'read',
+    effect: path.startsWith('/admin/') ? 'admin' :
+      /token|signing-key/.test(path) || Object.entries(methods.get.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
+        (methods.get.produces ?? swagger.produces ?? []).includes('application/json') ? 'read' : 'download',
     schema: (methods.get.responses?.['200']?.$ref ? swagger.responses[methods.get.responses['200'].$ref.split('/').at(-1)] : methods.get.responses?.['200'])?.schema ?? null,
   }] : []), null, 2) + '\n',
 };

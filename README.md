@@ -54,7 +54,7 @@ Bodies default to 1000 characters, diffs to 10000 characters, and rendered outpu
 `--full` expands bodies and diffs within the response and output ceilings.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
-Raw requests accept `api [GET] <relative-path>` and refuse absolute URLs, traversal, secret query fields, credential-bearing routes and unclassified routes.
+Raw requests accept `api [GET] <relative-path>` for JSON metadata and refuse absolute URLs, traversal, secret query fields, credential-bearing routes, administrative routes, text or binary downloads and unclassified routes.
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
 
 `src/registry.ts` owns command metadata, help and the host inventory.
