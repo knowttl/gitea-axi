@@ -1,0 +1,22 @@
+{
+  "task": "S1.1",
+  "provenance": "Synthetic offline scenario reviewed against manifest AC-001, AC-002, AC-004 and sanitized P-001, P-002, P-004. Expected values come from those source cases, not CLI output.",
+  "operations": ["OP-001", "OP-002", "OP-004"],
+  "outcomes": ["AC-001", "AC-002", "AC-004"],
+  "credentialCases": [],
+  "crossCuttingCases": [],
+  "commands": [
+    {
+      "id": "C075",
+      "command": "repo view",
+      "capturedFlags": ["--repo"],
+      "expectedOutcome": "The requested repository identity and metadata are returned, and conflicting selectors fail before a call.",
+      "scope": "S1.1 proves repository identity and default branch only. Remaining C075 projections belong to S2.2."
+    }
+  ],
+  "expected": {
+    "version": "1.23.4",
+    "specificationVersion": "1.23.4",
+    "repository": { "id": 1008, "full_name": "sample-owner/sample-repo", "default_branch": "main" }
+  }
+}

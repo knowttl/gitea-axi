@@ -1,0 +1,30 @@
+{
+  "name": "@knowttl/gitea-axi",
+  "version": "0.1.0",
+  "description": "An agent CLI for Gitea repository workflows",
+  "type": "module",
+  "bin": { "gitea-axi": "dist/cli.js" },
+  "files": ["dist", "schemas", "generated"],
+  "engines": { "node": ">=24.11.0 <25" },
+  "packageManager": "npm@11.9.0",
+  "overrides": { "ignore": "7.0.13" },
+  "scripts": {
+    "build": "tsc && node scripts/generate.mjs --check",
+    "generate": "node scripts/generate.mjs",
+    "generate:check": "node scripts/generate.mjs --check",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && npm run generate:check",
+    "test": "node scripts/verify.mjs --task S1.1",
+    "check": "node scripts/check.mjs --offline"
+  },
+  "dependencies": {
+    "@toon-format/toon": "2.3.1",
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "eslint": "9.39.4",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.1"
+  }
+}

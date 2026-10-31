@@ -1,0 +1,63 @@
+{
+  "Repository": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "full_name": {
+        "type": "string"
+      },
+      "default_branch": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "full_name",
+      "default_branch"
+    ],
+    "additionalProperties": true
+  },
+  "ServerVersion": {
+    "type": "object",
+    "properties": {
+      "version": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "version"
+    ],
+    "additionalProperties": true
+  },
+  "Specification": {
+    "type": "object",
+    "required": [
+      "info",
+      "paths"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "info": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "paths": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
