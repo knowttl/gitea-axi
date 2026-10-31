@@ -46,6 +46,8 @@ Inline tokens and secret arguments are refused.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
 HTTP requires `allowInsecureHttp: true` on that exact profile; a runtime origin override cannot reuse the token for another origin.
 Keep file references owned by the invoking account with mode 0600 on Linux.
+Windows file protection is PENDING; file SecretRefs are refused until native ACL verification is available.
+Use env SecretRefs on Windows.
 
 S1.2 uses an unmerged local Artium fixture based on revision `3cfc65afc2d7c1a0f50d2f6e02dc2ee13d6fd7e8`, with the reviewed credential-support delta applied.
 Set `GITEA_AXI_ARTIUM_ROOT` to that built fixture and `GITEA_AXI_HOST_GATE_REPORT` to its external verification receipt, then run `node scripts/verify.mjs --task S1.2` or both tasks with `node scripts/check.mjs --offline`.

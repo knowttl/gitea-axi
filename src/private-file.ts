@@ -3,6 +3,7 @@ import { constants } from 'node:fs';
 import { CliError } from './error.js';
 
 export async function readPrivateFile(path: string, secret = false): Promise<string> {
+  if (secret && process.platform === 'win32') throw new CliError('CONFIG_INVALID', 'File SecretRef protection cannot be verified on Windows; use env SecretRefs');
   const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW).catch(() => {
     throw new CliError('CONFIG_INSECURE', 'Private file must be a regular owned file; use chmod 600');
   });

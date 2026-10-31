@@ -46,8 +46,13 @@ function expect(name, actual, expected) {
   report.assertions.push(name);
 }
 function assertNoSecrets(outputs) {
+  if (outputs && typeof outputs === 'object') {
+    for (const value of Object.values(outputs)) assertNoSecrets(value);
+    return;
+  }
+  if (typeof outputs !== 'string') return;
   for (const form of secretForms) {
-    assert(outputs.every(output => !output.includes(form)), 'Secret in client output, server output, audit or journal');
+    assert(!outputs.includes(form), 'Secret in client output, server output, audit or journal');
   }
 }
 async function run(executable, argv, options = {}) {
@@ -71,7 +76,7 @@ async function api(path, method = 'GET', body, status = 200, signal) {
   const response = await fetch(hostUrl + path, { method, headers: { 'content-type': 'application/json', ...headers },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal });
   const result = await response.json();
-  assertNoSecrets([JSON.stringify(result)]);
+  assertNoSecrets(result);
   assert.equal(response.status, status, JSON.stringify(result));
   return result;
 }
@@ -145,9 +150,13 @@ try {
   await writeFile(join(home, '.gitconfig'), `[credential]\nhelper = ${poisons[3]}\n`);
   const standaloneEnv = { PATH: process.env.PATH, HOME: home, XDG_CONFIG_HOME: home, GITEA_AXI_TEST_TOKEN: canary };
   const config = await profile(origin, { env: 'GITEA_AXI_TEST_TOKEN' });
-  const standalone = (args = command, code = 0, env = {}) => run(process.execPath, [bin, ...args], {
-    env: { ...standaloneEnv, GITEA_AXI_CONFIG: config, ...env }, code,
-  });
+  const standalone = async (args = command, code = 0, env = {}) => {
+    const output = await run(process.execPath, [bin, ...args], {
+      env: { ...standaloneEnv, GITEA_AXI_CONFIG: config, ...env }, code,
+    });
+    assertNoSecrets(decode(output));
+    return output;
+  };
   expect('CS-004 environment reference', decode(await standalone()).repository, scenario.expected.repository);
   const tokenFile = join(scratch, 'token');
   await writeFile(tokenFile, canary + '\n', { mode: 0o600 });
@@ -174,6 +183,8 @@ try {
   mode = 'redirect';
   expect('CS-012 redirect refusal', decode(await standalone(command, 1)).error.code, 'TRANSPORT_ERROR');
   expect('CS-012 foreign origin untouched', foreignRequests, 0);
+  mode = 'secret';
+  await standalone();
   mode = 'success';
   const bootstrap = join(scratch, 'bootstrap');
   await writeFile(bootstrap, passwords.bootstrap, { mode: 0o600 });
@@ -244,6 +255,7 @@ try {
   const user = users.users.find(user => user.username === 'fixture-admin');
   await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
   const hosted = decode(await client(['gitea-axi', ...command]));
+  assertNoSecrets(hosted);
   expect('AC-001 hosted version', hosted.server.version, scenario.expected.version);
   expect('AC-002 hosted specification', hosted.server.specification_version, scenario.expected.specificationVersion);
   expect('AC-002 exact hosted paths', hosted.server.specification_paths, Object.keys(routes['/swagger.v1.json'].paths).length);
@@ -259,7 +271,7 @@ try {
     mode = failure;
     const result = await api(runPath, 'POST', { args: command });
     if (failure === 'large') expect('runner output cap', result.truncated.stdout, true);
-    else if (failure === 'secret') assert(!JSON.stringify(result).includes(canary), 'CS-009 hosted output redaction');
+    else if (failure === 'secret') assertNoSecrets(decode(result.stdout));
     else expect('hosted failure ' + failure, result.exitCode, 1);
     await clean('cleanup after ' + failure);
   }

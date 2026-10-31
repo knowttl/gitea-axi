@@ -70,6 +70,7 @@ try {
   await run(npm, ['run', 'typecheck']);
   await run(npm, ['run', 'lint']);
   await run(npm, ['run', 'build']);
+  await run(process.execPath, ['scripts/verify-credentials.mjs']);
   const packed = JSON.parse(await run(npm, ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', scratch]));
   assert.equal(packed.length, 1, 'Exactly one immutable tarball');
   const tarball = join(scratch, packed[0].filename);

@@ -40,10 +40,10 @@ export async function main(args: string[]) {
       throw new CliError('USAGE', '--repo must be OWNER/NAME', 2);
     }
     const identity = await credentials(typeof values.origin === 'string' ? values.origin : undefined, Boolean(values['allow-insecure-http']));
-    console.log(redact(encode(await readRepository(identity.origin, repo, identity.token))));
+    console.log(encode(redact(await readRepository(identity.origin, repo, identity.token))));
   } catch (error) {
     const failure = error instanceof CliError ? error : new CliError('INTERNAL_ERROR', 'Unable to read the repository');
-    console.log(redact(encode({ error: { code: failure.code, operation: 'repo view', reason: failure.message }, help: 'gitea-axi repo view --help' })));
+    console.log(encode(redact({ error: { code: failure.code, operation: 'repo view', reason: failure.message }, help: 'gitea-axi repo view --help' })));
     process.exitCode = failure.exitCode;
   }
 }

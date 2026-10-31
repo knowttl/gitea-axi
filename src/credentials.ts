@@ -15,13 +15,17 @@ const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', 
 const validate = new Ajv({ strict: false }).compile<Profile>(schema);
 const secrets: string[] = [];
 
-export function redact(value: string): string {
+export function redact(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redact);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, redact(item)]));
+  if (typeof value !== 'string') return value;
+  let output = value;
   for (const secret of secrets) {
     for (const form of [secret, JSON.stringify(secret).slice(1, -1), encodeURIComponent(secret)]) {
-      value = value.replaceAll(form, '[REDACTED]');
+      output = output.replaceAll(form, '[REDACTED]');
     }
   }
-  return value;
+  return output;
 }
 
 export function canonicalOrigin(value: string): string {
@@ -45,9 +49,9 @@ export async function credentials(override: string | undefined, allowHttp: boole
     let token: unknown;
     try { token = JSON.parse(process.env.GITEA_AXI_TOKEN ?? 'null'); } catch { /* Schema reports only the field name. */ }
     const http = process.env.GITEA_AXI_ALLOW_INSECURE_HTTP;
-    if (http !== undefined && !/^(true|false|1|0)$/i.test(http)) throw new CliError('CONFIG_INVALID', 'allowInsecureHttp must be boolean');
+    if (http !== undefined && http !== 'true' && http !== 'false') throw new CliError('CONFIG_INVALID', 'allowInsecureHttp must be true or false');
     profile = { origin: process.env.GITEA_AXI_ORIGIN, tokenOrigin: process.env.GITEA_AXI_TOKEN_ORIGIN, token,
-      allowInsecureHttp: /^(true|1)$/i.test(http ?? '') };
+      allowInsecureHttp: http === 'true' };
   } else if (existsSync(path)) {
     let config: { version?: unknown; defaultProfile?: string; profiles?: Record<string, unknown> };
     try { config = JSON.parse(await readPrivateFile(path)); }
