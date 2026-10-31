@@ -60,7 +60,7 @@ Set `GITEA_AXI_ARTIUM_ROOT` to that built fixture and `GITEA_AXI_HOST_GATE_REPOR
 The driver launches the real local server and public client, executes the installed tarball, and tests injected credentials, admission, private files, redaction, redirects, timeout, cancellation, output bounds, audit and cleanup.
 The receipt must record successful `check`, `test:containers` and `test:runner-container` gates with nonzero scenario counts, the completed host review bound to its full commit SHA, and `candidate: {inputs: buildInputs(), output: digest(['dist/'])}` from Artium's `scripts/build-inputs.mjs`.
 The host review record preserves the pipeline outcome separately from the direct regression and container results.
-It also binds the approved test-only revision follow-up; the driver checks that subsequent changes are confined to the fixture test.
+It also binds the approved fixture follow-ups; the driver permits only the fixture test, generated Gitea inventory and package lockfile to differ from the reviewed head.
 The driver rejects missing gates or evidence for different host inputs or compiled output.
 Private hygiene checking belongs to the fixture maintainer, who checks the candidate and delta before delivery.
 Stock Artium support is not claimed.

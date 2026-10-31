@@ -324,7 +324,9 @@ try {
   expect('host review completed', report.hostGates.review.status, 'completed');
   await run('git', ['merge-base', '--is-ancestor', report.hostGates.review.headSha, 'HEAD'], { cwd: host });
   const followupPaths = (await run('git', ['diff', '--name-only', report.hostGates.review.headSha, 'HEAD'], { cwd: host })).trim();
-  expect('host changes after review are the approved fixture test repair', followupPaths, 'test/admission-fixture.test.ts');
+  expect('host changes after review are the approved fixture updates', followupPaths.split('\n'), [
+    'test/admission-fixture.test.ts', 'tools/inventories/gitea-axi.json', 'tools/pnpm-lock.yaml',
+  ]);
   expect('host follow-up approval covers the selected revision', report.hostGates.review.approvedFollowupHeadSha, report.artiumRevision);
   const inputs = (await run(process.execPath, ['--input-type=module', '-e', `const {buildInputs,digest}=await import('./scripts/build-inputs.mjs');console.log(JSON.stringify({inputs:buildInputs(),output:digest(['dist/'])}));`], { cwd: host })).trim();
   expect('host evidence matches current inputs and compiled output', JSON.parse(inputs), report.hostGates.candidate);
