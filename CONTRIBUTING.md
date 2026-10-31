@@ -17,4 +17,4 @@ Tests are never required first; a change is verified end to end against the beha
 Exempt: validation-boundary tests, contract tests against an agreed schema or recording, and regression tests that cite the bug they reproduce.
 <!-- END canonical test-quality rules -->
 
-The build is offline: tests use fakes only and never contact a real Gitea service.
+Dependency installation can access npm; tests use fakes only and never contact a real Gitea service.

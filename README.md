@@ -6,16 +6,25 @@ Verification uses offline fakes only; live Gitea access remains unverified.
 
 Use Node 24.14.0 (minimum 24.11.0) and npm 11.9.0.
 Dependencies are exact in `package.json` and transitive versions are locked in `package-lock.json`.
-Setup uses a prepared npm cache and performs no registry requests:
+Install the public npm package:
 
 ```sh
-npm ci --offline --ignore-scripts
+npm install -g @knowttl/gitea-axi
+gitea-axi --version
+```
+
+The executable is `gitea-axi`.
+To build from source:
+
+```sh
+npm ci --ignore-scripts
 npm run build
 node dist/cli.js repo view --help
 node scripts/verify.mjs --task S1.1
 ```
 
-The verification driver builds and packs the CLI, installs that tarball offline into an empty temporary prefix and invokes its installed bin from outside the source tree.
+The verification driver builds and packs the CLI, installs that tarball into an empty temporary prefix and invokes its installed bin from outside the source tree.
+Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
@@ -90,7 +99,7 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package offline checks for S1.1 and S2.1 through S2.4.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1 and S2.1 through S2.4.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.

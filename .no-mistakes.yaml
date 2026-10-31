@@ -7,7 +7,7 @@ agent_args_override:
     - model_reasoning_effort="medium"
 no_ci: true
 commands:
-  prepare: npm ci --offline --ignore-scripts
+  prepare: npm ci --ignore-scripts
   test: npm test
   lint: npm run typecheck && npm run lint
 review:
