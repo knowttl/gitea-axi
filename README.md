@@ -4,6 +4,28 @@ An agent CLI for Gitea repository, issue and pull request reads with private cre
 It includes a bounded repository dashboard, list and detail views, reviews, checks, diffs and classified raw GET requests.
 Verification uses offline fakes only; live Gitea access remains unverified.
 
+`run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
+`--user` and unmapped fields fail explicitly.
+Task IDs and status strings do not establish run identity, job conclusions or terminal run results.
+All seven run commands and five workflow commands remain discoverable with `--help`.
+Run detail, watch, logs, downloads and workflow controls report explicit capability gaps.
+Mutating controls remain pending on the shared write gate.
+The retained 1.24.0 workflow, artifact and job-log routes are investigation candidates, not supported target operations.
+
+`search issues|prs|repos|commits "text"` searches at most 20 pages and 1000 candidates per collection, then filters, sorts and applies the total output limit (default 1000).
+Issue and PR searches support exact arbitrary author and assignee names and comma-separated label ANY matching; an unknown label alone matches nothing.
+Use `--repo OWNER/NAME` for repository scope or `--owner OWNER` for issue, PR and repository searches.
+Repository search supports `--language` and integer `--stars` comparisons.
+Commit search requires `--repo`, resolves `--revision` (default repository branch) to a SHA and discloses that ancestry scope.
+Results disclose truncation and scope; totals are unknown when candidate collection is incomplete.
+Queries accept plain text; unsupported qualifiers, review predicates and `authorAssociation` fail explicitly.
+`search code` remains unresolved because repository contents cannot substitute for indexed code search.
+
+Run the S5 installed-package fake journeys with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
+`npm test` includes these journeys under a process preload that denies outbound connections except loopback.
+Artium journeys are opt-in via `GITEA_AXI_ARTIUM_ROOT` and `GITEA_AXI_ARTIUM_MANIFEST`, with an explicit skip reason when absent.
+Native Windows and live commissioning remain pending.
+
 Use Node 24.14.0 (minimum 24.11.0) and npm 11.9.0.
 Dependencies are exact in `package.json` and transitive versions are locked in `package-lock.json`.
 Install the public npm package:

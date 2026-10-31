@@ -11,6 +11,10 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
+if (args.length === 2 && args[0] === '--task' && ['S5.1', 'S5.2'].includes(args[1])) {
+  await import('./verify-stage-five.ts');
+  process.exit(0);
+}
 if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'].includes(args[1])) {
   await import('./verify-reads.mjs');
   process.exit(0);
@@ -81,6 +85,7 @@ try {
   const home = join(scratch, 'home');
   await mkdir(home);
   const env = {
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
     PATH: process.env.PATH, HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: home,
     SystemRoot: process.env.SystemRoot, TEMP: scratch, TMP: scratch,
   };

@@ -9,6 +9,8 @@ import { Client } from './transport.js';
 import { collect, object, rawPath, rawRead, read } from './api.js';
 import { boundedList, issueFields, listIssues, listOptions, positive, prFields, repository, selectedFields, view, watchChecks } from './reads.js';
 import type { Options } from './reads.js';
+import { tasks, validateTasks } from './ci.js';
+import { search, validateSearch } from './search.js';
 
 export async function main(args: string[]) {
   let operation = 'dashboard';
@@ -45,10 +47,19 @@ export async function main(args: string[]) {
     }
     const options = values as Options;
     const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff'].includes(operation);
+    if (operation.startsWith('workflow ') || operation.startsWith('run ') && operation !== 'run list') {
+      throw new CliError('CAPABILITY_GAP', operation + ' is pending: the 1.23.4 contract has task summaries only; 1.24.0 candidates require commissioning. Mutating controls also await the shared write gate');
+    }
+    const searching = operation.startsWith('search ');
+    if (searching) {
+      if (positionals.length !== 1) throw new CliError('USAGE', 'Select exactly one quoted search query', 2);
+      validateSearch(path[1]!, positionals[0]!, options);
+    }
     if (takesNumber && (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select exactly one positive item number', 2);
-    if (!takesNumber && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
+    if (!takesNumber && !searching && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
     if (operation === 'org view' && (positionals.length !== 1 || !/^[A-Za-z0-9_.-]+$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select one organization name', 2);
     if (operation.endsWith('list')) listOptions(options);
+    if (operation === 'run list') validateTasks(options);
     if (operation === 'issue view' || operation === 'issue list') selectedFields(options, issueFields);
     if (operation === 'pr view') selectedFields(options, prFields);
     if (operation === 'pr list') selectedFields(options, issueFields.concat(['isDraft', 'headRefName', 'baseRefName']));
@@ -74,6 +85,7 @@ export async function main(args: string[]) {
     if (operation === 'auth status') output = { profile: identity.profile ?? 'anonymous', origin: identity.origin, source: identity.source ?? 'anonymous', authenticated: Boolean(identity.token) };
     else if (operation === 'doctor') output = { origin: identity.origin, identity: await read(client, '/api/v1/user') };
     else if (operation === 'api') output = await rawRead(client, apiPath!);
+    else if (searching) output = await search(client, path[1]!, positionals[0]!, options);
     else if (operation === 'org view') output = { organization: await read(client, '/api/v1/orgs/' + encodeURIComponent(positionals[0]!)) };
     else if (operation === 'repo list') {
       if (options.fields) throw new CliError('USAGE', 'repo list supports its compact identity fields only', 2);
@@ -98,7 +110,8 @@ export async function main(args: string[]) {
           help: [`gitea-axi issue list --repo ${repo}`, `gitea-axi pr list --repo ${repo}`, 'gitea-axi --help'] };
       } else if (operation === 'issue list' || operation === 'pr list') output = await listIssues(client, base, operation === 'pr list' ? 'pr' : 'issue', options);
       else if (operation === 'issue view' || operation === 'pr view') output = await view(client, base, operation === 'pr view' ? 'pr' : 'issue', positionals[0]!, options);
-      else if (['label list', 'run list', 'release list'].includes(operation)) output = boundedList(await collect(client, base + (operation === 'label list' ? '/labels' : operation === 'release list' ? '/releases' : '/actions/tasks'), operation === 'run list' ? 'workflow_runs' : undefined), positive(options.limit, 30, 1000), operation === 'label list' ? ['id', 'name', 'color'] : ['id', 'name', 'status', 'conclusion']);
+      else if (operation === 'run list') output = await tasks(client, base, options);
+      else if (['label list', 'release list'].includes(operation)) output = boundedList(await collect(client, base + (operation === 'label list' ? '/labels' : '/releases')), positive(options.limit, 30, 1000), operation === 'label list' ? ['id', 'name', 'color'] : ['id', 'name', 'status', 'conclusion']);
       else if (operation === 'pr checks') {
         const result = await watchChecks(client, base, positionals[0]!, options);
         process.exitCode = result.exitCode;
