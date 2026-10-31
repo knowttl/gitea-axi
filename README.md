@@ -1,7 +1,7 @@
 # gitea-axi
 
 An agent CLI for Gitea repository, issue and pull request reads with private credential profiles.
-It includes a bounded repository dashboard, list and detail views, reviews, checks, diffs and classified raw GET requests.
+It includes a bounded repository dashboard, list and detail views, reviews, checks, diffs, Actions task summaries, bounded search and classified raw GET requests.
 Verification uses offline fakes only; live Gitea access remains unverified.
 
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
@@ -20,11 +20,6 @@ Commit search requires `--repo`, resolves `--revision` (default repository branc
 Results disclose truncation and scope; totals are unknown when candidate collection is incomplete.
 Queries accept plain text; unsupported qualifiers, review predicates and `authorAssociation` fail explicitly.
 `search code` remains unresolved because repository contents cannot substitute for indexed code search.
-
-Run the S5 installed-package fake journeys with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
-`npm test` includes these journeys under a process preload that denies outbound connections except loopback.
-Artium journeys are opt-in via `GITEA_AXI_ARTIUM_ROOT` and `GITEA_AXI_ARTIUM_MANIFEST`, with an explicit skip reason when absent.
-Native Windows and live commissioning remain pending.
 
 Use Node 24.14.0 (minimum 24.11.0) and npm 11.9.0.
 Dependencies are exact in `package.json` and transitive versions are locked in `package-lock.json`.
@@ -50,9 +45,10 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-Each driver prints its report path.
-Set `GITEA_AXI_REPORT` to retain the report at a chosen path.
-The default report goes to a unique file in the OS temporary directory; temporary installation files are removed.
+The S1 and S2 drivers print their report paths.
+Set `GITEA_AXI_REPORT` to retain an S1 or S2 report at a chosen path.
+Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
+For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
 Command syntax:
 
@@ -78,7 +74,7 @@ Business reads share a 30-second deadline, except check watches use their explic
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
 Hosted repository reads require an explicit repository.
-Lists default to 30 returned records and bound collection scans to 20 pages or 1000 unique records.
+Lists default to 30 returned records, except `run list` defaults to 10; collection scans are bounded to 20 pages or 1000 unique records.
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
 Milestone selectors use exact names, including numeric-looking names.
 List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
@@ -121,11 +117,12 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1 and S2.1 through S2.4.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S5.1 and S5.2 under a process preload that denies outbound connections except loopback.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
+Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
 Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
-The S2 driver reports whether Artium was selected; a standalone pass does not establish hosted admission.
+The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
 Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
 The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
