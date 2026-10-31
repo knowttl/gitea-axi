@@ -60,34 +60,39 @@ Raw requests accept `api [GET] <relative-path>` for JSON metadata and refuse abs
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
 
 `src/registry.ts` owns command metadata, help and the host inventory.
-`npm run generate` generates those artifacts plus the consumed response schema and route types from the retained Swagger.
+`npm run generate` generates those artifacts plus the consumed response schemas, route types and classified raw-route registry from the retained Swagger.
 `npm run generate:check` rejects stale artifacts.
 `evidence/README.md` records retained source paths, provenance and hashes.
 Credentialed reads use the shipped `axi-credential.schema.json` contract.
 The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.config/gitea-axi/config.json` on Linux, and `%APPDATA%\gitea-axi\config.json` on Windows.
 `--config` takes precedence over `GITEA_AXI_CONFIG`, and `--profile` takes precedence over `GITEA_AXI_PROFILE`.
+`--config` requires an absolute path.
 The config object contains `version: 1`, a `profiles` object keyed by profile name, and an optional `defaultProfile` name.
 Without `--profile` or `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
 File selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile.
 Multiple file profiles without a selection or default are refused.
 On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
+Config files and file SecretRefs must be regular files; symlinks are refused.
 See [the credential schema](axi-credential.schema.json) for profile fields and env/file SecretRef shapes.
 `origin` and `tokenOrigin` must identify the same canonical origin.
 Inline tokens and secret arguments are refused.
 Resolved credentials are redacted from response and error string values before TOON serialization, including their JSON-escaped and URL-encoded forms.
+Redaction also masks recognized secret fields, secret query values, URL credentials, JWTs, private keys and account keys.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
 Set `GITEA_AXI_ALLOW_INSECURE_HTTP=true` to permit HTTP for that environment profile; only the exact values `true` and `false` are accepted.
 HTTP requires `allowInsecureHttp: true` on that exact profile; a runtime origin override cannot reuse the token for another origin.
 Keep file references owned by the invoking account with mode 0600 on Linux.
 Windows file protection is PENDING; file SecretRefs are refused until native ACL verification is available.
 Use env SecretRefs on Windows.
+`auth status` resolves the selected credentials locally; its `authenticated` field reports token availability without checking the server.
+`doctor` checks the current identity through Gitea's `/api/v1/user` endpoint.
 
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
 `npm test` runs the installed-package offline checks for S1.1 and S2.1 through S2.4.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
-The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for all 46 selected PR fields.
+The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
 Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
 The S2 driver reports whether Artium was selected; a standalone pass does not establish hosted admission.
