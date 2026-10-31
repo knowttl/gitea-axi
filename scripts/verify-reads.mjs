@@ -24,7 +24,7 @@ let bin;
 let origin;
 let foreignRequests = 0;
 let host;
-const report = { task, channel: 'offline-fake', result: 'failed', hostedInvocations: 0, fixture: null };
+const report = { task, channel: 'offline-fake', result: 'failed', hostedInvocations: 0, hostedRefusals: [], fixture: null };
 const foreign = createServer((_request, response) => { foreignRequests++; response.end('{}'); });
 const server = createServer((request, response) => {
   requests.push({ method: request.method, path: request.url });
@@ -79,11 +79,11 @@ async function run(executable, argv, options = {}) {
   return stdout;
 }
 let env;
-const invoke = async (argv, code = 0, extra = {}) => {
+const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
   const output = await run(process.execPath, [bin, ...argv], { code, env: { ...env, ...extra } });
   for (const form of [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)]) assert(!output.includes(form), 'Canary escaped output');
   const result = decode(output);
-  if (host && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
+  if (host && hosted && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
     const hosted = await host.invoke(argv[0] === '--repo' ? ['dashboard', ...argv] : argv, code);
     report.hostedInvocations++;
     assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
@@ -205,7 +205,16 @@ try {
       assert.equal(refusal.error.code, 'READ_ONLY');
       assert.match(refusal.error.reason, /only JSON metadata reads are available/);
     }
-    for (const path of ['https://foreign.test/api/v1/user', '../user', '%2e%2e/user', 'user?token=canary', 'repos/sample/demo/actions/runners/registration-token', 'unknown']) await invoke(['api', path], path.includes('token=') ? 1 : path.includes('registration-token') || path === 'unknown' ? 1 : 2);
+    // Unsafe and unclassified paths are refused by hosted admission before CLI execution.
+    for (const [path, exitCode, errorCode, admissionCode] of [
+      ['https://foreign.test/api/v1/user', 2, 'USAGE', 'INVALID_INPUT'], ['../user', 2, 'USAGE', 'INVALID_INPUT'],
+      ['%2e%2e/user', 2, 'USAGE', 'INVALID_INPUT'], ['user?token=canary', 1, 'CONFIG_INVALID', 'FLAG_BLOCKED'],
+      ['repos/sample/demo/actions/runners/registration-token', 1, 'READ_ONLY', 'INVALID_INPUT'],
+      ['unknown', 1, 'READ_ONLY', 'INVALID_INPUT'],
+    ]) {
+      assert.equal((await invoke(['api', path], exitCode, {}, false)).error.code, errorCode);
+      if (host) report.hostedRefusals.push({ args: ['api', path], response: await host.refuse(['api', path], admissionCode) });
+    }
     assert.equal(requests.length, before);
     for (const [failure, code] of [['missing', 'INVALID_RESPONSE'], ['wrong-type', 'INVALID_RESPONSE'], ['malformed', 'INVALID_RESPONSE'], ['html', 'INVALID_RESPONSE'], ['401', 'AUTH_REQUIRED'], ['403', 'PERMISSION_DENIED'], ['404', 'NOT_FOUND_OR_HIDDEN'], ['429', 'RATE_LIMITED'], ['redirect', 'TRANSPORT_ERROR']]) {
       mode = failure; assert.equal((await invoke(['api', 'repos/sample/demo'], 1)).error.code, code);

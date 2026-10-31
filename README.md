@@ -17,8 +17,9 @@ node scripts/verify.mjs --task S1.1
 
 The verification driver builds and packs the CLI, installs that tarball offline into an empty temporary prefix and invokes its installed bin from outside the source tree.
 Only the local HTTP fake replaces the vendor boundary.
-The driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
-It prints the path to a report containing exact process invocations, assertions, runtime pins and the package SHA-256.
+The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
+Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
+Each driver prints its report path.
 Set `GITEA_AXI_REPORT` to retain the report at a chosen path.
 The default report goes to a unique file in the OS temporary directory; temporary installation files are removed.
 
@@ -38,11 +39,12 @@ gitea-axi config path
 gitea-axi doctor
 ```
 
-Anonymous reads require an explicit origin and repository.
+Anonymous reads require an explicit origin; repository selection follows the rules below.
 Anonymous HTTP reads require `--allow-insecure-http` for that selected origin.
 The tool follows no redirects and never imports tea or Git credentials.
 Output uses TOON; structured errors use stdout, with exit 1 for operational failures and exit 2 for usage errors.
-Requests have a 30-second timeout and a 2,000,000-byte response limit.
+Business reads share a 30-second deadline, except check watches use their explicit timeout; each request has a 2,000,000-byte response limit.
+`repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
 Hosted repository reads require an explicit repository.
 Lists default to 30 returned records and bound collection scans to 20 pages or 1000 unique records.
@@ -65,11 +67,12 @@ Credentialed reads use the shipped `axi-credential.schema.json` contract.
 The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.config/gitea-axi/config.json` on Linux, and `%APPDATA%\gitea-axi\config.json` on Windows.
 `--config` takes precedence over `GITEA_AXI_CONFIG`, and `--profile` takes precedence over `GITEA_AXI_PROFILE`.
 The config object contains `version: 1`, a `profiles` object keyed by profile name, and an optional `defaultProfile` name.
-Without `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
-Otherwise the file's `defaultProfile` or its sole profile is selected.
+Without `--profile` or `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
+File selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile.
 Multiple file profiles without a selection or default are refused.
 On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
-Each profile contains `origin`, an equal `tokenOrigin`, and `token` as either `{"env":"TOKEN_VARIABLE"}` or `{"file":"/absolute/private/token"}`.
+See [the credential schema](axi-credential.schema.json) for profile fields and env/file SecretRef shapes.
+`origin` and `tokenOrigin` must identify the same canonical origin.
 Inline tokens and secret arguments are refused.
 Resolved credentials are redacted from response and error string values before TOON serialization, including their JSON-escaped and URL-encoded forms.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
@@ -88,4 +91,5 @@ The S2 fixtures contain synthetic non-empty records authored against the retaine
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
 Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
 The S2 driver reports whether Artium was selected; a standalone pass does not establish hosted admission.
+Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
 The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.

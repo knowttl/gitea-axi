@@ -49,10 +49,12 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     await client(['login', '--username', 'fixture-admin', '--password-stdin'], replacement);
     const session = JSON.parse(await readFile(join(scratch, 'client/artium-axi/session.json'), 'utf8'));
     const headers = { 'content-type': 'application/json', authorization: 'Bearer ' + session.accessToken };
-    async function api(path, method = 'GET', body) {
+    async function api(path, method = 'GET', body, expectedStatus) {
       const response = await fetch('http://127.0.0.1:' + port + path, { method, headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
       const value = await response.json();
-      assert(response.ok, JSON.stringify(value)); return value;
+      if (expectedStatus === undefined) assert(response.ok, JSON.stringify(value));
+      else assert.equal(response.status, expectedStatus, JSON.stringify(value));
+      return value;
     }
     headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket;
     const path = '/v1/admin/tools/gitea-axi';
@@ -64,7 +66,11 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     const user = (await api('/v1/admin/users')).users.find(user => user.username === 'fixture-admin');
     await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
     assert.equal(decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])).repository.full_name, 'sample/demo');
-    return { close, invoke: async (args, code) => {
+    return { close, refuse: async (args, code) => {
+      const value = await api('/v1/tools/gitea-axi/run', 'POST', { args }, 400);
+      assert.equal(value.error.code, code, JSON.stringify(value));
+      return value;
+    }, invoke: async (args, code) => {
       const value = await api('/v1/tools/gitea-axi/run', 'POST', { args });
       assert.equal(value.exitCode, code, value.stdout + value.stderr);
       assert(!value.truncated.stdout, 'Hosted result was truncated');
