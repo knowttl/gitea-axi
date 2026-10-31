@@ -30,7 +30,7 @@
         },
         "origin": {
           "type": "string",
-          "required": true,
+          "default": "selected profile",
           "description": "Gitea origin; HTTPS by default"
         },
         "allow-insecure-http": {

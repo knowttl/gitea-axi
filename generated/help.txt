@@ -2,7 +2,7 @@ command: gitea-axi repo view
 description: Read repository identity and default branch with server contract metadata.
 flags[4]{flag,type,requirement,description}:
   "--repo",string,required,Repository as OWNER/NAME
-  "--origin",string,required,Gitea origin; HTTPS by default
+  "--origin",string,default selected profile,Gitea origin; HTTPS by default
   "--allow-insecure-http",boolean,default false,Allow HTTP only for the explicitly selected origin
   "--help",boolean,default false,Show command help
 limits:

@@ -1,0 +1,89 @@
+import { readFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { isAbsolute, join } from 'node:path';
+import { Ajv } from 'ajv';
+import { CliError } from './error.js';
+import { readPrivateFile } from './private-file.js';
+
+interface Profile {
+  origin: string;
+  tokenOrigin: string;
+  token: { env: string } | { file: string };
+  allowInsecureHttp?: boolean;
+}
+const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', import.meta.url), 'utf8'));
+const validate = new Ajv({ strict: false }).compile<Profile>(schema);
+const secrets: string[] = [];
+
+export function redact(value: string): string {
+  for (const secret of secrets) {
+    for (const form of [secret, JSON.stringify(secret).slice(1, -1), encodeURIComponent(secret)]) {
+      value = value.replaceAll(form, '[REDACTED]');
+    }
+  }
+  return value;
+}
+
+export function canonicalOrigin(value: string): string {
+  try {
+    const url = new URL(value);
+    if (!/^https?:\/\/[^\s\\/?#@]+\/?$/i.test(value) || !url.hostname || url.username || url.password) throw new Error();
+    return url.origin;
+  } catch {
+    throw new CliError('CONFIG_INVALID', 'origin must contain only HTTP or HTTPS scheme, host and port');
+  }
+}
+
+export async function credentials(override: string | undefined, allowHttp: boolean): Promise<{ origin: string; token?: string }> {
+  const configHome = process.platform === 'win32' ? process.env.APPDATA : process.env.XDG_CONFIG_HOME;
+  const path = process.env.GITEA_AXI_CONFIG ?? join(configHome && isAbsolute(configHome) ? configHome : join(homedir(), '.config'), 'gitea-axi', 'config.json');
+  const selected = process.env.GITEA_AXI_PROFILE;
+  const fields = ['ORIGIN', 'TOKEN_ORIGIN', 'TOKEN', 'ALLOW_INSECURE_HTTP'] as const;
+  const hasEnv = fields.some(field => process.env['GITEA_AXI_' + field] !== undefined);
+  let profile: unknown;
+  if (!selected && hasEnv) {
+    let token: unknown;
+    try { token = JSON.parse(process.env.GITEA_AXI_TOKEN ?? 'null'); } catch { /* Schema reports only the field name. */ }
+    const http = process.env.GITEA_AXI_ALLOW_INSECURE_HTTP;
+    if (http !== undefined && !/^(true|false|1|0)$/i.test(http)) throw new CliError('CONFIG_INVALID', 'allowInsecureHttp must be boolean');
+    profile = { origin: process.env.GITEA_AXI_ORIGIN, tokenOrigin: process.env.GITEA_AXI_TOKEN_ORIGIN, token,
+      allowInsecureHttp: /^(true|1)$/i.test(http ?? '') };
+  } else if (existsSync(path)) {
+    let config: { version?: unknown; defaultProfile?: string; profiles?: Record<string, unknown> };
+    try { config = JSON.parse(await readPrivateFile(path)); }
+    catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
+    }
+    if (config.version !== 1 || !config.profiles || typeof config.profiles !== 'object') throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
+    const names = Object.keys(config.profiles);
+    const name = selected ?? config.defaultProfile ?? (names.length === 1 ? names[0] : undefined);
+    if (!name) throw new CliError(names.length ? 'PROFILE_AMBIGUOUS' : 'PROFILE_REQUIRED', 'Select a profile');
+    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name) || !Object.hasOwn(config.profiles, name)) throw new CliError('PROFILE_NOT_FOUND', 'Selected profile was not found');
+    profile = config.profiles[name];
+  } else if (selected || process.env.GITEA_AXI_CONFIG) {
+    throw new CliError('PROFILE_NOT_FOUND', 'Selected profile configuration was not found');
+  } else if (override) {
+    const origin = canonicalOrigin(override);
+    if (origin.startsWith('http:') && !allowHttp) throw new CliError('USAGE', 'HTTP requires --allow-insecure-http for the explicit --origin', 2);
+    return { origin };
+  } else {
+    throw new CliError('AUTH_REQUIRED', 'Select a configured profile or an explicit anonymous --origin');
+  }
+  if (!validate(profile)) throw new CliError('CONFIG_INVALID', 'Invalid profile field: ' + (validate.errors?.[0]?.instancePath || 'token/origin'));
+  const origin = canonicalOrigin(profile.origin);
+  if (origin !== canonicalOrigin(profile.tokenOrigin) || (override && canonicalOrigin(override) !== origin)) {
+    throw new CliError('AUTH_BINDING_MISMATCH', 'origin must match tokenOrigin before resolving token');
+  }
+  if (origin.startsWith('http:') && !profile.allowInsecureHttp) throw new CliError('CONFIG_INVALID', 'HTTP requires allowInsecureHttp on the selected profile');
+  let token: string;
+  if ('env' in profile.token) token = process.env[profile.token.env] ?? '';
+  else {
+    if (!isAbsolute(profile.token.file) || /^\\\\/.test(profile.token.file)) throw new CliError('CONFIG_INVALID', 'token file must be an absolute local path');
+    token = (await readPrivateFile(profile.token.file, true)).replace(/^\uFEFF/, '').trimEnd();
+  }
+  if (!token) throw new CliError('AUTH_REQUIRED', 'token reference is empty');
+  secrets.push(token);
+  if (/[\r\n]/.test(token)) throw new CliError('CONFIG_INVALID', 'token must be a single line');
+  return { origin, token };
+}

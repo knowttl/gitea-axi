@@ -12,16 +12,16 @@ const validateRepository = ajv.compile<Repository>(schemas.Repository);
 const validateVersion = ajv.compile<ServerVersion>(schemas.ServerVersion);
 const validateSpecification = ajv.compile<Specification>(schemas.Specification);
 
-export async function readRepository(origin: string, repo: string) {
-  const version = await get(origin, routes.version);
+export async function readRepository(origin: string, repo: string, token?: string) {
+  const version = await get(origin, routes.version, token);
   if (!validateVersion(version)) throw new CliError('INVALID_RESPONSE', 'Gitea version response is invalid');
-  const specification = await get(origin, routes.specification);
+  const specification = await get(origin, routes.specification, token);
   if (!validateSpecification(specification)) {
     throw new CliError('INVALID_RESPONSE', 'Gitea specification response is invalid');
   }
   const [owner, name] = repo.split('/') as [string, string];
   const path = routes.repository.replace('{owner}', encodeURIComponent(owner)).replace('{repo}', encodeURIComponent(name));
-  const repository = await get(origin, path);
+  const repository = await get(origin, path, token);
   if (!validateRepository(repository) || repository.full_name !== repo || !repository.default_branch) {
     throw new CliError('INVALID_RESPONSE', 'Gitea repository identity or default branch is invalid');
   }

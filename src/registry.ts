@@ -7,7 +7,7 @@ export const command = {
   effect: 'read',
   flags: {
     repo: { type: 'string', required: true, description: 'Repository as OWNER/NAME' },
-    origin: { type: 'string', required: true, description: 'Gitea origin; HTTPS by default' },
+    origin: { type: 'string', default: 'selected profile', description: 'Gitea origin; HTTPS by default' },
     'allow-insecure-http': {
       type: 'boolean', default: false,
       description: 'Allow HTTP only for the explicitly selected origin',

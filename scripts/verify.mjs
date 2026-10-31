@@ -11,6 +11,10 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
+if (args.join(' ') === '--task S1.2') {
+  await import('./verify-hosted.mjs');
+  process.exit(0);
+}
 assert.deepEqual(args, ['--task', 'S1.1'], 'Select exactly --task S1.1; missing or empty scenario selection fails');
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fixture = name => readJson(join(root, 'evidence', 'fixtures', name + '.json'));

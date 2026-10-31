@@ -1,10 +1,10 @@
 import { limits } from './registry.js';
 import { CliError } from './error.js';
 
-export async function get(origin: string, path: string): Promise<unknown> {
+export async function get(origin: string, path: string, token?: string): Promise<unknown> {
   try {
     const response = await fetch(new URL(path, origin), {
-      headers: { accept: 'application/json' },
+      headers: { accept: 'application/json', ...(token ? { authorization: 'token ' + token } : {}) },
       redirect: 'error',
       signal: AbortSignal.timeout(limits.timeoutMs),
     });
