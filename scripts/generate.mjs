@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { command, limits } from '../src/registry.ts';
+import { command, commands, limits } from '../src/registry.ts';
 import { encode } from '@toon-format/toon';
 
 const check = process.argv.slice(2);
@@ -53,8 +53,14 @@ const artifacts = {
   'schemas/responses.json': JSON.stringify(schemas, null, 2) + '\n',
   'generated/help.txt': help,
   'generated/host-inventory.json': JSON.stringify({
-    schemaVersion: 1, tool: 'gitea-axi', commands: [command], limits,
+    schemaVersion: 1, tool: 'gitea-axi', commands, limits,
   }, null, 2) + '\n',
+  'schemas/vendor.json': JSON.stringify({ definitions: swagger.definitions }, null, 2) + '\n',
+  'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => methods.get ? [{
+    path: swagger.basePath + path, operation: methods.get.operationId,
+    effect: /registration-token|\/tokens(?:\/|$)|signing-key/.test(path) ? 'credential' : 'read',
+    schema: (methods.get.responses?.['200']?.$ref ? swagger.responses[methods.get.responses['200'].$ref.split('/').at(-1)] : methods.get.responses?.['200'])?.schema ?? null,
+  }] : []), null, 2) + '\n',
 };
 for (const [path, content] of Object.entries(artifacts)) {
   const target = new URL(path, root);
