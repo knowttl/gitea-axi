@@ -11,6 +11,10 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
+if (args.join(' ') === '--task S1.2') {
+  await import('./verify-hosted.mjs');
+  process.exit(0);
+}
 assert.deepEqual(args, ['--task', 'S1.1'], 'Select exactly --task S1.1; missing or empty scenario selection fails');
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fixture = name => readJson(join(root, 'evidence', 'fixtures', name + '.json'));
@@ -66,6 +70,7 @@ try {
   await run(npm, ['run', 'typecheck']);
   await run(npm, ['run', 'lint']);
   await run(npm, ['run', 'build']);
+  await run(process.execPath, ['scripts/verify-credentials.mjs']);
   const packed = JSON.parse(await run(npm, ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', scratch]));
   assert.equal(packed.length, 1, 'Exactly one immutable tarball');
   const tarball = join(scratch, packed[0].filename);

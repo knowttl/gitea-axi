@@ -1,0 +1,18 @@
+{
+  "task": "S1.2",
+  "provenance": "Synthetic offline scenario reviewed against AC-001, AC-002, AC-004, credential cases and retained P-004. No live observations.",
+  "operations": ["OP-001", "OP-002", "OP-004"],
+  "outcomes": ["AC-001", "AC-002", "AC-004"],
+  "credentialCases": ["CS-003", "CS-004", "CS-009", "CS-010", "CS-011", "CS-012", "CS-013"],
+  "crossCuttingCases": [],
+  "commands": [{
+    "id": "C075", "command": "repo view", "capturedFlags": ["--repo"],
+    "expectedOutcome": "The requested repository identity and metadata are returned, and conflicting selectors fail before a call.",
+    "scope": "Hosted repository identity and default branch. Remaining projections belong to S2.2."
+  }],
+  "expected": {
+    "version": "1.23.4", "specificationVersion": "1.23.4",
+    "repository": { "id": 1008, "full_name": "sample-owner/sample-repo", "default_branch": "main" }
+  },
+  "fixtureRevision": "3cfc65afc2d7c1a0f50d2f6e02dc2ee13d6fd7e8"
+}

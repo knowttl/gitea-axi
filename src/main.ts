@@ -4,11 +4,15 @@ import { encode } from '@toon-format/toon';
 import { command } from './registry.js';
 import { CliError } from './error.js';
 import { readRepository } from './repository.js';
+import { credentials, redact } from './credentials.js';
 
 const help = readFileSync(new URL('../generated/help.txt', import.meta.url), 'utf8');
 
 export async function main(args: string[]) {
   try {
+    if (args.some(arg => /^--(?:token|api-key|password|authorization)(?:=|$)/i.test(arg))) {
+      throw new CliError('CONFIG_INVALID', 'token and other secret arguments are not accepted');
+    }
     let parsed;
     try {
       parsed = parseArgs({
@@ -35,24 +39,11 @@ export async function main(args: string[]) {
     if (typeof repo !== 'string' || !/^[A-Za-z0-9_][A-Za-z0-9_.-]*\/[A-Za-z0-9_][A-Za-z0-9_.-]*$/.test(repo)) {
       throw new CliError('USAGE', '--repo must be OWNER/NAME', 2);
     }
-    let origin: URL;
-    try {
-      if (typeof values.origin !== 'string') throw new Error();
-      origin = new URL(values.origin);
-    } catch {
-      throw new CliError('USAGE', '--origin must be an explicit Gitea origin', 2);
-    }
-    if (origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash ||
-        !['https:', 'http:'].includes(origin.protocol)) {
-      throw new CliError('USAGE', '--origin must contain only scheme, hostname and optional port', 2);
-    }
-    if (origin.protocol === 'http:' && !values['allow-insecure-http']) {
-      throw new CliError('USAGE', 'HTTP requires --allow-insecure-http for the explicit --origin', 2);
-    }
-    console.log(encode(await readRepository(origin.origin, repo)));
+    const identity = await credentials(typeof values.origin === 'string' ? values.origin : undefined, Boolean(values['allow-insecure-http']));
+    console.log(encode(redact(await readRepository(identity.origin, repo, identity.token))));
   } catch (error) {
     const failure = error instanceof CliError ? error : new CliError('INTERNAL_ERROR', 'Unable to read the repository');
-    console.log(encode({ error: { code: failure.code, operation: 'repo view', reason: failure.message }, help: 'gitea-axi repo view --help' }));
+    console.log(encode(redact({ error: { code: failure.code, operation: 'repo view', reason: failure.message }, help: 'gitea-axi repo view --help' })));
     process.exitCode = failure.exitCode;
   }
 }

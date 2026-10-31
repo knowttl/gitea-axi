@@ -4,7 +4,7 @@
   "description": "An agent CLI for Gitea repository workflows",
   "type": "module",
   "bin": { "gitea-axi": "dist/cli.js" },
-  "files": ["dist", "schemas", "generated"],
+  "files": ["dist", "schemas", "generated", "axi-credential.schema.json"],
   "engines": { "node": ">=24.11.0 <25" },
   "packageManager": "npm@11.9.0",
   "overrides": { "ignore": "7.0.13" },
