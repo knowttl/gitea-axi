@@ -37,7 +37,9 @@ const server = createServer((request, response) => {
   if (mode === 'denied') { response.writeHead(403, { 'content-type': 'application/json' }).end(JSON.stringify({ message: 'scope denied ' + canary })); return; }
   const second = url.searchParams.get('page') === '2';
   let data: unknown;
-  if (url.pathname.endsWith('/actions/tasks')) data = mode === 'invalid' ? { workflow_runs: [{ name: 'missing identity' }], total_count: 1 } : { workflow_runs: [rows[second ? 1 : 0]], total_count: 2 };
+  if (url.pathname === '/api/v1/version') data = { version: '1.23.4' };
+  else if (url.pathname === '/swagger.v1.json') data = { info: { version: '1.23.4' }, paths: { '/version': {} } };
+  else if (url.pathname.endsWith('/actions/tasks')) data = mode === 'invalid' ? { workflow_runs: [{ name: 'missing identity' }], total_count: 1 } : { workflow_runs: [rows[second ? 1 : 0]], total_count: 2 };
   else if (url.pathname === base) data = repository;
   else if (url.pathname === base + '/git/commits/main') data = { sha: 'abc', commit: { message: 'tip' } };
   else if (url.pathname === base + '/commits') data = [{ sha: second ? 'match' : 'other', commit: { message: second ? 'login fix' : 'unrelated' }, author: user }];
@@ -45,7 +47,7 @@ const server = createServer((request, response) => {
   else if (url.pathname.endsWith('/issues') || url.pathname.endsWith('/pulls') || url.pathname === '/api/v1/repos/issues/search') data = [{ ...issue, ...(second ? {} : { id: 10, number: 10, title: 'unrelated' }), ...(url.pathname.endsWith('/pulls') ? { head: { sha: 'abc', ref: 'main' }, base: { sha: 'def', ref: 'main' } } : {}) }];
   else { response.writeHead(404, { 'content-type': 'application/json' }).end('{}'); return; }
   if (mode === 'multiple' && second && url.pathname.endsWith('/issues')) data = [issue, { ...issue, id: 13, number: 13, created_at: '2026-02-01T00:00:00Z' }];
-  if (!second && ![base, base + '/git/commits/main'].includes(url.pathname)) {
+  if (!second && ![base, base + '/git/commits/main', '/api/v1/version', '/swagger.v1.json'].includes(url.pathname)) {
     url.searchParams.set('page', '2');
     response.setHeader('link', `<${url}>; rel="next"`);
   }
