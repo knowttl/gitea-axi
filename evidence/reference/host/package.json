@@ -1,0 +1,64 @@
+{
+  "name": "artium-axi",
+  "version": "0.0.28",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "artium-axi-server": "bin/artium-axi-server"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "scripts": {
+    "start": "node dist/src/server/main.js",
+    "prepare": "pnpm --dir tools install --frozen-lockfile",
+    "build": "node scripts/build.mjs",
+    "build:npm": "node scripts/build-npm.mjs",
+    "test:containers": "node scripts/container-checks.mjs",
+    "test:browser": "pnpm build && node --test test/browser/*.mjs",
+    "test:axi": "node scripts/axi-check.mjs",
+    "test:walking-skeleton": "pnpm build && node scripts/walking-skeleton.mjs",
+    "test": "node scripts/upstream-inventory.mjs && node scripts/mg-headless-schema.mjs && vitest run",
+    "test:mg-headless": "node scripts/mg-headless-check.mjs",
+    "test:fake-services": "pnpm build && node scripts/fake-services.mjs",
+    "test:build-image": "node scripts/build-fake-service-image.mjs",
+    "test:runner-container": "pnpm build && node scripts/runner-container-check.mjs",
+    "test:security": "vitest run --testNamePattern security --passWithNoTests",
+    "lint": "tsc --noEmit",
+    "errors:generate": "node scripts/errors-reference.mjs --write",
+    "check": "node scripts/errors-reference.mjs && pnpm lint && pnpm test && pnpm build && pnpm test:axi",
+    "hygiene:check": "node scripts/hygiene-check.mjs"
+  },
+  "devDependencies": {
+    "@actions/expressions": "0.3.61",
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.0",
+    "yaml": "2.9.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "argon2",
+      "better-sqlite3",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "@azure/msal-node": "7.0.1",
+    "@fastify/cookie": "^11.1.3",
+    "@fastify/csrf-protection": "^7.1.0",
+    "@fastify/formbody": "^8.0.2",
+    "@toon-format/toon": "2.3.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "argon2": "0.45.1",
+    "better-sqlite3": "13.0.3",
+    "fastify": "^5.12.5",
+    "openid-client": "6.8.8",
+    "zod": "4.6.5"
+  }
+}
