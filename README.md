@@ -54,7 +54,7 @@ Bodies default to 1000 characters, diffs to 10000 characters, and rendered outpu
 `--full` expands bodies and diffs within the response and output ceilings.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
-Raw requests accept `api [GET] <relative-path>` and refuse absolute URLs, traversal, secret query fields, credential issuance and unclassified routes.
+Raw requests accept `api [GET] <relative-path>` and refuse absolute URLs, traversal, secret query fields, credential-bearing routes and unclassified routes.
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
 
 `src/registry.ts` owns command metadata, help and the host inventory.
@@ -79,15 +79,6 @@ Keep file references owned by the invoking account with mode 0600 on Linux.
 Windows file protection is PENDING; file SecretRefs are refused until native ACL verification is available.
 Use env SecretRefs on Windows.
 
-S1.2 uses an unmerged local Artium fixture based on revision `3cfc65afc2d7c1a0f50d2f6e02dc2ee13d6fd7e8`, with the reviewed credential-support delta applied.
-Set `GITEA_AXI_ARTIUM_ROOT` to that built fixture and `GITEA_AXI_HOST_GATE_REPORT` to its external verification receipt, then run `node scripts/verify.mjs --task S1.2` or both tasks with `node scripts/check.mjs --offline`.
-The driver launches the real local server and public client, executes the installed tarball, and tests injected credentials, admission, private files, redaction, redirects, timeout, cancellation, output bounds, audit and cleanup.
-The fixture inventory's credential schema must exactly equal the schema shipped in the installed tarball.
-The receipt must record successful `check`, `test:containers` and `test:runner-container` gates with nonzero scenario counts, the completed host review bound to its full commit SHA, and `candidate: {inputs: buildInputs(), output: digest(['dist/'])}` from Artium's `scripts/build-inputs.mjs`.
-The host review record preserves the pipeline outcome separately from the direct regression and container results.
-It also binds the approved fixture follow-ups; the driver permits only the fixture test, generated Gitea inventory and package lockfile to differ from the reviewed head.
-The driver rejects missing gates or evidence for different host inputs or compiled output.
-Private hygiene checking belongs to the fixture maintainer, who checks the candidate and delta before delivery.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 

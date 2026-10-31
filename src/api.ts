@@ -35,6 +35,7 @@ export function object(value: unknown): Row {
 
 export function routeFor(path: string) {
   const route = routes.find(route => new RegExp('^' + route.path.replace(/[.]/g, '\\.').replace(/\{[^}]+\}/g, '[^/]+') + '$').test(path));
+  if (route?.effect === 'credential') throw new CliError('READ_ONLY', 'Credential-bearing API routes are refused; only metadata reads are available');
   if (!route || route.effect !== 'read') throw new CliError('READ_ONLY', 'Only classified metadata reads are available');
   return route;
 }

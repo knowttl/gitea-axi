@@ -15,10 +15,6 @@ if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'
   await import('./verify-reads.mjs');
   process.exit(0);
 }
-if (args.join(' ') === '--task S1.2') {
-  await import('./verify-hosted.mjs');
-  process.exit(0);
-}
 assert.deepEqual(args, ['--task', 'S1.1'], 'Select exactly --task S1.1; missing or empty scenario selection fails');
 const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const fixture = name => readJson(join(root, 'evidence', 'fixtures', name + '.json'));

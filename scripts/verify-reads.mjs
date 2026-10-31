@@ -190,6 +190,11 @@ try {
     assert.equal((await invoke(['api', '/swagger.v1.json'])).data.info.version, '1.23.4');
     assert.equal((await invoke(['api', 'repos/sample/demo'])).data.id, 10);
     const before = requests.length;
+    for (const path of ['user/applications/oauth2/1', 'repos/o/r/hooks/1']) {
+      const refusal = await invoke(['api', path], 1);
+      assert.equal(refusal.error.code, 'READ_ONLY');
+      assert.match(refusal.error.reason, /Credential-bearing API routes are refused/);
+    }
     for (const path of ['https://foreign.test/api/v1/user', '../user', '%2e%2e/user', 'user?token=canary', 'repos/sample/demo/actions/runners/registration-token', 'unknown']) await invoke(['api', path], path.includes('token=') ? 1 : path.includes('registration-token') || path === 'unknown' ? 1 : 2);
     assert.equal(requests.length, before);
     for (const [failure, code] of [['missing', 'INVALID_RESPONSE'], ['wrong-type', 'INVALID_RESPONSE'], ['malformed', 'INVALID_RESPONSE'], ['html', 'INVALID_RESPONSE'], ['401', 'AUTH_REQUIRED'], ['403', 'PERMISSION_DENIED'], ['404', 'NOT_FOUND_OR_HIDDEN'], ['429', 'RATE_LIMITED'], ['redirect', 'TRANSPORT_ERROR']]) {

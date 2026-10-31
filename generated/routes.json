@@ -43,7 +43,7 @@
   {
     "path": "/api/v1/admin/hooks",
     "operation": "adminListHooks",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "array",
       "items": {
@@ -54,7 +54,7 @@
   {
     "path": "/api/v1/admin/hooks/{id}",
     "operation": "adminGetHook",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "$ref": "#/definitions/Hook"
     }
@@ -290,7 +290,7 @@
   {
     "path": "/api/v1/orgs/{org}/hooks",
     "operation": "orgListHooks",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "array",
       "items": {
@@ -301,7 +301,7 @@
   {
     "path": "/api/v1/orgs/{org}/hooks/{id}",
     "operation": "orgGetHook",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "$ref": "#/definitions/Hook"
     }
@@ -747,7 +747,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/hooks",
     "operation": "repoListHooks",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "array",
       "items": {
@@ -777,7 +777,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}",
     "operation": "repoGetHook",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "$ref": "#/definitions/Hook"
     }
@@ -1621,7 +1621,7 @@
   {
     "path": "/api/v1/user/applications/oauth2",
     "operation": "userGetOauth2Application",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "array",
       "items": {
@@ -1632,7 +1632,7 @@
   {
     "path": "/api/v1/user/applications/oauth2/{id}",
     "operation": "userGetOAuth2Application",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "$ref": "#/definitions/OAuth2Application"
     }
@@ -1696,7 +1696,7 @@
   {
     "path": "/api/v1/user/gpg_key_token",
     "operation": "getVerificationToken",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "string"
     }
@@ -1723,7 +1723,7 @@
   {
     "path": "/api/v1/user/hooks",
     "operation": "userListHooks",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "type": "array",
       "items": {
@@ -1734,7 +1734,7 @@
   {
     "path": "/api/v1/user/hooks/{id}",
     "operation": "userGetHook",
-    "effect": "read",
+    "effect": "credential",
     "schema": {
       "$ref": "#/definitions/Hook"
     }
