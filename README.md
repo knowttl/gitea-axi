@@ -41,9 +41,15 @@ Requests have a 30-second timeout and a 2,000,000-byte response limit.
 Credentialed reads use the shipped `axi-credential.schema.json` contract.
 The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.config/gitea-axi/config.json` on Linux, and `%APPDATA%\gitea-axi\config.json` on Windows.
 `GITEA_AXI_CONFIG` selects an explicit file and `GITEA_AXI_PROFILE` selects its profile.
+The config object contains `version: 1`, a `profiles` object keyed by profile name, and an optional `defaultProfile` name.
+Without `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
+Otherwise the file's `defaultProfile` or its sole profile is selected.
+Multiple file profiles without a selection or default are refused.
+On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
 Each profile contains `origin`, an equal `tokenOrigin`, and `token` as either `{"env":"TOKEN_VARIABLE"}` or `{"file":"/absolute/private/token"}`.
 Inline tokens and secret arguments are refused.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
+Set `GITEA_AXI_ALLOW_INSECURE_HTTP=true` to permit HTTP for that environment profile; only the exact values `true` and `false` are accepted.
 HTTP requires `allowInsecureHttp: true` on that exact profile; a runtime origin override cannot reuse the token for another origin.
 Keep file references owned by the invoking account with mode 0600 on Linux.
 Windows file protection is PENDING; file SecretRefs are refused until native ACL verification is available.
