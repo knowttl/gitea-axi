@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { CliError } from './error.js';
 
-export async function readPrivateFile(path: string, secret = false): Promise<string> {
+export async function readPrivateFile(path: string, secret = false, maxBytes?: number): Promise<string> {
   if (secret && process.platform === 'win32') throw new CliError('CONFIG_INVALID', 'File SecretRef protection cannot be verified on Windows; use env SecretRefs');
   const info = await lstat(path).catch(() => { throw new CliError('CONFIG_INSECURE', 'Private file is unavailable'); });
   if (!info.isFile() || info.isSymbolicLink()) throw new CliError('CONFIG_INSECURE', 'Private file must be a regular owned file; use chmod 600');
@@ -13,6 +13,7 @@ export async function readPrivateFile(path: string, secret = false): Promise<str
   });
   try {
     const stat = await file.stat();
+    if (maxBytes !== undefined && stat.size > maxBytes) throw new CliError('USAGE', 'Input exceeds ' + maxBytes + ' bytes', 2);
     if (!stat.isFile() || (process.platform !== 'win32' &&
         (stat.uid !== process.getuid!() || (stat.mode & (secret ? 0o077 : 0o022)) !== 0))) {
       throw new CliError('CONFIG_INSECURE', 'Private file must be owned and protected; use chmod 600');

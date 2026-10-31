@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { Ajv } from 'ajv';
@@ -10,6 +11,7 @@ interface Profile {
   tokenOrigin: string;
   token: { env: string } | { file: string };
   allowInsecureHttp?: boolean;
+  writes?: { allowWrites: boolean; operations: string[] };
 }
 const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', import.meta.url), 'utf8'));
 const validate = new Ajv({ strict: false }).compile<Profile>(schema);
@@ -70,13 +72,14 @@ export function canonicalOrigin(value: string): string {
   }
 }
 
-export async function credentials(override: string | undefined, allowHttp: boolean, options: { config?: string; profile?: string } = {}): Promise<{ origin: string; token?: string; profile?: string; source?: string }> {
+export async function credentials(override: string | undefined, allowHttp: boolean, options: { config?: string; profile?: string } = {}): Promise<{ origin: string; token?: string; profile?: string; source?: string; revision?: string; writes?: Profile['writes'] }> {
   const path = configPath(options.config);
   const selected = options.profile ?? process.env.GITEA_AXI_PROFILE;
   const fields = ['ORIGIN', 'TOKEN_ORIGIN', 'TOKEN', 'ALLOW_INSECURE_HTTP'] as const;
   const hasEnv = fields.some(field => process.env['GITEA_AXI_' + field] !== undefined);
   let profile: unknown;
   let profileName = 'environment';
+  let revision = 'environment';
   if (!selected && hasEnv) {
     let token: unknown;
     try { token = JSON.parse(process.env.GITEA_AXI_TOKEN ?? 'null'); } catch { /* Schema reports only the field name. */ }
@@ -92,6 +95,7 @@ export async function credentials(override: string | undefined, allowHttp: boole
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name) || !Object.hasOwn(config.profiles, name)) throw new CliError('PROFILE_NOT_FOUND', 'Selected profile was not found');
     profile = config.profiles[name];
     profileName = name;
+    revision = process.env.GITEA_AXI_CREDENTIAL_REVISION ?? String((await stat(path, { bigint: true })).mtimeNs);
   } else if (selected || options.config || process.env.GITEA_AXI_CONFIG) {
     throw new CliError('PROFILE_NOT_FOUND', 'Selected profile configuration was not found');
   } else if (override) {
@@ -112,9 +116,11 @@ export async function credentials(override: string | undefined, allowHttp: boole
   else {
     if (!isAbsolute(profile.token.file) || /^\\\\/.test(profile.token.file)) throw new CliError('CONFIG_INVALID', 'token file must be an absolute local path');
     token = (await readPrivateFile(profile.token.file, true)).replace(/^\uFEFF/, '').trimEnd();
+    revision += ':' + String((await stat(profile.token.file, { bigint: true })).mtimeNs);
   }
   if (!token) throw new CliError('AUTH_REQUIRED', 'token reference is empty');
   secrets.push(token);
   if (/[\r\n]/.test(token)) throw new CliError('CONFIG_INVALID', 'token must be a single line');
-  return { origin, token, profile: profileName, source: 'env' in profile.token ? 'env:' + profile.token.env : 'file:' + profile.token.file };
+  return { origin, token, profile: profileName, revision, source: 'env' in profile.token ? 'env:' + profile.token.env : 'file:' + profile.token.file,
+    ...(profile.writes ? { writes: profile.writes } : {}) };
 }

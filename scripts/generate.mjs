@@ -66,13 +66,15 @@ const artifacts = {
     schemaVersion: 1, tool: 'gitea-axi', commands, limits,
   }, null, 2) + '\n',
   'schemas/vendor.json': JSON.stringify({ definitions: swagger.definitions }, null, 2) + '\n',
-  'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => methods.get ? [{
-    path: swagger.basePath + path, operation: methods.get.operationId,
+  'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => Object.entries(methods).filter(([method]) => ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'].includes(method)).map(([method, definition]) => ({
+    path: swagger.basePath + path, method: method.toUpperCase(), operation: definition.operationId,
     effect: path.startsWith('/admin/') ? 'admin' :
-      /token|signing-key/.test(path) || Object.entries(methods.get.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
-        /\/(?:archives?|downloads?)(?:\/|$)/i.test(path) || !(methods.get.produces ?? swagger.produces ?? []).includes('application/json') ? 'download' : 'read',
-    schema: (methods.get.responses?.['200']?.$ref ? swagger.responses[methods.get.responses['200'].$ref.split('/').at(-1)] : methods.get.responses?.['200'])?.schema ?? null,
-  }] : []), null, 2) + '\n',
+      /token|signing-key|secrets/.test(path) || Object.entries(definition.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
+        method !== 'get' ? 'write' :
+          /\/(?:archives?|downloads?)(?:\/|$)/i.test(path) || !(definition.produces ?? swagger.produces ?? []).includes('application/json') ? 'download' : 'read',
+    requestSchema: definition.parameters?.find(parameter => parameter.in === 'body')?.schema ?? null,
+    schema: (definition.responses?.['200']?.$ref ? swagger.responses[definition.responses['200'].$ref.split('/').at(-1)] : definition.responses?.['200'])?.schema ?? null,
+  }))), null, 2) + '\n',
 };
 for (const [path, content] of Object.entries(artifacts)) {
   const target = new URL(path, root);

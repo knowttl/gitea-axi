@@ -76,7 +76,7 @@ try {
   await writeFile(config, JSON.stringify({ version: 1, profiles: { test: profile } }), { mode: 0o600 });
   assert.equal((await invoke(selected)).repository.id, 1008);
   await writeFile(config, JSON.stringify({ version: 1, profiles: { test: { ...profile, writes: { allowWrites: false, operations: [] } } } }));
-  assert.equal((await invoke(selected, 1)).error.code, 'CONFIG_INVALID');
+  assert.equal((await invoke(selected)).repository.id, 1008);
   const token = join(scratch, 'token');
   await writeFile(token, canary + '\n', { mode: 0o600 });
   const fileRef = { GITEA_AXI_TOKEN: JSON.stringify({ file: token }) };

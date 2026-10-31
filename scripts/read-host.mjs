@@ -6,8 +6,14 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createServer } from 'node:http';
 import { decode } from '@toon-format/toon';
+import { pathToFileURL } from 'node:url';
 
 export async function readHost({ host, bin, scratch, origin, token }) {
+  let entry = bin;
+  if (process.env.NODE_OPTIONS) {
+    entry = join(scratch, 'network-entry.ts');
+    await writeFile(entry, `import ${JSON.stringify(new URL('deny-network.ts', import.meta.url).href)};\nprocess.argv[1]=${JSON.stringify(bin)};\nawait import(${JSON.stringify(pathToFileURL(bin).href)});\n`);
+  }
   const bootstrap = join(scratch, 'bootstrap');
   const password = 'CANARY-S2-bootstrap';
   const replacement = 'CANARY-S2-replacement';
@@ -18,11 +24,11 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     serverDefaults.host='127.0.0.1';serverDefaults.port=Number(process.env.TEST_PORT);serverDefaults.temporaryDirectory=process.env.TEST_SCRATCH+'/calls';
     toolPaths['gitea-axi']=process.env.TEST_BIN;toolCredentialSchemaPaths['gitea-axi']=process.env.TEST_SCHEMA;await import('./dist/src/server/main.js');`;
   const server = spawn(process.execPath, ['--input-type=module', '-e', launcher], { cwd: host, stdio: ['ignore', 'pipe', 'pipe'], env: {
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
     PATH: process.env.PATH, HOME: scratch, XDG_CONFIG_HOME: scratch, XDG_STATE_HOME: scratch,
     ARTIUM_AXI_MASTER_KEY: randomBytes(32).toString('base64'), ARTIUM_AXI_DATABASE_FILE: join(scratch, 'host/artium.db'),
     ARTIUM_AXI_ADMIN_USERNAME: 'fixture-admin', ARTIUM_AXI_ADMIN_PASSWORD_FILE: bootstrap,
-    TEST_PORT: String(port), TEST_SCRATCH: scratch, TEST_BIN: bin, TEST_SCHEMA: join(dirname(dirname(bin)), 'axi-credential.schema.json'),
-    NODE_OPTIONS: process.env.NODE_OPTIONS,
+    TEST_PORT: String(port), TEST_SCRATCH: scratch, TEST_BIN: entry, TEST_SCHEMA: join(dirname(dirname(bin)), 'axi-credential.schema.json'),
   } });
   let log = '';
   const ready = new Promise((resolve, reject) => {
@@ -67,7 +73,14 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     const user = (await api('/v1/admin/users')).users.find(user => user.username === 'fixture-admin');
     await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
     assert.equal(decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])).repository.full_name, 'sample/demo');
-    return { close, refuse: async (args, code) => {
+    return { close,
+      grantWrites: async operations => {
+        headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket;
+        const current = await api(path);
+        await api(path + '/write-access', 'PATCH', { enabled: operations.length > 0, operations, expectedRevision: current.revision });
+      },
+      invokeClient: async (args, code = 0) => decode(await client(['gitea-axi', ...args], undefined, code)),
+      refuse: async (args, code) => {
       const value = await api('/v1/tools/gitea-axi/run', 'POST', { args }, 400);
       assert.equal(value.error.code, code, JSON.stringify(value));
       return value;

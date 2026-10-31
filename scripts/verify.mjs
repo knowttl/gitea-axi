@@ -15,6 +15,10 @@ if (args.length === 2 && args[0] === '--task' && ['S5.1', 'S5.2'].includes(args[
   await import('./verify-stage-five.ts');
   process.exit(0);
 }
+if (args.length === 2 && args[0] === '--task' && ['S3.1', 'S3.2'].includes(args[1])) {
+  await import('./verify-writes.ts');
+  process.exit(0);
+}
 if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'].includes(args[1])) {
   await import('./verify-reads.mjs');
   process.exit(0);
@@ -89,7 +93,7 @@ try {
     PATH: process.env.PATH, HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: home,
     SystemRoot: process.env.SystemRoot, TEMP: scratch, TMP: scratch,
   };
-  await run(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, '--prefix', prefix, tarball], { cwd: scratch, env });
+  await run(npm, ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, '--prefix', prefix, tarball], { cwd: scratch, env });
   const installedRoot = join(prefix, 'node_modules', '@knowttl', 'gitea-axi');
   const installedPkg = await readJson(join(installedRoot, 'package.json'));
   const bin = await realpath(join(installedRoot, installedPkg.bin['gitea-axi']));

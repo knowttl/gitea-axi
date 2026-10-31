@@ -6,16 +6,18 @@ export class Client {
   constructor(readonly origin: string, readonly token?: string, timeoutMs: number = limits.timeoutMs) {
     this.deadline = Date.now() + timeoutMs;
   }
-  async request(path: string, text = false) {
+  async request(path: string, text = false, mutation?: { method: string; payload?: unknown }) {
     const url = new URL(path, this.origin);
     if (url.origin !== this.origin || !path.startsWith('/') || path.startsWith('//')) throw new CliError('UNSAFE_PATH', 'Request must stay within the selected origin');
   try {
     const response = await fetch(url, {
-      headers: { accept: text ? 'text/plain' : 'application/json', ...(this.token ? { authorization: 'token ' + this.token } : {}) },
+      method: mutation?.method ?? 'GET',
+      ...(mutation?.payload === undefined ? {} : { body: JSON.stringify(mutation.payload) }),
+      headers: { accept: text ? 'text/plain' : 'application/json', ...(mutation ? { 'content-type': 'application/json' } : {}), ...(this.token ? { authorization: 'token ' + this.token } : {}) },
       redirect: 'error',
       signal: AbortSignal.timeout(Math.max(1, this.deadline - Date.now())),
     });
-    if (response.ok && !text && !response.headers.get('content-type')?.includes('application/json')) {
+    if (response.ok && response.status !== 204 && !text && !response.headers.get('content-type')?.includes('application/json')) {
       await response.body?.cancel();
       throw new CliError('INVALID_RESPONSE', 'Gitea did not return JSON');
     }
@@ -42,7 +44,7 @@ export class Client {
         response.status === 404 ? 'NOT_FOUND_OR_HIDDEN' : response.status === 429 ? 'RATE_LIMITED' : 'HTTP_ERROR';
       throw new CliError(code, `${path.split('?')[0]} returned HTTP ${response.status}${reason}${retry ? '; retry-after ' + retry : ''}`);
     }
-    return { data: text ? body : JSON.parse(body) as unknown, headers: response.headers };
+    return { data: response.status === 204 ? null : text ? body : JSON.parse(body) as unknown, headers: response.headers };
   } catch (error) {
     if (error instanceof CliError) throw error;
     if (error instanceof SyntaxError) throw new CliError('INVALID_RESPONSE', 'Gitea returned malformed JSON');
