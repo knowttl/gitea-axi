@@ -44,7 +44,16 @@ const server = createServer((request, response) => {
   else if (url.pathname === base + '/git/commits/main') data = { sha: 'abc', commit: { message: 'tip' } };
   else if (url.pathname === base + '/commits') data = [{ sha: second ? 'match' : 'other', commit: { message: second ? 'login fix' : 'unrelated' }, author: user }];
   else if (url.pathname === '/api/v1/repos/search') data = { ok: true, data: [second ? repository : { ...repository, id: 5, full_name: 'other/else', description: 'else' }] };
-  else if (url.pathname.endsWith('/issues') || url.pathname.endsWith('/pulls') || url.pathname === '/api/v1/repos/issues/search') data = [{ ...issue, ...(second ? {} : { id: 10, number: 10, title: 'unrelated' }), ...(url.pathname.endsWith('/pulls') ? { head: { sha: 'abc', ref: 'main' }, base: { sha: 'def', ref: 'main' } } : {}) }];
+  else if (url.pathname.endsWith('/issues') || url.pathname.endsWith('/pulls') || url.pathname === '/api/v1/repos/issues/search') {
+    const scoped = url.pathname.endsWith('/pulls');
+    const pr = scoped ? { head: { sha: 'abc', ref: 'main' }, base: { sha: 'def', ref: 'main' } } : {};
+    data = mode === 'drafts' ? (second ? [
+      { ...issue, ...pr, ...(scoped ? { draft: true } : { pull_request: { draft: true } }) },
+      { ...issue, ...pr, id: 14, number: 14, ...(scoped ? { draft: false } : { pull_request: { draft: false } }) },
+      { ...issue, ...pr, id: 15, number: 15, ...(scoped ? {} : { pull_request: {} }) },
+    ] : [{ ...issue, ...pr, id: 10, number: 10, title: 'unrelated', ...(scoped ? { draft: true } : { pull_request: { draft: true } }) }]) :
+      [{ ...issue, ...(second ? {} : { id: 10, number: 10, title: 'unrelated' }), ...pr }];
+  }
   else { response.writeHead(404, { 'content-type': 'application/json' }).end('{}'); return; }
   if (mode === 'multiple' && second && url.pathname.endsWith('/issues')) data = [issue, { ...issue, id: 13, number: 13, created_at: '2026-02-01T00:00:00Z' }];
   if (!second && ![base, base + '/git/commits/main', '/api/v1/version', '/swagger.v1.json'].includes(url.pathname)) {
@@ -124,6 +133,16 @@ try {
     assert.deepEqual((await invoke(['search', 'issues', 'login', '--repo', 'sample/demo', '--label', 'unknown'])).items, []);
     assert.deepEqual((await invoke(['search', 'issues', 'login', '--repo', 'sample/demo', '--author', 'bob'])).items, []);
     assert.deepEqual((await invoke(['search', 'issues', 'login', '--owner', 'sample', '--author', 'alice'])).items, [{ repository: 'sample/demo', number: 11, title: 'login bug', state: 'open' }]);
+    mode = 'drafts';
+    for (const scope of [[], ['--repo', 'sample/demo']]) {
+      const args = ['search', 'prs', 'login', ...scope, '--fields', 'number,isDraft', '--sort', 'created', '--order', 'asc'];
+      assert.deepEqual((await invoke(args)).items, [
+        { repository: 'sample/demo', number: 11, isDraft: true },
+        { repository: 'sample/demo', number: 14, isDraft: false },
+        { repository: 'sample/demo', number: 15, isDraft: null },
+      ]);
+      assert.deepEqual((await invoke([...args, '--draft'])).items, [{ repository: 'sample/demo', number: 11, isDraft: true }]);
+    }
     mode = 'multiple';
     const capped = await invoke(['search', 'issues', 'login', '--repo', 'sample/demo', '--sort', 'created', '--limit', '1']);
     assert.deepEqual(capped.items, [{ repository: 'sample/demo', number: 13, title: 'login bug', state: 'open' }]);

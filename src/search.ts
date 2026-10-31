@@ -41,6 +41,9 @@ export async function search(client: Client, kind: string, query: string, option
     page = await collect(client, base ? base + (kind === 'prs' ? '/pulls' : '/issues') + '?state=all' + (kind === 'issues' ? '&type=issues' : '') :
       '/api/v1/repos/issues/search?state=all&type=' + (kind === 'prs' ? 'pulls' : 'issues') + '&q=' + encodeURIComponent(query) + (options.owner ? '&owner=' + encodeURIComponent(String(options.owner)) : ''));
   }
+  if (kind === 'prs' && !base) {
+    page.items = page.items.map(row => ({ ...row, draft: row.pull_request ? object(row.pull_request).draft : undefined }));
+  }
   const needle = query.toLowerCase();
   const rows = page.items.filter(row => {
     const fullName = kind === 'repos' ? row.full_name : row.repository ? object(row.repository).full_name : target;
