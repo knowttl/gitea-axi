@@ -84,7 +84,7 @@ const invoke = async (argv, code = 0, extra = {}) => {
   for (const form of [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)]) assert(!output.includes(form), 'Canary escaped output');
   const result = decode(output);
   if (host && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
-    const hosted = await host.invoke(argv, code);
+    const hosted = await host.invoke(argv[0] === '--repo' ? ['dashboard', ...argv] : argv, code);
     report.hostedInvocations++;
     if (hosted !== null) assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
   }
