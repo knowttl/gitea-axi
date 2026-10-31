@@ -1,0 +1,2025 @@
+[
+  {
+    "path": "/api/v1/activitypub/user-id/{user-id}",
+    "operation": "activitypubPerson",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ActivityPub"
+    }
+  },
+  {
+    "path": "/api/v1/admin/cron",
+    "operation": "adminCronList",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Cron"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/emails",
+    "operation": "adminGetAllEmails",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Email"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/emails/search",
+    "operation": "adminSearchEmails",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Email"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/hooks",
+    "operation": "adminListHooks",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Hook"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/hooks/{id}",
+    "operation": "adminGetHook",
+    "effect": "admin",
+    "schema": {
+      "$ref": "#/definitions/Hook"
+    }
+  },
+  {
+    "path": "/api/v1/admin/orgs",
+    "operation": "adminGetAllOrgs",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Organization"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/runners/registration-token",
+    "operation": "adminGetRunnerRegistrationToken",
+    "effect": "admin",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/admin/unadopted",
+    "operation": "adminUnadoptedList",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/users",
+    "operation": "adminSearchUsers",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/admin/users/{username}/badges",
+    "operation": "adminListUserBadges",
+    "effect": "admin",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Badge"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/gitignore/templates",
+    "operation": "listGitignoresTemplates",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/gitignore/templates/{name}",
+    "operation": "getGitignoreTemplateInfo",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GitignoreTemplateInfo"
+    }
+  },
+  {
+    "path": "/api/v1/label/templates",
+    "operation": "listLabelTemplates",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/label/templates/{name}",
+    "operation": "getLabelTemplateInfo",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/LabelTemplate"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/licenses",
+    "operation": "listLicenseTemplates",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/LicensesTemplateListEntry"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/licenses/{name}",
+    "operation": "getLicenseTemplateInfo",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/LicenseTemplateInfo"
+    }
+  },
+  {
+    "path": "/api/v1/nodeinfo",
+    "operation": "getNodeInfo",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/NodeInfo"
+    }
+  },
+  {
+    "path": "/api/v1/notifications",
+    "operation": "notifyGetList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NotificationThread"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/notifications/new",
+    "operation": "notifyNewAvailable",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/NotificationCount"
+    }
+  },
+  {
+    "path": "/api/v1/notifications/threads/{id}",
+    "operation": "notifyGetThread",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/NotificationThread"
+    }
+  },
+  {
+    "path": "/api/v1/orgs",
+    "operation": "orgGetAll",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Organization"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}",
+    "operation": "orgGet",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Organization"
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/actions/runners/registration-token",
+    "operation": "orgGetRunnerRegistrationToken",
+    "effect": "credential",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/orgs/{org}/actions/secrets",
+    "operation": "orgListActionsSecrets",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Secret"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/actions/variables",
+    "operation": "getOrgVariablesList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ActionVariable"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/actions/variables/{variablename}",
+    "operation": "getOrgVariable",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ActionVariable"
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/activities/feeds",
+    "operation": "orgListActivityFeeds",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Activity"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/blocks",
+    "operation": "organizationListBlocks",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/blocks/{username}",
+    "operation": "organizationCheckUserBlock",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/orgs/{org}/hooks",
+    "operation": "orgListHooks",
+    "effect": "credential",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Hook"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/hooks/{id}",
+    "operation": "orgGetHook",
+    "effect": "credential",
+    "schema": {
+      "$ref": "#/definitions/Hook"
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/labels",
+    "operation": "orgListLabels",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Label"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/labels/{id}",
+    "operation": "orgGetLabel",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Label"
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/members",
+    "operation": "orgListMembers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/members/{username}",
+    "operation": "orgIsMember",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/orgs/{org}/public_members",
+    "operation": "orgListPublicMembers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/public_members/{username}",
+    "operation": "orgIsPublicMember",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/orgs/{org}/repos",
+    "operation": "orgListRepos",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/teams",
+    "operation": "orgListTeams",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Team"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/orgs/{org}/teams/search",
+    "operation": "teamSearch",
+    "effect": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Team"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "path": "/api/v1/packages/{owner}",
+    "operation": "listPackages",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Package"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/packages/{owner}/{type}/{name}/{version}",
+    "operation": "getPackage",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Package"
+    }
+  },
+  {
+    "path": "/api/v1/packages/{owner}/{type}/{name}/{version}/files",
+    "operation": "listPackageFiles",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PackageFile"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/issues/search",
+    "operation": "issueSearchIssues",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Issue"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/search",
+    "operation": "repoSearch",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/SearchResults"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}",
+    "operation": "repoGet",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Repository"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/actions/runners/registration-token",
+    "operation": "repoGetRunnerRegistrationToken",
+    "effect": "credential",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/actions/secrets",
+    "operation": "repoListActionsSecrets",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Secret"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/actions/tasks",
+    "operation": "ListActionTasks",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ActionTaskResponse"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/actions/variables",
+    "operation": "getRepoVariablesList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ActionVariable"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/actions/variables/{variablename}",
+    "operation": "getRepoVariable",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ActionVariable"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/activities/feeds",
+    "operation": "repoListActivityFeeds",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Activity"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/archive/{archive}",
+    "operation": "repoGetArchive",
+    "effect": "download",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/assignees",
+    "operation": "repoGetAssignees",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/branch_protections",
+    "operation": "repoListBranchProtection",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BranchProtection"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/branch_protections/{name}",
+    "operation": "repoGetBranchProtection",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/BranchProtection"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/branches",
+    "operation": "repoListBranches",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Branch"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/branches/{branch}",
+    "operation": "repoGetBranch",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Branch"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/collaborators",
+    "operation": "repoListCollaborators",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}",
+    "operation": "repoCheckCollaborator",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}/permission",
+    "operation": "repoGetRepoPermissions",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/RepoCollaboratorPermission"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/commits",
+    "operation": "repoGetAllCommits",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Commit"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/commits/{ref}/status",
+    "operation": "repoGetCombinedStatusByRef",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/CombinedStatus"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/commits/{ref}/statuses",
+    "operation": "repoListStatusesByRef",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CommitStatus"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/commits/{sha}/pull",
+    "operation": "repoGetCommitPullRequest",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PullRequest"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/compare/{basehead}",
+    "operation": "repoCompareDiff",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Compare"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/contents",
+    "operation": "repoGetContentsList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ContentsResponse"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/contents/{filepath}",
+    "operation": "repoGetContents",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ContentsResponse"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/editorconfig/{filepath}",
+    "operation": "repoGetEditorConfig",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/forks",
+    "operation": "listForks",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/blobs/{sha}",
+    "operation": "GetBlob",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GitBlobResponse"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/commits/{sha}",
+    "operation": "repoGetSingleCommit",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Commit"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/commits/{sha}.{diffType}",
+    "operation": "repoDownloadCommitDiffOrPatch",
+    "effect": "download",
+    "schema": {
+      "type": "string"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/notes/{sha}",
+    "operation": "repoGetNote",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Note"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/refs",
+    "operation": "repoListAllGitRefs",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Reference"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/refs/{ref}",
+    "operation": "repoListGitRefs",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Reference"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/tags/{sha}",
+    "operation": "GetAnnotatedTag",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/AnnotatedTag"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/git/trees/{sha}",
+    "operation": "GetTree",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GitTreeResponse"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/hooks",
+    "operation": "repoListHooks",
+    "effect": "credential",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Hook"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/hooks/git",
+    "operation": "repoListGitHooks",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GitHook"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/hooks/git/{id}",
+    "operation": "repoGetGitHook",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GitHook"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}",
+    "operation": "repoGetHook",
+    "effect": "credential",
+    "schema": {
+      "$ref": "#/definitions/Hook"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issue_config",
+    "operation": "repoGetIssueConfig",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/IssueConfig"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issue_config/validate",
+    "operation": "repoValidateIssueConfig",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/IssueConfigValidation"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issue_templates",
+    "operation": "repoGetIssueTemplates",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IssueTemplate"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues",
+    "operation": "issueListIssues",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Issue"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/comments",
+    "operation": "issueGetRepoComments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Comment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}",
+    "operation": "issueGetComment",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Comment"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets",
+    "operation": "issueListIssueCommentAttachments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Attachment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id}",
+    "operation": "issueGetIssueCommentAttachment",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Attachment"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/reactions",
+    "operation": "issueGetCommentReactions",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Reaction"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/pinned",
+    "operation": "repoListPinnedIssues",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Issue"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}",
+    "operation": "issueGetIssue",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Issue"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets",
+    "operation": "issueListIssueAttachments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Attachment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets/{attachment_id}",
+    "operation": "issueGetIssueAttachment",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Attachment"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/blocks",
+    "operation": "issueListBlocks",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Issue"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/comments",
+    "operation": "issueGetComments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Comment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/dependencies",
+    "operation": "issueListIssueDependencies",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Issue"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels",
+    "operation": "issueGetLabels",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Label"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/reactions",
+    "operation": "issueGetIssueReactions",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Reaction"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions",
+    "operation": "issueSubscriptions",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions/check",
+    "operation": "issueCheckSubscription",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/WatchInfo"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/timeline",
+    "operation": "issueGetCommentsAndTimeline",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TimelineComment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/times",
+    "operation": "issueTrackedTimes",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrackedTime"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/keys",
+    "operation": "repoListKeys",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DeployKey"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/keys/{id}",
+    "operation": "repoGetKey",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/DeployKey"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/labels",
+    "operation": "issueListLabels",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Label"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/labels/{id}",
+    "operation": "issueGetLabel",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Label"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/languages",
+    "operation": "repoGetLanguages",
+    "effect": "read",
+    "schema": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "int64"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/licenses",
+    "operation": "repoGetLicenses",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/media/{filepath}",
+    "operation": "repoGetRawFileOrLFS",
+    "effect": "download",
+    "schema": {
+      "type": "file"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/milestones",
+    "operation": "issueGetMilestonesList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Milestone"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/milestones/{id}",
+    "operation": "issueGetMilestone",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Milestone"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/new_pin_allowed",
+    "operation": "repoNewPinAllowed",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/NewIssuePinsAllowed"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/notifications",
+    "operation": "notifyGetRepoList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NotificationThread"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls",
+    "operation": "repoListPullRequests",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PullRequest"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/pinned",
+    "operation": "repoListPinnedPullRequests",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PullRequest"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{base}/{head}",
+    "operation": "repoGetPullRequestByBaseHead",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PullRequest"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}",
+    "operation": "repoGetPullRequest",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PullRequest"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}.{diffType}",
+    "operation": "repoDownloadPullDiffOrPatch",
+    "effect": "download",
+    "schema": {
+      "type": "string"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/commits",
+    "operation": "repoGetPullRequestCommits",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Commit"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/files",
+    "operation": "repoGetPullRequestFiles",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ChangedFile"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/merge",
+    "operation": "repoPullRequestIsMerged",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews",
+    "operation": "repoListPullReviews",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PullReview"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}",
+    "operation": "repoGetPullReview",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PullReview"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}/comments",
+    "operation": "repoGetPullReviewComments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PullReviewComment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/push_mirrors",
+    "operation": "repoListPushMirrors",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PushMirror"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/push_mirrors/{name}",
+    "operation": "repoGetPushMirrorByRemoteName",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PushMirror"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/raw/{filepath}",
+    "operation": "repoGetRawFile",
+    "effect": "download",
+    "schema": {
+      "type": "file"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases",
+    "operation": "repoListReleases",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Release"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases/latest",
+    "operation": "repoGetLatestRelease",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Release"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases/tags/{tag}",
+    "operation": "repoGetReleaseByTag",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Release"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases/{id}",
+    "operation": "repoGetRelease",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Release"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets",
+    "operation": "repoListReleaseAttachments",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Attachment"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets/{attachment_id}",
+    "operation": "repoGetReleaseAttachment",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Attachment"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/reviewers",
+    "operation": "repoGetReviewers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/signing-key.gpg",
+    "operation": "repoSigningKey",
+    "effect": "credential",
+    "schema": {
+      "type": "string"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/stargazers",
+    "operation": "repoListStargazers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/statuses/{sha}",
+    "operation": "repoListStatuses",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CommitStatus"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/subscribers",
+    "operation": "repoListSubscribers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/subscription",
+    "operation": "userCurrentCheckSubscription",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/WatchInfo"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/tag_protections",
+    "operation": "repoListTagProtection",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TagProtection"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/tag_protections/{id}",
+    "operation": "repoGetTagProtection",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/TagProtection"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/tags",
+    "operation": "repoListTags",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Tag"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/tags/{tag}",
+    "operation": "repoGetTag",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Tag"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/teams",
+    "operation": "repoListTeams",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Team"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/teams/{team}",
+    "operation": "repoCheckTeam",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Team"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/times",
+    "operation": "repoTrackedTimes",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrackedTime"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/times/{user}",
+    "operation": "userTrackedTimes",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrackedTime"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/topics",
+    "operation": "repoListTopics",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/TopicName"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/wiki/page/{pageName}",
+    "operation": "repoGetWikiPage",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/WikiPage"
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/wiki/pages",
+    "operation": "repoGetWikiPages",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/WikiPageMetaData"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/repos/{owner}/{repo}/wiki/revisions/{pageName}",
+    "operation": "repoGetWikiPageRevisions",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/WikiCommitList"
+    }
+  },
+  {
+    "path": "/api/v1/repositories/{id}",
+    "operation": "repoGetByID",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Repository"
+    }
+  },
+  {
+    "path": "/api/v1/settings/api",
+    "operation": "getGeneralAPISettings",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GeneralAPISettings"
+    }
+  },
+  {
+    "path": "/api/v1/settings/attachment",
+    "operation": "getGeneralAttachmentSettings",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GeneralAttachmentSettings"
+    }
+  },
+  {
+    "path": "/api/v1/settings/repository",
+    "operation": "getGeneralRepositorySettings",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GeneralRepoSettings"
+    }
+  },
+  {
+    "path": "/api/v1/settings/ui",
+    "operation": "getGeneralUISettings",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GeneralUISettings"
+    }
+  },
+  {
+    "path": "/api/v1/signing-key.gpg",
+    "operation": "getSigningKey",
+    "effect": "credential",
+    "schema": {
+      "type": "string"
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}",
+    "operation": "orgGetTeam",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Team"
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}/activities/feeds",
+    "operation": "orgListTeamActivityFeeds",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Activity"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}/members",
+    "operation": "orgListTeamMembers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}/members/{username}",
+    "operation": "orgListTeamMember",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/User"
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}/repos",
+    "operation": "orgListTeamRepos",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/teams/{id}/repos/{org}/{repo}",
+    "operation": "orgListTeamRepo",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/Repository"
+    }
+  },
+  {
+    "path": "/api/v1/topics/search",
+    "operation": "topicSearch",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TopicResponse"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user",
+    "operation": "userGetCurrent",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/User"
+    }
+  },
+  {
+    "path": "/api/v1/user/actions/runners/registration-token",
+    "operation": "userGetRunnerRegistrationToken",
+    "effect": "credential",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/user/actions/variables",
+    "operation": "getUserVariablesList",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ActionVariable"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/actions/variables/{variablename}",
+    "operation": "getUserVariable",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ActionVariable"
+    }
+  },
+  {
+    "path": "/api/v1/user/applications/oauth2",
+    "operation": "userGetOauth2Application",
+    "effect": "credential",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/OAuth2Application"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/applications/oauth2/{id}",
+    "operation": "userGetOAuth2Application",
+    "effect": "credential",
+    "schema": {
+      "$ref": "#/definitions/OAuth2Application"
+    }
+  },
+  {
+    "path": "/api/v1/user/blocks",
+    "operation": "userListBlocks",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/blocks/{username}",
+    "operation": "userCheckUserBlock",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/user/emails",
+    "operation": "userListEmails",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Email"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/followers",
+    "operation": "userCurrentListFollowers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/following",
+    "operation": "userCurrentListFollowing",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/following/{username}",
+    "operation": "userCurrentCheckFollowing",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/user/gpg_key_token",
+    "operation": "getVerificationToken",
+    "effect": "credential",
+    "schema": {
+      "type": "string"
+    }
+  },
+  {
+    "path": "/api/v1/user/gpg_keys",
+    "operation": "userCurrentListGPGKeys",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GPGKey"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/gpg_keys/{id}",
+    "operation": "userCurrentGetGPGKey",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/GPGKey"
+    }
+  },
+  {
+    "path": "/api/v1/user/hooks",
+    "operation": "userListHooks",
+    "effect": "credential",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Hook"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/hooks/{id}",
+    "operation": "userGetHook",
+    "effect": "credential",
+    "schema": {
+      "$ref": "#/definitions/Hook"
+    }
+  },
+  {
+    "path": "/api/v1/user/keys",
+    "operation": "userCurrentListKeys",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PublicKey"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/keys/{id}",
+    "operation": "userCurrentGetKey",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/PublicKey"
+    }
+  },
+  {
+    "path": "/api/v1/user/orgs",
+    "operation": "orgListCurrentUserOrgs",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Organization"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/repos",
+    "operation": "userCurrentListRepos",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/settings",
+    "operation": "getUserSettings",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UserSettings"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/starred",
+    "operation": "userCurrentListStarred",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/starred/{owner}/{repo}",
+    "operation": "userCurrentCheckStarring",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/user/stopwatches",
+    "operation": "userGetStopWatches",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/StopWatch"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/subscriptions",
+    "operation": "userCurrentListSubscriptions",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/teams",
+    "operation": "userListTeams",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Team"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/user/times",
+    "operation": "userCurrentTrackedTimes",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrackedTime"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/search",
+    "operation": "userSearch",
+    "effect": "read",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}",
+    "operation": "userGet",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/User"
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/activities/feeds",
+    "operation": "userListActivityFeeds",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Activity"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/followers",
+    "operation": "userListFollowers",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/following",
+    "operation": "userListFollowing",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/User"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/following/{target}",
+    "operation": "userCheckFollowing",
+    "effect": "read",
+    "schema": null
+  },
+  {
+    "path": "/api/v1/users/{username}/gpg_keys",
+    "operation": "userListGPGKeys",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GPGKey"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/heatmap",
+    "operation": "userGetHeatmapData",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UserHeatmapData"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/keys",
+    "operation": "userListKeys",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PublicKey"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/orgs",
+    "operation": "orgListUserOrgs",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Organization"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/orgs/{org}/permissions",
+    "operation": "orgGetUserPermissions",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/OrganizationPermissions"
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/repos",
+    "operation": "userListRepos",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/starred",
+    "operation": "userListStarred",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/subscriptions",
+    "operation": "userListSubscriptions",
+    "effect": "read",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Repository"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/users/{username}/tokens",
+    "operation": "userGetTokens",
+    "effect": "credential",
+    "schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AccessToken"
+      }
+    }
+  },
+  {
+    "path": "/api/v1/version",
+    "operation": "getVersion",
+    "effect": "read",
+    "schema": {
+      "$ref": "#/definitions/ServerVersion"
+    }
+  }
+]

@@ -11,8 +11,8 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
-if (args.join(' ') === '--task S1.2') {
-  await import('./verify-hosted.mjs');
+if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'].includes(args[1])) {
+  await import('./verify-reads.mjs');
   process.exit(0);
 }
 assert.deepEqual(args, ['--task', 'S1.1'], 'Select exactly --task S1.1; missing or empty scenario selection fails');
@@ -94,7 +94,7 @@ try {
   expect('shipped schema', await readJson(join(installedRoot, 'schemas/responses.json')), await readJson(join(root, 'schemas/responses.json')));
   const inventory = await readJson(join(installedRoot, 'generated/host-inventory.json'));
   expect('shipped host inventory', inventory, await readJson(join(root, 'generated/host-inventory.json')));
-  expect('host read classification', inventory.commands.map(command => ({ path: command.path, effect: command.effect, operations: command.operations, outcomes: command.outcomes })), [{
+  expect('host read classification', inventory.commands.filter(command => command.path.join(' ') === 'repo view').map(command => ({ path: command.path, effect: command.effect, operations: command.operations, outcomes: command.outcomes })), [{
     path: ['repo', 'view'], effect: 'read', operations: scenario.operations, outcomes: scenario.outcomes,
   }]);
   const invoke = (argv, code = 0) => run(process.execPath, [bin, ...argv], { cwd: scratch, env, code });
@@ -114,10 +114,10 @@ try {
   report.versionTiming = { ...timings, maximumFloorRatio: 4 };
   assert(median(timings.version) < 4 * median(timings.floor), 'Version fast path exceeds four times the same-run Node startup floor');
   const help = decode(await invoke(['repo', 'view', '--help']));
-  const generatedHelp = decode(await readFile(join(root, 'generated/help.txt'), 'utf8'));
-  expect('registry-derived installed help', help, {
-    bin, description: generatedHelp.description, ...generatedHelp,
-  });
+  const repoCommand = inventory.commands.find(command => command.path.join(' ') === 'repo view');
+  expect('registry-derived installed help', help, { bin, command: 'gitea-axi repo view', description: repoCommand.description,
+    flags: Object.entries(repoCommand.flags).map(([name, flag]) => ({ flag: '--' + name, ...flag })),
+    examples: ['gitea-axi repo view --help', 'gitea-axi repo view --profile <name>'] });
   const version = await fixture('P-001');
   const specification = await fixture('P-002');
   const repository = await fixture('P-004');
@@ -157,7 +157,7 @@ try {
     'repo', 'view', '--repo=sample-owner/sample-repo', '--origin', origin, '--allow-insecure-http',
   ])).repository, scenario.expected.repository);
   for (const [failureMode, code] of [
-    ['permission', 'HTTP_ERROR'], ['malformed', 'INVALID_RESPONSE'], ['missing-branch', 'INVALID_RESPONSE'],
+    ['permission', 'PERMISSION_DENIED'], ['malformed', 'INVALID_RESPONSE'], ['missing-branch', 'INVALID_RESPONSE'],
   ]) {
     mode = failureMode;
     const failure = decode(await invoke(command, 1));

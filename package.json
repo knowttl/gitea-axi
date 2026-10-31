@@ -14,7 +14,7 @@
     "generate:check": "node scripts/generate.mjs --check",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . && npm run generate:check",
-    "test": "node scripts/verify.mjs --task S1.1",
+    "test": "node scripts/verify-suite.mjs",
     "check": "node scripts/check.mjs --offline"
   },
   "dependencies": {

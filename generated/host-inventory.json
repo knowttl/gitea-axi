@@ -25,7 +25,7 @@
       "flags": {
         "repo": {
           "type": "string",
-          "required": true,
+          "default": "matching local origin remote",
           "description": "Repository as OWNER/NAME"
         },
         "origin": {
@@ -42,12 +42,747 @@
           "type": "boolean",
           "default": false,
           "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
         }
       },
       "examples": [
         "gitea-axi repo view --repo sample-owner/sample-repo --origin https://gitea.example.test",
         "gitea-axi repo view --help"
       ]
+    },
+    {
+      "path": [
+        "dashboard"
+      ],
+      "description": "Bounded repository dashboard with explicit partial results",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "auth",
+        "status"
+      ],
+      "description": "auth status",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "profile",
+        "list"
+      ],
+      "description": "profile list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "config",
+        "path"
+      ],
+      "description": "config path",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "doctor"
+      ],
+      "description": "doctor",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "repo",
+        "list"
+      ],
+      "description": "repo list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        },
+        "org": {
+          "type": "string",
+          "description": "List repositories belonging to this organization"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "org",
+        "view"
+      ],
+      "description": "org view",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "issue",
+        "list"
+      ],
+      "description": "issue list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        },
+        "state": {
+          "type": "string",
+          "description": "open, closed or all; default open"
+        },
+        "sort": {
+          "type": "string",
+          "description": "created, updated or number; default created"
+        },
+        "order": {
+          "type": "string",
+          "description": "asc or desc; default desc"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated selected fields"
+        },
+        "assignee": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "milestone": {
+          "type": "string"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "issue",
+        "view"
+      ],
+      "description": "issue view",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated selected fields"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Full body within response ceiling"
+        },
+        "comments": {
+          "type": "boolean",
+          "description": "Include comments"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "label",
+        "list"
+      ],
+      "description": "label list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "pr",
+        "list"
+      ],
+      "description": "pr list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        },
+        "state": {
+          "type": "string",
+          "description": "open, closed or all; default open"
+        },
+        "sort": {
+          "type": "string",
+          "description": "created, updated or number; default created"
+        },
+        "order": {
+          "type": "string",
+          "description": "asc or desc; default desc"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated selected fields"
+        },
+        "assignee": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "milestone": {
+          "type": "string"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "pr",
+        "view"
+      ],
+      "description": "pr view",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Comma-separated selected fields"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Full body within response ceiling"
+        },
+        "comments": {
+          "type": "boolean",
+          "description": "Include comments"
+        },
+        "reviews": {
+          "type": "boolean"
+        },
+        "checks": {
+          "type": "boolean"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "pr",
+        "checks"
+      ],
+      "description": "pr checks",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "watch": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "Watch deadline seconds, required with --watch"
+        },
+        "interval": {
+          "type": "string",
+          "description": "Watch interval seconds, default 5"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "pr",
+        "diff"
+      ],
+      "description": "pr diff",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Full body within response ceiling"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "run",
+        "list"
+      ],
+      "description": "run list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "release",
+        "list"
+      ],
+      "description": "release list",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Maximum returned records, default 30, maximum 1000"
+        }
+      },
+      "effect": "read"
+    },
+    {
+      "path": [
+        "api"
+      ],
+      "description": "api",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        }
+      },
+      "effect": "read"
     }
   ],
   "limits": {

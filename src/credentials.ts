@@ -17,7 +17,8 @@ const secrets: string[] = [];
 
 export function redact(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(redact);
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, redact(item)]));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
+    /^(?:token|access_token|refresh_token|password|secret|authorization|private_key)$/i.test(key) ? '[REDACTED]' : redact(item)]));
   if (typeof value !== 'string') return value;
   let output = value;
   for (const secret of secrets) {
@@ -25,7 +26,38 @@ export function redact(value: unknown): unknown {
       output = output.replaceAll(form, '[REDACTED]');
     }
   }
-  return output;
+  return output.replace(/([?&](?:token|access_token|api_key|sig)=)[^&#\s]*/gi, '$1[REDACTED]')
+    .replace(/(https?:\/\/)[^/\s@]+@/gi, '$1[REDACTED]@')
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, '[REDACTED]')
+    .replace(/-----BEGIN [^-]*PRIVATE KEY-----[\s\S]*?-----END [^-]*PRIVATE KEY-----/g, '[REDACTED]')
+    .replace(/(AccountKey=)[^;\s]+/gi, '$1[REDACTED]');
+}
+
+export function configPath(explicit?: string): string {
+  const base = process.platform === 'win32' ? process.env.APPDATA : process.env.XDG_CONFIG_HOME;
+  return explicit ?? process.env.GITEA_AXI_CONFIG ?? join(base && isAbsolute(base) ? base : join(homedir(), '.config'), 'gitea-axi', 'config.json');
+}
+
+export async function profileList(explicit?: string) {
+  const path = configPath(explicit);
+  if (!existsSync(path)) return { path, profiles: [] };
+  const config = await readConfig(path);
+  return { path, profiles: Object.keys(config.profiles).map(name => ({ name, default: name === config.defaultProfile })) };
+}
+
+async function readConfig(path: string) {
+  let config: { version?: unknown; defaultProfile?: string; profiles: Record<string, unknown> };
+  try { config = JSON.parse(await readPrivateFile(path)); }
+  catch (error) {
+    if (error instanceof CliError) throw error;
+    throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
+  }
+  if (!config || config.version !== 1 || !config.profiles || Array.isArray(config.profiles) || typeof config.profiles !== 'object' ||
+      Object.keys(config).some(key => !['version', 'profiles', 'defaultProfile'].includes(key)) ||
+      Object.keys(config.profiles).some(name => !/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name))) {
+    throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
+  }
+  return config;
 }
 
 export function canonicalOrigin(value: string): string {
@@ -38,13 +70,13 @@ export function canonicalOrigin(value: string): string {
   }
 }
 
-export async function credentials(override: string | undefined, allowHttp: boolean): Promise<{ origin: string; token?: string }> {
-  const configHome = process.platform === 'win32' ? process.env.APPDATA : process.env.XDG_CONFIG_HOME;
-  const path = process.env.GITEA_AXI_CONFIG ?? join(configHome && isAbsolute(configHome) ? configHome : join(homedir(), '.config'), 'gitea-axi', 'config.json');
-  const selected = process.env.GITEA_AXI_PROFILE;
+export async function credentials(override: string | undefined, allowHttp: boolean, options: { config?: string; profile?: string } = {}): Promise<{ origin: string; token?: string; profile?: string; source?: string }> {
+  const path = configPath(options.config);
+  const selected = options.profile ?? process.env.GITEA_AXI_PROFILE;
   const fields = ['ORIGIN', 'TOKEN_ORIGIN', 'TOKEN', 'ALLOW_INSECURE_HTTP'] as const;
   const hasEnv = fields.some(field => process.env['GITEA_AXI_' + field] !== undefined);
   let profile: unknown;
+  let profileName = 'environment';
   if (!selected && hasEnv) {
     let token: unknown;
     try { token = JSON.parse(process.env.GITEA_AXI_TOKEN ?? 'null'); } catch { /* Schema reports only the field name. */ }
@@ -53,19 +85,14 @@ export async function credentials(override: string | undefined, allowHttp: boole
     profile = { origin: process.env.GITEA_AXI_ORIGIN, tokenOrigin: process.env.GITEA_AXI_TOKEN_ORIGIN, token,
       allowInsecureHttp: http === 'true' };
   } else if (existsSync(path)) {
-    let config: { version?: unknown; defaultProfile?: string; profiles?: Record<string, unknown> };
-    try { config = JSON.parse(await readPrivateFile(path)); }
-    catch (error) {
-      if (error instanceof CliError) throw error;
-      throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
-    }
-    if (config.version !== 1 || !config.profiles || typeof config.profiles !== 'object') throw new CliError('CONFIG_INVALID', 'Invalid profile configuration');
+    const config = await readConfig(path);
     const names = Object.keys(config.profiles);
     const name = selected ?? config.defaultProfile ?? (names.length === 1 ? names[0] : undefined);
     if (!name) throw new CliError(names.length ? 'PROFILE_AMBIGUOUS' : 'PROFILE_REQUIRED', 'Select a profile');
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name) || !Object.hasOwn(config.profiles, name)) throw new CliError('PROFILE_NOT_FOUND', 'Selected profile was not found');
     profile = config.profiles[name];
-  } else if (selected || process.env.GITEA_AXI_CONFIG) {
+    profileName = name;
+  } else if (selected || options.config || process.env.GITEA_AXI_CONFIG) {
     throw new CliError('PROFILE_NOT_FOUND', 'Selected profile configuration was not found');
   } else if (override) {
     const origin = canonicalOrigin(override);
@@ -89,5 +116,5 @@ export async function credentials(override: string | undefined, allowHttp: boole
   if (!token) throw new CliError('AUTH_REQUIRED', 'token reference is empty');
   secrets.push(token);
   if (/[\r\n]/.test(token)) throw new CliError('CONFIG_INVALID', 'token must be a single line');
-  return { origin, token };
+  return { origin, token, profile: profileName, source: 'env' in profile.token ? 'env:' + profile.token.env : 'file:' + profile.token.file };
 }
