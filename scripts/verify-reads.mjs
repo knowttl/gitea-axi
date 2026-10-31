@@ -102,7 +102,7 @@ try {
   foreign.listen(0, '127.0.0.1'); await once(foreign, 'listening');
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   origin = 'http://127.0.0.1:' + server.address().port;
-  env = { PATH: process.env.PATH, HOME: scratch, APPDATA: scratch, XDG_CONFIG_HOME: scratch, GITEA_AXI_ORIGIN: origin,
+  env = { PATH: process.env.PATH, NODE_OPTIONS: process.env.NODE_OPTIONS, HOME: scratch, APPDATA: scratch, XDG_CONFIG_HOME: scratch, GITEA_AXI_ORIGIN: origin,
     GITEA_AXI_TOKEN_ORIGIN: origin, GITEA_AXI_TOKEN: JSON.stringify({ env: 'TEST_TOKEN' }), TEST_TOKEN: canary, GITEA_AXI_ALLOW_INSECURE_HTTP: 'true' };
   if (process.env.GITEA_AXI_ARTIUM_ROOT) {
     assert(process.env.GITEA_AXI_ARTIUM_MANIFEST, 'Hosted proof requires GITEA_AXI_ARTIUM_MANIFEST from the frozen fixture');

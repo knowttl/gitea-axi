@@ -31,6 +31,7 @@ try {
   await once(server, 'listening');
   const origin = 'http://127.0.0.1:' + server.address().port;
   const env = {
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
     PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, HOME: scratch, APPDATA: scratch, XDG_CONFIG_HOME: scratch,
     GITEA_AXI_ORIGIN: origin, GITEA_AXI_TOKEN_ORIGIN: origin,
     GITEA_AXI_TOKEN: JSON.stringify({ env: 'TEST_TOKEN' }), TEST_TOKEN: canary, GITEA_AXI_ALLOW_INSECURE_HTTP: 'true',

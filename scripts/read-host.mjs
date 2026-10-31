@@ -22,6 +22,7 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     ARTIUM_AXI_MASTER_KEY: randomBytes(32).toString('base64'), ARTIUM_AXI_DATABASE_FILE: join(scratch, 'host/artium.db'),
     ARTIUM_AXI_ADMIN_USERNAME: 'fixture-admin', ARTIUM_AXI_ADMIN_PASSWORD_FILE: bootstrap,
     TEST_PORT: String(port), TEST_SCRATCH: scratch, TEST_BIN: bin, TEST_SCHEMA: join(dirname(dirname(bin)), 'axi-credential.schema.json'),
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
   } });
   let log = '';
   const ready = new Promise((resolve, reject) => {
@@ -35,7 +36,7 @@ export async function readHost({ host, bin, scratch, origin, token }) {
   };
   try {
     await ready;
-    const clientEnv = { PATH: process.env.PATH, HOME: scratch, XDG_CONFIG_HOME: join(scratch, 'client'), ARTIUM_AXI_URL: 'http://127.0.0.1:' + port, ARTIUM_AXI_TEST_HTTP: '1' };
+    const clientEnv = { PATH: process.env.PATH, NODE_OPTIONS: process.env.NODE_OPTIONS, HOME: scratch, XDG_CONFIG_HOME: join(scratch, 'client'), ARTIUM_AXI_URL: 'http://127.0.0.1:' + port, ARTIUM_AXI_TEST_HTTP: '1' };
     async function client(args, input, expected = 0) {
       const child = spawn(process.execPath, [join(host, 'dist/cli/artium-axi.mjs'), ...args], { cwd: scratch, env: clientEnv, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
       let stdout = '', stderr = '';

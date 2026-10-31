@@ -17,9 +17,9 @@
     "build": "tsc && node scripts/generate.mjs --check",
     "generate": "node scripts/generate.mjs",
     "generate:check": "node scripts/generate.mjs --check",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.tooling.json",
     "lint": "eslint . && npm run generate:check",
-    "test": "node scripts/verify-suite.mjs",
+    "test": "node --import ./scripts/deny-network.ts scripts/verify-suite.mjs",
     "check": "node scripts/check.mjs --offline"
   },
   "dependencies": {

@@ -47,7 +47,7 @@ const definitions = [
   ['pr list', { ...repo, ...list, assignee: { type: 'string' }, author: { type: 'string' }, label: { type: 'string' }, milestone: { type: 'string' } }],
   ['pr view', { ...repo, ...detail, reviews: { type: 'boolean' }, checks: { type: 'boolean' } }],
   ['pr checks', { ...repo, watch: { type: 'boolean' }, timeout: { type: 'string', description: 'Watch deadline seconds, required with --watch' }, interval: { type: 'string', description: 'Watch interval seconds, default 5' } }],
-  ['pr diff', { ...repo, full: detail.full }], ['run list', { ...repo, limit: list.limit }],
+  ['pr diff', { ...repo, full: detail.full }],
   ['release list', { ...repo, limit: list.limit }], ['api', {}],
 ] as const;
 export interface Command {
@@ -61,3 +61,24 @@ export const commands: Command[] = [
   ...definitions.map(([name, flags]) => ({ path: name.split(' '), description: name === 'dashboard' ? 'Bounded repository dashboard with explicit partial results' : name,
     flags: { ...globalFlags, ...flags }, effect: 'read' })),
 ];
+
+const strings = (...names: string[]) => Object.fromEntries(names.map(name => [name, { type: 'string' as const }]));
+const booleans = (...names: string[]) => Object.fromEntries(names.map(name => [name, { type: 'boolean' as const }]));
+const stageFive: [string, Command['flags'], string][] = [
+  ['run list', strings('workflow', 'branch', 'status', 'event', 'user', 'commit', 'limit', 'fields'), 'read'],
+  ['run view', { ...strings('job', 'conclusion'), ...booleans('log', 'verbose', 'log-failed') }, 'read'],
+  ['run watch', strings('timeout', 'interval'), 'read'],
+  ['run rerun', { ...strings('job'), ...booleans('failed', 'debug') }, 'pending-write'],
+  ['run cancel', {}, 'pending-write'], ['run delete', {}, 'pending-write'],
+  ['run download', strings('name', 'dir'), 'download'],
+  ['workflow list', { ...strings('limit'), ...booleans('all') }, 'read'],
+  ['workflow view', booleans('yaml'), 'read'],
+  ['workflow run', strings('ref', 'field'), 'pending-write'],
+  ['workflow enable', {}, 'pending-write'], ['workflow disable', {}, 'pending-write'],
+  ...['issues', 'prs', 'repos', 'commits', 'code'].map((kind): [string, Command['flags'], string] => [
+    'search ' + kind,
+    { ...strings('owner', 'state', 'label', 'assignee', 'author', 'sort', 'order', 'limit', 'fields', 'review', 'language', 'stars', 'revision'), ...booleans('draft') },
+    'read',
+  ]),
+];
+commands.push(...stageFive.map(([name, flags, effect]) => ({ path: name.split(' '), description: name + (effect === 'pending-write' ? ' (pending shared write gate)' : ''), flags: { ...globalFlags, ...repo, ...flags }, effect })));

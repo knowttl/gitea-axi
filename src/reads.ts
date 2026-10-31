@@ -17,11 +17,11 @@ export const prFields = [...Object.keys(scalarFields), ...gaps, 'assignees', 'au
   'mergeable', 'mergedBy', 'milestone', 'reactionGroups', 'reviewRequests', 'reviews', 'state', 'statusCheckRollup'];
 export const issueFields = ['number', 'title', 'state', 'body', 'author', 'assignees', 'labels', 'milestone', 'createdAt', 'updatedAt', 'url'];
 
-export function selectedFields(options: Options, allowed: string[]): string[] | undefined {
+export function selectedFields(options: Options, allowed: string[], unavailable = gaps): string[] | undefined {
   if (typeof options.fields !== 'string') return;
   const fields = options.fields.split(',');
   if (fields.some(field => !allowed.includes(field)) || new Set(fields).size !== fields.length) throw new CliError('USAGE', 'Unknown or repeated field; choose ' + allowed.join(','), 2);
-  const gap = fields.find(field => gaps.includes(field));
+  const gap = fields.find(field => unavailable.includes(field));
   if (gap) throw new CliError('CAPABILITY_GAP', gap + ' has no evidenced Gitea equivalent');
   if (options.full || options.comments || options.reviews || options.checks) throw new CliError('USAGE', '--fields cannot combine with --full, --comments, --reviews or --checks', 2);
   return fields;

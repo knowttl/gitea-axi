@@ -13,6 +13,7 @@ const required: Record<string, string[]> = {
   Comment: ['id', 'body', 'user'], PullReview: ['id', 'user', 'state', 'body', 'commit_id'],
   CommitStatus: ['id', 'context', 'status'], Milestone: ['id', 'title'],
   PRBranchInfo: ['sha', 'ref'], CombinedStatus: ['sha', 'statuses', 'total_count'],
+  ActionTask: ['id', 'name', 'status'], ActionTaskResponse: ['workflow_runs', 'total_count'],
 };
 for (const [name, fields] of Object.entries(required)) {
   if (vendor.definitions[name]) vendor.definitions[name].required = fields;
