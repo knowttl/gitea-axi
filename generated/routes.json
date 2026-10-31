@@ -515,7 +515,7 @@
   {
     "path": "/api/v1/repos/{owner}/{repo}/archive/{archive}",
     "operation": "repoGetArchive",
-    "effect": "read",
+    "effect": "download",
     "schema": null
   },
   {

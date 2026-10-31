@@ -86,7 +86,7 @@ const invoke = async (argv, code = 0, extra = {}) => {
   if (host && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
     const hosted = await host.invoke(argv[0] === '--repo' ? ['dashboard', ...argv] : argv, code);
     report.hostedInvocations++;
-    if (hosted !== null) assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
+    assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
   }
   return result;
 };
@@ -200,7 +200,7 @@ try {
       assert.equal(refusal.error.code, 'READ_ONLY');
       assert.match(refusal.error.reason, /Administrative API routes are refused/);
     }
-    for (const path of ['repos/o/r/git/commits/abc123.diff', 'repos/o/r/pulls/7.diff', 'repos/o/r/pulls/7.patch', 'repos/o/r/media/file.txt', 'repos/o/r/raw/file.txt']) {
+    for (const path of ['repos/o/r/git/commits/abc123.diff', 'repos/o/r/pulls/7.diff', 'repos/o/r/pulls/7.patch', 'repos/o/r/media/file.txt', 'repos/o/r/raw/file.txt', 'repos/o/r/archive/main.zip', 'repos/o/r/archive/main.tar.gz']) {
       const refusal = await invoke(['api', path], 1);
       assert.equal(refusal.error.code, 'READ_ONLY');
       assert.match(refusal.error.reason, /only JSON metadata reads are available/);

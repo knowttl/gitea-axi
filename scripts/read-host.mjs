@@ -49,14 +49,9 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     await client(['login', '--username', 'fixture-admin', '--password-stdin'], replacement);
     const session = JSON.parse(await readFile(join(scratch, 'client/artium-axi/session.json'), 'utf8'));
     const headers = { 'content-type': 'application/json', authorization: 'Bearer ' + session.accessToken };
-    async function api(path, method = 'GET', body, allowRefusal = false) {
+    async function api(path, method = 'GET', body) {
       const response = await fetch('http://127.0.0.1:' + port + path, { method, headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
       const value = await response.json();
-      if (!response.ok && allowRefusal) {
-        assert.equal(response.status, 400, JSON.stringify(value));
-        assert(['INVALID_INPUT', 'FLAG_BLOCKED'].includes(value.error.code), JSON.stringify(value));
-        return { admissionRefusal: value.error.code };
-      }
       assert(response.ok, JSON.stringify(value)); return value;
     }
     headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket;
@@ -70,8 +65,7 @@ export async function readHost({ host, bin, scratch, origin, token }) {
     await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
     assert.equal(decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])).repository.full_name, 'sample/demo');
     return { close, invoke: async (args, code) => {
-      const value = await api('/v1/tools/gitea-axi/run', 'POST', { args }, code !== 0);
-      if (value.admissionRefusal) return null;
+      const value = await api('/v1/tools/gitea-axi/run', 'POST', { args });
       assert.equal(value.exitCode, code, value.stdout + value.stderr);
       assert(!value.truncated.stdout, 'Hosted result was truncated');
       for (const form of [token, encodeURIComponent(token), JSON.stringify(token).slice(1, -1)]) assert(!(value.stdout + value.stderr).includes(form));

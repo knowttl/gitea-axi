@@ -70,7 +70,7 @@ const artifacts = {
     path: swagger.basePath + path, operation: methods.get.operationId,
     effect: path.startsWith('/admin/') ? 'admin' :
       /token|signing-key/.test(path) || Object.entries(methods.get.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
-        (methods.get.produces ?? swagger.produces ?? []).includes('application/json') ? 'read' : 'download',
+        /\/(?:archives?|downloads?)(?:\/|$)/i.test(path) || !(methods.get.produces ?? swagger.produces ?? []).includes('application/json') ? 'download' : 'read',
     schema: (methods.get.responses?.['200']?.$ref ? swagger.responses[methods.get.responses['200'].$ref.split('/').at(-1)] : methods.get.responses?.['200'])?.schema ?? null,
   }] : []), null, 2) + '\n',
 };
