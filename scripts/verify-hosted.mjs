@@ -208,7 +208,6 @@ try {
     ARTIUM_AXI_MASTER_KEY: randomBytes(32).toString('base64'), ARTIUM_AXI_DATABASE_FILE: join(scratch, 'data/artium.db'),
     ARTIUM_AXI_ADMIN_USERNAME: 'fixture-admin', ARTIUM_AXI_ADMIN_PASSWORD_FILE: bootstrap,
     GITEA_TEST_SCRATCH: scratch, GITEA_TEST_PORT: String(port), GITEA_TEST_BIN: bin, GITEA_TEST_SCHEMA: join(installed, 'axi-credential.schema.json') };
-  // An ephemeral listening port is read from the server's structured log below.
   server = spawn(process.execPath, ['--input-type=module', '-e', launcher], { cwd: host, env: hostEnv, stdio: ['ignore', 'pipe', 'pipe'] });
   report.invocations.push({ executable: process.execPath, argv: ['--input-type=module', '-e', launcher], cwd: host, role: 'real-server' });
   const ready = new Promise((resolveReady, reject) => {

@@ -29,7 +29,7 @@ gitea-axi repo view --repo OWNER/NAME --origin https://gitea.example.test
 ```
 
 Anonymous reads require an explicit origin and repository.
-HTTP requires `--allow-insecure-http` for that selected origin.
+Anonymous HTTP reads require `--allow-insecure-http` for that selected origin.
 The tool follows no redirects and never imports tea or Git credentials.
 Output uses TOON; structured errors use stdout, with exit 1 for operational failures and exit 2 for usage errors.
 Requests have a 30-second timeout and a 2,000,000-byte response limit.
@@ -48,6 +48,7 @@ Multiple file profiles without a selection or default are refused.
 On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
 Each profile contains `origin`, an equal `tokenOrigin`, and `token` as either `{"env":"TOKEN_VARIABLE"}` or `{"file":"/absolute/private/token"}`.
 Inline tokens and secret arguments are refused.
+Resolved credentials are redacted from response and error string values before TOON serialization, including their JSON-escaped and URL-encoded forms.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
 Set `GITEA_AXI_ALLOW_INSECURE_HTTP=true` to permit HTTP for that environment profile; only the exact values `true` and `false` are accepted.
 HTTP requires `allowInsecureHttp: true` on that exact profile; a runtime origin override cannot reuse the token for another origin.
@@ -58,6 +59,7 @@ Use env SecretRefs on Windows.
 S1.2 uses an unmerged local Artium fixture based on revision `3cfc65afc2d7c1a0f50d2f6e02dc2ee13d6fd7e8`, with the reviewed credential-support delta applied.
 Set `GITEA_AXI_ARTIUM_ROOT` to that built fixture and `GITEA_AXI_HOST_GATE_REPORT` to its external verification receipt, then run `node scripts/verify.mjs --task S1.2` or both tasks with `node scripts/check.mjs --offline`.
 The driver launches the real local server and public client, executes the installed tarball, and tests injected credentials, admission, private files, redaction, redirects, timeout, cancellation, output bounds, audit and cleanup.
+The fixture inventory's credential schema must exactly equal the schema shipped in the installed tarball.
 The receipt must record successful `check`, `test:containers` and `test:runner-container` gates with nonzero scenario counts, the completed host review bound to its full commit SHA, and `candidate: {inputs: buildInputs(), output: digest(['dist/'])}` from Artium's `scripts/build-inputs.mjs`.
 The host review record preserves the pipeline outcome separately from the direct regression and container results.
 It also binds the approved fixture follow-ups; the driver permits only the fixture test, generated Gitea inventory and package lockfile to differ from the reviewed head.
