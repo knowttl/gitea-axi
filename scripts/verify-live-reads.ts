@@ -111,10 +111,18 @@ try {
   // D8: only allowlisted non-secret transport causes reach output.
   const originalFetch = globalThis.fetch;
   try {
-    for (const [code, expected] of [['ECONNREFUSED', 'ECONNREFUSED'], ['ENOTFOUND', 'ENOTFOUND'], ['UND_ERR_CONNECT_TIMEOUT', 'ETIMEDOUT'], ['CERT_HAS_EXPIRED', 'TLS error'], ['private-value', 'connection error']]) {
+    for (const [code, expected] of [['ECONNREFUSED', 'ECONNREFUSED'], ['ECONNRESET', 'ECONNRESET'], ['ENOTFOUND', 'ENOTFOUND'], ['UND_ERR_CONNECT_TIMEOUT', 'ETIMEDOUT'], ['CERT_HAS_EXPIRED', 'TLS error'], ['private-value', 'connection error']]) {
       globalThis.fetch = async () => { throw new TypeError('private detail', { cause: Object.assign(new Error('private detail'), { code }) }); };
       await assert.rejects(new Client('https://example.test').get('/api/v1/user'), { code: 'TRANSPORT_ERROR', message: 'Gitea request failed (' + expected + '); check the selected origin and connection' });
+      await assert.rejects(new Client('https://example.test').attachment('11111111-1111-1111-1111-111111111111'), { code: 'TRANSPORT_ERROR', message: 'Binary attachment transfer failed (' + expected + '); redirects are refused' });
     }
+    globalThis.fetch = async () => new Response(new ReadableStream<Uint8Array>({
+      start(controller) { controller.error(new TypeError('private body detail', { cause: Object.assign(new Error('private detail'), { code: 'ECONNRESET' }) })); },
+    }), { headers: { 'content-type': 'application/octet-stream' } });
+    await assert.rejects(new Client('https://example.test').get('/api/v1/user'), { code: 'TRANSPORT_ERROR', message: 'Gitea request failed (ECONNRESET); check the selected origin and connection' });
+    await assert.rejects(new Client('https://example.test').attachment('11111111-1111-1111-1111-111111111111'), { code: 'TRANSPORT_ERROR', message: 'Binary attachment transfer failed (ECONNRESET); redirects are refused' });
+    globalThis.fetch = async () => new Response('attachment bytes', { headers: { 'content-type': 'application/octet-stream' } });
+    assert.deepEqual(await new Client('https://example.test').attachment('11111111-1111-1111-1111-111111111111', 'application/octet-stream'), { bytes: Buffer.from('attachment bytes'), type: 'application/octet-stream' });
   } finally { globalThis.fetch = originalFetch; }
   // D9: report missing environment variables and the HTTP opt-in key.
   const incomplete = await invoke(['auth', 'status'], 1, { GITEA_AXI_TOKEN_ORIGIN: undefined, GITEA_AXI_TOKEN: undefined, GITEA_AXI_ALLOW_INSECURE_HTTP: undefined });
@@ -125,15 +133,20 @@ try {
   const secureOrigin = 'https://example.test';
   const secureProfile = { origin: secureOrigin, tokenOrigin: secureOrigin, token: { env: 'TEST_TOKEN' } };
   for (const [profile, reason] of [
+    [{ tokenOrigin: secureOrigin, token: { env: 'TEST_TOKEN' } }, 'Invalid profile field: origin; set this required field'],
+    [{ tokenOrigin: secureOrigin, token: { file: 'relative' }, unexpected: true }, 'Invalid profile field: origin; set this required field'],
+    [{ origin, tokenOrigin: origin }, 'Invalid profile field: token; set exactly one of env (an environment variable name) or file (an absolute local path)'],
     [{ ...secureProfile, token: { file: 'relative' } }, 'Invalid profile field: token.file; set an absolute local file path'],
     [{ ...secureProfile, unexpected: true }, 'Invalid profile field: unexpected; remove this unknown field'],
+    [{ ...secureProfile, unexpected: true, token: { file: 'relative' } }, 'Invalid profile field: unexpected; remove this unknown field'],
+    [{ ...secureProfile, tokenOrigin: 'invalid', token: { file: 'relative' } }, 'Invalid profile field: token.file; set an absolute local file path'],
     [{ ...secureProfile, writes: { operations: [] } }, 'Invalid profile field: writes.allowWrites; set this required field'],
     [{ ...secureProfile, token: { env: 'invalid-name' } }, 'Invalid profile field: token.env; set a valid environment variable name'],
     [{ ...secureProfile, allowInsecureHttp: 'yes' }, 'Invalid profile field: allowInsecureHttp; set true or false'],
   ] as const) {
     await writeFile(config, JSON.stringify({ version: 1, profiles: { test: profile } }));
-    for (const selector of [['--profile', 'test'], ['--profile', 'test', '--hostname', 'example.test']]) {
-      assert.equal((await invoke(['auth', 'status', '--config', config, ...selector], 1)).error.reason, reason);
+    for (const selector of [['--profile', 'test'], ['--profile', 'test', '--hostname', 'example.test'], ['--hostname', 'example.test']]) {
+      assert.equal((await invoke(['auth', 'status', '--config', config, ...selector], 1, { GITEA_AXI_ORIGIN: undefined, GITEA_AXI_TOKEN_ORIGIN: undefined, GITEA_AXI_TOKEN: undefined, GITEA_AXI_ALLOW_INSECURE_HTTP: undefined })).error.reason, reason);
     }
   }
   assert.equal((await invoke(['auth', 'status'], 1, {

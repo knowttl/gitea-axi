@@ -17,13 +17,16 @@ const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', 
 const validate = new Ajv({ strict: false, allErrors: true }).compile<Profile>(schema);
 function validateProfile(profile: unknown): asserts profile is Profile {
   if (validate(profile)) return;
-  const token = profile && typeof profile === 'object' && 'token' in profile ? profile.token : undefined;
+  const value = profile && typeof profile === 'object' ? profile : undefined;
+  const token = value && 'token' in value ? value.token : undefined;
   const branch = token && typeof token === 'object' ? 'env' in token ? '0' : 'file' in token ? '1' : undefined : undefined;
-  const errors = validate.errors ?? [];
-  const error = errors.find(error => {
+  const http = value && 'origin' in value && typeof value.origin === 'string' && value.origin.startsWith('http:');
+  const errors = (validate.errors ?? []).filter(error => {
     const alternative = error.schemaPath.match(/^#\/properties\/token\/oneOf\/(\d+)\//)?.[1];
-    return (!alternative || alternative === branch) && error.keyword !== 'if' && error.keyword !== 'oneOf';
-  }) ?? errors.find(error => error.keyword === 'oneOf');
+    return (!alternative || alternative === branch) && (!error.schemaPath.startsWith('#/then/') || http) && error.keyword !== 'if' && error.keyword !== 'oneOf';
+  });
+  const priority: Record<string, number> = { required: 0, additionalProperties: 1 };
+  const error = errors.find(error => error.schemaPath === '#/required') ?? errors.sort((a, b) => (priority[a.keyword] ?? 2) - (priority[b.keyword] ?? 2) || b.instancePath.split('/').length - a.instancePath.split('/').length)[0] ?? validate.errors?.find(error => error.keyword === 'oneOf');
   const property = error?.keyword === 'required' ? error.params.missingProperty : error?.keyword === 'additionalProperties' ? error.params.additionalProperty : undefined;
   const field = [...(error?.instancePath.split('/').slice(1) ?? []), ...(property ? [String(property)] : [])].join('.');
   if (field === 'allowInsecureHttp' && error?.schemaPath.startsWith('#/then/')) throw new CliError('CONFIG_INVALID', 'HTTP requires allowInsecureHttp: true on the selected profile');

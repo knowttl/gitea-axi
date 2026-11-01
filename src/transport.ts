@@ -91,7 +91,7 @@ export class Client {
       return { bytes: Buffer.concat(chunks), type };
     } catch (error) {
       if (error instanceof CliError) throw error;
-      throw new CliError('TRANSPORT_ERROR', 'Binary attachment transfer failed; redirects are refused');
+      throw new CliError('TRANSPORT_ERROR', 'Binary attachment transfer failed (' + transportCause(error) + '); redirects are refused');
     }
   }
 }
