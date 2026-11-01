@@ -92,6 +92,8 @@ export async function credentials(override: string | undefined, allowHttp: boole
   let profileName = 'environment';
   let revision = 'environment';
   if (!selected && hasEnv) {
+    const missing = ['ORIGIN', 'TOKEN_ORIGIN', 'TOKEN'].filter(field => !process.env['GITEA_AXI_' + field]);
+    if (missing.length) throw new CliError('CONFIG_INVALID', 'Set missing environment variables: ' + missing.map(field => 'GITEA_AXI_' + field).join(', '));
     let token: unknown;
     try { token = JSON.parse(process.env.GITEA_AXI_TOKEN ?? 'null'); } catch { /* Schema reports only the field name. */ }
     const http = process.env.GITEA_AXI_ALLOW_INSECURE_HTTP;
@@ -124,7 +126,11 @@ export async function credentials(override: string | undefined, allowHttp: boole
   } else {
     throw new CliError('AUTH_REQUIRED', 'Select a configured profile or an explicit anonymous --origin');
   }
-  if (!validate(profile)) throw new CliError('CONFIG_INVALID', 'Invalid profile field: ' + (validate.errors?.[0]?.instancePath || 'token/origin'));
+  if (!validate(profile)) {
+    const error = validate.errors?.[0];
+    const field = error?.keyword === 'required' ? String(error.params.missingProperty) : error?.instancePath.slice(1);
+    throw new CliError('CONFIG_INVALID', field === 'allowInsecureHttp' ? 'HTTP requires allowInsecureHttp: true on the selected profile' : 'Invalid profile field: ' + (field || 'profile') + '; check the credential profile schema');
+  }
   const origin = canonicalOrigin(profile.origin);
   if (hostname && !matchesHost(origin)) throw new CliError('AUTH_BINDING_MISMATCH', 'Selected profile does not match --hostname/GH_HOST');
   if (origin !== canonicalOrigin(profile.tokenOrigin) || (override && canonicalOrigin(override) !== origin)) {

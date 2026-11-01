@@ -31,6 +31,13 @@ for (const definition of Object.values(vendor.definitions) as { properties?: Rec
     }
   }
 }
+const requestDefinitions = structuredClone(vendor.definitions);
+// Optional response scalars can also be null (for example an unmerged PR's merge SHA).
+for (const definition of Object.values(vendor.definitions) as { required?: string[]; properties?: Record<string, object> }[]) {
+  for (const [key, property] of Object.entries(definition.properties ?? {})) {
+    if (!definition.required?.includes(key)) definition.properties![key] = { anyOf: [property, { type: 'null' }] };
+  }
+}
 const ajv = new Ajv({ strict: false, validateFormats: false });
 const validators = new Map<string, ReturnType<typeof ajv.compile>>();
 
@@ -65,7 +72,7 @@ export function validatePayload(method: string, path: string, payload: unknown) 
       throw new CliError('USAGE', 'Integer route parameters require canonical decimal spelling', 2);
     }
   }
-  if (route.requestSchema && !ajv.compile({ ...route.requestSchema, definitions: vendor.definitions })(payload)) {
+  if (route.requestSchema && !ajv.compile({ ...route.requestSchema, definitions: requestDefinitions })(payload)) {
     throw new CliError('USAGE', 'Invalid request fields for ' + route.operation, 2);
   }
   return route;
@@ -104,7 +111,7 @@ export function rawPath(input: string, method = 'GET'): string {
   const decoded = decodeURIComponent(pathname);
   if (/[\\#\s%]/.test(decoded) || decoded.split('/').some(part => part === '.' || part === '..')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
   for (const key of new URLSearchParams(query).keys()) {
-    if (/token|secret|password|authorization|api.?key/i.test(key)) throw new CliError('CONFIG_INVALID', 'Secret query fields are refused');
+    if (/token|secret|password|authorization|api.?key/i.test(key)) throw new CliError('USAGE', 'Secret query fields are refused', 2);
   }
   const path = pathname === '/swagger.v1.json' ? pathname : pathname?.startsWith('/api/v1/') ? pathname : '/api/v1/' + pathname?.replace(/^\//, '');
   if (path !== '/swagger.v1.json' && method === 'GET') routeFor(path);

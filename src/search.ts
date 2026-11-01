@@ -2,7 +2,7 @@ import { collect, object, read } from './api.js';
 import type { Page, Row } from './api.js';
 import type { Client } from './transport.js';
 import { CliError } from './error.js';
-import { issue, issueFields, positive, repository, selectedFields } from './reads.js';
+import { continuationHelp, issue, issueFields, positive, repository, selectedFields } from './reads.js';
 import type { Options } from './reads.js';
 
 export function validateSearch(kind: string, query: string, options: Options) {
@@ -85,5 +85,5 @@ export async function search(client: Client, kind: string, query: string, option
     return { ...(kind === 'issues' || kind === 'prs' ? { repository: row.repository ? object(row.repository).full_name : target } : {}), ...Object.fromEntries(fields.map(field => [field, projection[field]])) };
   }), count: Math.min(rows.length, limit), total: page.truncated ? null : rows.length, truncated: page.truncated || rows.length > limit, next: page.next,
   scope: { repository: target ?? 'visible repositories', owner: options.owner ?? null, revision, pages: 'maximum 20 pages / 1000 candidates per collection', indexed: false },
-  continuation: page.truncated || rows.length > limit };
+  continuation: page.truncated || rows.length > limit, help: continuationHelp(page, rows.length, limit) };
 }

@@ -108,6 +108,10 @@ Lists default to 30 returned records, except `run list` and `release list` defau
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
 Milestone selectors use exact names, including numeric-looking names.
 List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
+`unfiltered_total` is the server count before client-side filtering; `total` is the filtered count when the bounded read is complete.
+Truncated output includes guidance to raise `--limit` (maximum 1000), or use raw API pagination when the bounded read is incomplete.
+Actions task summaries use the Gitea 1.23.4 task endpoint; versions older than 1.24 may return an empty list even when workflow runs exist.
+Full workflow run APIs require Gitea 1.24 or later and remain pending commissioning here.
 Dashboard sections report permission failures as partial results.
 Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.

@@ -15,7 +15,7 @@ import { issueLabelPlan, rawWritePlan, reconcile, write } from './writes.js';
 import { readPrivateFile } from './private-file.js';
 import { pullPlan, validatePull } from './pulls.js';
 import { repositoryPlan, validateRepositoryWorkflow } from './repo-workflows.js';
-import { releasePlan, releaseRead, validateRelease } from './releases.js';
+import { releaseListFields, releasePlan, releaseRead, validateRelease } from './releases.js';
 import { actionValues, valuePlan } from './action-values.js';
 import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
 import { isLocal, localWorkflow, validateLocal } from './local-workflows.js';
@@ -33,7 +33,7 @@ async function input(path: string) {
 }
 
 export async function main(args: string[]) {
-  let operation = 'dashboard';
+  let operation = args[0] && !args[0].startsWith('-') ? args[0] : 'dashboard';
   try {
     for (const arg of args) {
       const match = /^(?:--(?:raw-)?field=)?data=([\s\S]*)$/.exec(arg);
@@ -44,7 +44,14 @@ export async function main(args: string[]) {
     }
     const command = args.length === 0 || args[0]?.startsWith('--') ? commands.find(command => command.path[0] === 'dashboard') :
       [...commands].sort((a, b) => b.path.length - a.path.length).find(command => command.path.every((part, index) => args[index] === part));
-    if (!command) throw new CliError('USAGE', 'Unknown command; use gitea-axi --help', 2);
+    if (!command) {
+      const children = commands.filter(command => command.path[0] === args[0]);
+      if (children.length && args.length === 2 && args[1] === '--help') {
+        console.log(encode({ command: 'gitea-axi ' + operation, commands: children.map(command => 'gitea-axi ' + command.path.join(' ')) }));
+        return;
+      }
+      throw new CliError('USAGE', children.length ? 'Choose a command: ' + children.map(command => 'gitea-axi ' + command.path.join(' ')).join(', ') : 'Unknown command; use gitea-axi --help', 2);
+    }
     const path = command.path;
     operation = command.path.join(' ');
     const rest = args[0]?.startsWith('--') || !args.length ? args : args.slice(path.length);
@@ -209,7 +216,10 @@ export async function main(args: string[]) {
     const client = new Client(identity.origin, identity.token, operation === 'pr checks' && options.watch ? positive(options.timeout, 30, 3600) * 1000 : 30_000);
     let output: unknown;
     if (operation === 'auth status') output = { profile: identity.profile ?? 'anonymous', origin: identity.origin, source: identity.source ?? 'anonymous', authenticated: Boolean(identity.token) };
-    else if (operation === 'doctor') output = { origin: identity.origin, identity: await read(client, '/api/v1/user') };
+    else if (operation === 'doctor') {
+      const account = object(await read(client, '/api/v1/user'));
+      output = { origin: identity.origin, identity: { id: account.id, login: account.login } };
+    }
     else if (searching) output = await search(client, path[1]!, positionals[0]!, options);
     else if (operation === 'write reconcile') output = await reconcile(client, positionals[0]!);
     else if (operation === 'api') output = method === 'GET' ? await rawRead(client, apiPath!) :
@@ -241,8 +251,10 @@ export async function main(args: string[]) {
         const sections: Record<string, unknown> = {};
         for (const [name, path, envelope] of [['repository', base], ['issues', base + '/issues?state=open&type=issues'], ['pulls', base + '/pulls?state=open'], ['labels', base + '/labels'], ['releases', base + '/releases'], ['runs', base + '/actions/tasks', 'workflow_runs']]) {
           try {
-            sections[name!] = name === 'repository' ? { status: 'ok', data: await read(client, path!) } :
-              { status: 'ok', ...boundedList(await collect(client, path!, envelope), 5, name === 'labels' ? ['id', 'name', 'color'] : ['id', 'number', 'title', 'state']) };
+            if (name === 'repository') {
+              const row = object(await read(client, path!));
+              sections[name] = { status: 'ok', data: Object.fromEntries(['id', 'full_name', 'private', 'default_branch', 'open_issues_count', 'open_pr_counter', 'updated_at'].map(key => [key, row[key] ?? null])) };
+            } else sections[name!] = { status: 'ok', ...(name === 'runs' ? await tasks(client, base, { limit: '5' }) : boundedList(await collect(client, path!, envelope), 5, name === 'labels' ? ['id', 'name', 'color'] : name === 'releases' ? releaseListFields : ['id', 'number', 'title', 'state'])) };
           } catch (error) {
             if (!(error instanceof CliError)) throw error;
             sections[name!] = { status: 'error', code: error.code, reason: error.message };
@@ -253,7 +265,7 @@ export async function main(args: string[]) {
       } else if (operation === 'issue list' || operation === 'pr list') output = await listIssues(client, base, operation === 'pr list' ? 'pr' : 'issue', options);
       else if (operation === 'issue view' || operation === 'pr view') output = await view(client, base, operation === 'pr view' ? 'pr' : 'issue', positionals[0]!, options);
       else if (operation === 'run list') output = await tasks(client, base, options);
-      else if (['label list', 'release list'].includes(operation)) output = boundedList(await collect(client, base + (operation === 'label list' ? '/labels' : '/releases')), positive(options.limit, 30, 1000), operation === 'label list' ? ['id', 'name', 'color'] : ['id', 'name', 'status', 'conclusion']);
+      else if (operation === 'label list') output = boundedList(await collect(client, base + '/labels'), positive(options.limit, 30, 1000), ['id', 'name', 'color']);
       else if (operation === 'pr checks') {
         const result = await watchChecks(client, base, positionals[0]!, options);
         process.exitCode = result.exitCode;
@@ -270,7 +282,7 @@ export async function main(args: string[]) {
     console.log(rendered);
   } catch (error) {
     const failure = error instanceof CliError ? error : new CliError('INTERNAL_ERROR', 'Unable to read the repository');
-    console.log(encode(redact({ error: { code: failure.code, operation, reason: failure.message }, help: 'gitea-axi ' + operation + ' --help' })));
+    console.log(encode(redact({ error: { code: failure.code, operation, reason: failure.message }, help: commands.some(command => command.path.join(' ') === operation || command.path[0] === operation) ? 'gitea-axi ' + operation + ' --help' : 'gitea-axi --help' })));
     process.exitCode = failure.exitCode;
   }
 }

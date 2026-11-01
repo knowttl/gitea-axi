@@ -97,9 +97,9 @@ export async function listIssues(client: Client, base: string, kind: 'issue' | '
   return { items: rows.slice(0, limit).map(row => {
     const projection = { ...issue(row), isDraft: row.draft ?? null, headRefName: row.head ? object(row.head).ref : null, baseRefName: row.base ? object(row.base).ref : null };
     return Object.fromEntries(fields.map(field => [field, projection[field as keyof typeof projection]]));
-  }), count: Math.min(rows.length, limit), total: page.truncated ? null : rows.length, vendor_total: page.total,
+  }), count: Math.min(rows.length, limit), total: page.truncated ? null : rows.length, unfiltered_total: page.total,
   truncated: page.truncated || rows.length > limit, next: page.next, continuation: page.truncated || rows.length > limit,
-  help: `gitea-axi ${kind} view <number> --repo ${base.split('/').slice(-2).join('/')}` };
+  help: [`gitea-axi ${kind} view <number> --repo ${base.split('/').slice(-2).join('/')}`, ...continuationHelp(page, rows.length, limit)] };
 }
 
 async function complete(client: Client, path: string): Promise<Row[]> {
@@ -121,7 +121,7 @@ async function reviews(client: Client, path: string, full: boolean) {
 
 export async function checks(client: Client, base: string, sha: string) {
   const combined = object(await read(client, base + '/commits/' + encodeURIComponent(sha) + '/status'));
-  if (combined.sha !== sha) throw new CliError('INVALID_RESPONSE', 'Check response does not match the pull request head SHA');
+  if (combined.sha !== sha && !(combined.sha === '' && combined.total_count === 0 && Array.isArray(combined.statuses) && !combined.statuses.length)) throw new CliError('INVALID_RESPONSE', 'Check response does not match the pull request head SHA');
   const statuses = await complete(client, base + '/commits/' + encodeURIComponent(sha) + '/statuses');
   statuses.sort((a, b) => Number(b.id) - Number(a.id));
   const latest = new Map<unknown, Row>();
@@ -147,7 +147,7 @@ export async function watchChecks(client: Client, base: string, number: string, 
       const sha = object(pull.head).sha;
       if (typeof sha !== 'string' || !sha) throw new CliError('INVALID_RESPONSE', 'Pull request head SHA is missing');
       const result = await checks(client, base, sha);
-      if (!options.watch || !result.pending || result.failed || Date.now() >= stop || controller.signal.aborted) return { ...result, cancelled: controller.signal.aborted };
+      if (!options.watch || result.items.length > 0 && !result.pending || result.failed || Date.now() >= stop || controller.signal.aborted) return { ...result, cancelled: controller.signal.aborted };
       await delay(Math.min(interval, Math.max(1, stop - Date.now())), undefined, { signal: controller.signal }).catch(error => {
         if (!controller.signal.aborted) throw error;
       });
@@ -200,8 +200,14 @@ export async function view(client: Client, base: string, kind: 'issue' | 'pr', n
   return fields ? Object.fromEntries(fields.map(field => [field, result[field] ?? null])) : result;
 }
 
+export function continuationHelp(page: Page, count: number, limit: number): string[] {
+  if (!page.truncated && count <= limit) return [];
+  return [page.truncated ? 'Use gitea-axi api GET "<collection>?limit=50&page=<page>" to page beyond the bounded read (maximum 1000 items).' : 'Raise --limit to see more items (maximum 1000).'];
+}
+
 export function boundedList(page: Page, limit: number, fields: string[]) {
   return { items: page.items.slice(0, limit).map(row => Object.fromEntries(fields.map(key => [key, row[key] ?? null]))),
     count: Math.min(page.items.length, limit), total: page.total, next: page.next,
-    truncated: page.truncated || page.items.length > limit, continuation: page.truncated || page.items.length > limit };
+    truncated: page.truncated || page.items.length > limit, continuation: page.truncated || page.items.length > limit,
+    ...(continuationHelp(page, page.items.length, limit).length ? { help: continuationHelp(page, page.items.length, limit) } : {}) };
 }
