@@ -1,7 +1,7 @@
 # gitea-axi
 
 An agent CLI for Gitea repository workflows with private credential profiles.
-It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, issue, label and pull request mutations, and classified raw API requests.
+It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, repository, release, issue, label and pull request mutations, and classified raw API requests.
 Verification uses offline fakes only; live Gitea access remains unverified.
 
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
@@ -74,7 +74,7 @@ Business reads share a 30-second deadline, except check watches use their explic
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
 Hosted repository reads require an explicit repository.
-Lists default to 30 returned records, except `run list` defaults to 10; collection scans are bounded to 20 pages or 1000 unique records.
+Lists default to 30 returned records, except `run list` and `release list` default to 10; collection scans are bounded to 20 pages or 1000 unique records.
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
 Milestone selectors use exact names, including numeric-looking names.
 List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
@@ -120,6 +120,37 @@ These are offline protocol and topology checks, not live vendor atomicity or con
 `pr review` validates exactly one of `--approve`, `--request-changes` or `--comment`, then refuses before posting.
 C043 and CX-007 remain unresolved: the retained contract does not establish review wire events or atomic stale-head refusal.
 Supplying `--match-head-commit` does not enable reviews or weaken this refusal to a warning.
+
+Repository mutations include API-only `repo create NAME|OWNER/NAME`, `repo edit` and `repo fork`.
+Create requires exactly one of `--public` or `--private`, and accepts `--description` and `--template OWNER/NAME`.
+An unqualified name uses the authenticated user; another owner selects an organization.
+The operation grants are `createCurrentUserRepo`, `createOrgRepo`, `generateRepo`, `repoEdit` and `createFork` respectively.
+Template creation uses the generate endpoint with Git content enabled, then compares the complete resulting Git tree with the template.
+Edit supports `--description`, `--visibility public|private`, `--default-branch`, `--enable-issues` and `--enable-wiki`.
+Boolean flags accept explicit `=true` and `=false`, including disabling issues or wiki.
+Fork takes a source through `--repo` or a positional OWNER/NAME and optionally `--org` for the destination.
+Verification checks the destination identity, requested fields and fork parent.
+Internal visibility and workspace flags (`--source`, `--push`, `--remote`, `--clone`) refuse before mutation.
+`--push` and `--remote` require `--source`; local workspace publishing remains deferred.
+
+Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
+List supports `--exclude-drafts` and `--exclude-pre-releases` and returns compact tag, title and publication flags.
+View shows up to 1500 note characters; `--full` expands this to 80000 within the output ceiling.
+Create and edit accept `--title`, `--notes` (or `--body`), `--notes-file` (or `--body-file`), `--draft` and `--prerelease`, preserving explicit false values.
+File inputs share the protected body-file contract; stdin uses `-`.
+Create accepts `--target`, `--verify-tag` and `--notes-from-tag` for an existing annotated tag's message.
+The grants are `repoCreateRelease`, `repoEditRelease` and `repoDeleteReleaseByTag`.
+Deletion verifies release absence, preservation of other releases and the independently observed tag state; it does not delete a tag.
+`--latest`, discussion settings and asset positionals refuse before creation.
+An existing or uncertain release cannot trigger an automatic duplicate create.
+
+`release create --generate-notes` computes notes locally from exact commit ancestry and declares a `local-composite` result with `from`, `to` and commit identities.
+`--notes-start-tag` excludes that tag and all its ancestors, requires it to be an ancestor of the target, and otherwise defaults to the most recent nondraft release's tag.
+With no previous release, notes include the complete target ancestry.
+The traversal includes merged branches, is bounded to 1000 commits per ancestry, and refuses incomplete ranges.
+For a new tag, the generated target is pinned to its resolved SHA in the write payload.
+`--fail-on-no-commits` refuses an empty generated range; supplied notes precede generated notes.
+These notes do not claim Gitea's native release-note generation or GitHub formatting parity.
 
 Writes are disabled unless `--allow-write` names every exact vendor operation needed by the command.
 A profile's optional `writes` object can narrow this grant with `allowWrites` and an `operations` array.
@@ -191,9 +222,10 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.4, S5.1 and S5.2 under an inherited outbound network guard.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1, S5.1 and S5.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
-Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3` or `S3.4`.
+Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
+Run the release journey with `node scripts/verify.mjs --task S4.1`.
 Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.

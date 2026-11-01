@@ -14,6 +14,8 @@ import { search, validateSearch } from './search.js';
 import { issueLabelPlan, rawWritePlan, reconcile, write } from './writes.js';
 import { readPrivateFile } from './private-file.js';
 import { pullPlan, validatePull } from './pulls.js';
+import { repositoryPlan, validateRepositoryWorkflow } from './repo-workflows.js';
+import { releasePlan, releaseRead, validateRelease } from './releases.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -39,7 +41,10 @@ export async function main(args: string[]) {
     let parsed;
     try {
       parsed = parseArgs({
-        args: rest, allowPositionals: true, strict: true, tokens: true,
+        args: rest.map(arg => {
+          const match = /^--([^=]+)=(true|false)$/.exec(arg);
+          return match && command.flags[match[1]!]?.type === 'boolean' ? '--' + match[1] : arg;
+        }), allowPositionals: true, strict: true, tokens: true,
         options: Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,
           ...(flag.multiple ? { multiple: true } : {}), ...(flag.short ? { short: flag.short } : {}) }])),
       });
@@ -47,6 +52,10 @@ export async function main(args: string[]) {
       throw new CliError('USAGE', 'Invalid arguments; valid flags: ' + Object.keys(command.flags).map(f => '--' + f).join(', '), 2);
     }
     const { values, positionals } = parsed;
+    for (const arg of rest) {
+      const match = /^--([^=]+)=(true|false)$/.exec(arg);
+      if (match && command.flags[match[1]!]?.type === 'boolean') values[match[1]!] = match[2] === 'true';
+    }
     const names = parsed.tokens.flatMap(token => token.kind === 'option' && !command.flags[token.name]?.multiple ? [token.name] : []);
     if (new Set(names).size !== names.length) {
       throw new CliError('USAGE', 'Choose each flag only once; --repo requires exactly one selector', 2);
@@ -60,6 +69,14 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
+    const repositoryMutation = operation.startsWith('repo ') && command.effect === 'write';
+    const releasing = operation.startsWith('release ');
+    if (repositoryMutation) validateRepositoryWorkflow(operation, options);
+    if (releasing) {
+      validateRelease(options);
+      if (options.notes !== undefined) options.body = options.notes;
+      if (options['notes-file'] !== undefined) options['body-file'] = options['notes-file'];
+    }
     if (operation.startsWith('pr ') && command.effect === 'write') validatePull(operation, options);
     if (operation.startsWith('workflow ') || operation.startsWith('run ') && operation !== 'run list') {
       throw new CliError('CAPABILITY_GAP', operation + ' is pending: the 1.23.4 contract has task summaries only; 1.24.0 candidates require commissioning. Mutating controls also await the shared write gate');
@@ -78,7 +95,10 @@ export async function main(args: string[]) {
     if (takesNumber && (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select exactly one positive item number', 2);
     const takesLabel = operation === 'label edit' || operation === 'label delete';
     if (takesLabel && positionals.length !== 1) throw new CliError('USAGE', 'Select one exact label name or ID', 2);
-    if (!takesNumber && !takesLabel && !searching && operation !== 'write reconcile' && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
+    const takesTag = releasing && operation !== 'release list';
+    if (takesTag && (positionals.length !== 1 || !positionals[0])) throw new CliError('USAGE', 'Select exactly one release tag; asset transfers are deferred', 2);
+    if (repositoryMutation && positionals.length > 1) throw new CliError('USAGE', 'Select at most one repository', 2);
+    if (!takesNumber && !takesLabel && !takesTag && !repositoryMutation && !searching && operation !== 'write reconcile' && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
     if (operation === 'write reconcile' && positionals.length !== 1) throw new CliError('USAGE', 'Select one confirmation ID', 2);
     if (operation === 'org view' && (positionals.length !== 1 || !/^[A-Za-z0-9_.-]+$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select one organization name', 2);
     if (operation.endsWith('list')) listOptions(options);
@@ -138,6 +158,7 @@ export async function main(args: string[]) {
     else if (operation === 'api') output = method === 'GET' ? await rawRead(client, apiPath!) :
       await write(client, identity, await rawWritePlan(client, method, apiPath!, payload), options);
     else if (operation === 'org view') output = { organization: await read(client, '/api/v1/orgs/' + encodeURIComponent(positionals[0]!)) };
+    else if (repositoryMutation) output = await write(client, identity, await repositoryPlan(client, operation, positionals[0], options), options);
     else if (operation === 'repo list') {
       if (options.fields) throw new CliError('USAGE', 'repo list supports its compact identity fields only', 2);
       const path = options.org ? '/api/v1/orgs/' + encodeURIComponent(String(options.org)) + '/repos' : '/api/v1/repos/search';
@@ -146,7 +167,8 @@ export async function main(args: string[]) {
       if (command.effect === 'write' && (!options['allow-write'] || process.env.GITEA_AXI_READ_ONLY && process.env.GITEA_AXI_READ_ONLY !== 'false')) throw new CliError('READ_ONLY', 'Writes require an exact operation grant and a writable policy');
       const repo = repository(typeof values.repo === 'string' ? values.repo : undefined, identity.origin);
       const base = '/api/v1/repos/' + repo.split('/').map(encodeURIComponent).join('/');
-      if (command.effect === 'write') output = await write(client, identity, await (operation.startsWith('pr ') ? pullPlan : issueLabelPlan)(client, operation, base, positionals[0], options), options);
+      if (releasing) output = command.effect === 'write' ? await write(client, identity, await releasePlan(client, operation, base, positionals[0]!, options), options) : await releaseRead(client, operation, base, positionals[0], options);
+      else if (command.effect === 'write') output = await write(client, identity, await (operation.startsWith('pr ') ? pullPlan : issueLabelPlan)(client, operation, base, positionals[0], options), options);
       else if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
       else if (operation === 'dashboard') {
         const sections: Record<string, unknown> = {};

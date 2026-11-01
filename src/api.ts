@@ -14,6 +14,9 @@ const required: Record<string, string[]> = {
   CommitStatus: ['id', 'context', 'status'], Milestone: ['id', 'title'],
   PRBranchInfo: ['sha', 'ref'], CombinedStatus: ['sha', 'statuses', 'total_count'],
   Branch: ['name', 'commit'], PayloadCommit: ['id'],
+  Release: ['id', 'tag_name', 'target_commitish', 'name', 'body', 'draft', 'prerelease'],
+  Tag: ['name', 'commit'], CommitMeta: ['sha'],
+  GitTreeResponse: ['tree', 'truncated'], GitEntry: ['path', 'mode', 'type', 'sha'],
   ActionTask: ['id', 'name', 'status'], ActionTaskResponse: ['workflow_runs', 'total_count'],
 };
 for (const [name, fields] of Object.entries(required)) {

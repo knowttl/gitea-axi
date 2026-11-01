@@ -1,0 +1,6 @@
+{
+  "task": "S3.5",
+  "provenance": "Synthetic repository identities and content, constrained by retained Gitea 1.23.4 Swagger. No business service observations.",
+  "operations": ["OP-004", "OP-048", "OP-053", "OP-055", "OP-070", "OP-071"],
+  "outcomes": ["AC-004", "AC-048", "AC-053", "AC-055", "AC-070", "AC-071"]
+}
