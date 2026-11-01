@@ -80,7 +80,8 @@ Output uses TOON; structured errors use stdout, with exit 1 for operational fail
 Business reads share a 30-second deadline, except check watches use their explicit timeout; each request has a 2,000,000-byte response limit.
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
-`-R` aliases `--repo`; `--hostname` or GH_HOST selects a matching configured profile without bypassing tokenOrigin or HTTP policy.
+`-R` aliases `--repo` after an explicit command, with the same duplicate-selector checks.
+For the default dashboard, use `gitea-axi --repo OWNER/NAME`; root-level `-R` remains unsupported.
 Hosted repository reads require an explicit repository.
 Lists default to 30 returned records, except `run list` and `release list` default to 10; collection scans are bounded to 20 pages or 1000 unique records.
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
@@ -128,8 +129,7 @@ It sends the vendor `head_commit_id` precondition and verifies the closed, merge
 Merge commits retain the previous base and checked head as parents; squash uses one new commit on the previous base; rebase verifies the rewritten linear chain and original commit messages.
 These are offline protocol and topology checks, not live vendor atomicity or content-equivalence commissioning.
 `--auto`, `--admin` and `--delete-branch` each report a capability gap because their semantics remain unverified.
-`pr review` validates exactly one of `--approve`, `--request-changes` or `--comment`, then refuses before posting.
-C043 and CX-007 remain unresolved: the retained contract does not establish review wire events or atomic stale-head refusal.
+`pr review` reports a compatibility gap before workflow validation or posting; see the [catalogue contract](docs/catalogue-contract.md) for C043 and CX-007.
 Supplying `--match-head-commit` does not enable reviews or weaken this refusal to a warning.
 
 Repository mutations include API-only `repo create NAME|OWNER/NAME`, `repo edit` and `repo fork`.
@@ -233,9 +233,7 @@ Replay guards also treat repository owner and repository name case variants as t
 Keep its private receipts until the outcome has been investigated.
 Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
-`src/registry.ts` owns command metadata, help and the host inventory.
-`npm run generate` generates those artifacts plus the consumed response schemas, route types and classified raw-route registry from the retained Swagger.
-`npm run generate:check` rejects stale artifacts.
+See the [catalogue contract](docs/catalogue-contract.md#generation-and-verification) for discovery generation and freshness commands.
 `evidence/README.md` records retained source paths, provenance and hashes.
 Credentialed reads use the shipped `axi-credential.schema.json` contract.
 The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.config/gitea-axi/config.json` on Linux, and `%APPDATA%\gitea-axi\config.json` on Windows.
@@ -243,8 +241,12 @@ The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.confi
 `--config` requires an absolute path.
 The config object contains `version: 1`, a `profiles` object keyed by profile name, and an optional `defaultProfile` name.
 Without `--profile` or `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
-File selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile.
-Multiple file profiles without a selection or default are refused.
+`--hostname` takes precedence over `GH_HOST` and requires the selected profile's origin to match its host and port before secret resolution.
+For file profiles, an explicit profile must match; otherwise exactly one matching profile is required, ignoring `defaultProfile`.
+Without a host selector, file selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile; multiple profiles without a selection or default are refused.
+A host selector cannot construct an anonymous origin, bypass tokenOrigin binding or enable HTTP.
+Search commands currently reject `--hostname`; use `GH_HOST` with a matching profile instead.
+Hosted invocations refuse credential/configuration overrides and ignore ambient `GH_HOST` for the injected Artium profile.
 On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
 Config files and file SecretRefs must be regular files; symlinks are refused.
 See [the credential schema](axi-credential.schema.json) for profile fields and env/file SecretRef shapes.

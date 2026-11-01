@@ -13,18 +13,14 @@ No command is counted as full baseline parity.
 | Issue locks | 1.23.4 lacks a lock endpoint. The 1.24.0 issue lock route is a candidate only; no upgrade or live commissioning is claimed. |
 | Issue transfer/subissues | No evidenced transfer or parent/child API in either retained contract. Repository transfer, blocks and dependencies are different operations. |
 | Draft transitions | Neither retained EditPullRequestOption exposes a draft transition field. `pr ready` refuses; reading the draft field does not implement changing it. |
-| Review posting (CX-007) | CreatePullReviewOptions supplies event and commit fields without establishing event values or atomic stale-head refusal. Posting remains unavailable; a preflight read cannot close the race. |
+| Review posting (C043/CX-007) | CreatePullReviewOptions supplies event and commit fields without establishing event values or atomic stale-head refusal. Posting remains unavailable; a preflight read cannot close the race. |
 | HEAD | No documented HEAD route/effect contract. Refuse without substituting GET. |
 | jq/template | Deliberately unimplemented until an evaluator, grammar and compatibility contract are selected. Both options refuse before requests or writes. |
 | Newer Actions APIs | The retained 1.24.0 routes remain investigation candidates. Task summaries do not establish full run/job/artifact behavior. |
 | Numeric IDs | `fullDatabaseId` is the vendor numeric ID. The GraphQL node `id` selector remains a gap. |
 | Status rollups | Results explicitly report `source: commit-statuses` and `partial: true`. Passed/failed/pending counts do not claim full check suites. |
 
-`-R` aliases `--repo` with the same duplicate-selector checks.
-`--hostname` takes precedence over `GH_HOST` and selects an existing profile with a matching host and port.
-An explicit profile must match the host selector; otherwise exactly one matching profile is required.
-The selector cannot construct a new anonymous origin, resolve an unrelated default profile's secret, bypass tokenOrigin binding or enable HTTP.
-Hosted invocations refuse credential/configuration overrides and ignore ambient GH_HOST for the injected Artium profile.
+See the [README](../README.md) for repository selectors, profile selection and hosted credential restrictions, including the current root-level `-R` and search `--hostname` limitations.
 
 ## Pending hooks and updater contracts
 
@@ -43,6 +39,7 @@ No agent paths, update channel, repository webhooks or telemetry are introduced.
 ## Generation and verification
 
 `npm run generate` compiles the current registry and regenerates help, the skill, the capabilities summary and host inventory.
+The executable registry in `src/registry.ts` owns their command metadata; the retained Swagger owns the generated response schemas, route types and classified raw-route registry produced by the same command.
 `npm run generate:check` compiles the current source and refuses stale generated artifacts.
 The S6.4 check demonstrates refusal after adding a command to a disposable registry copy.
 The generated skill uses noninteractive npm package invocations and contains no live session state.
