@@ -45,7 +45,7 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1, S2, S3 and S4 drivers print their report paths.
+The S1, S2, S3, S4 and S6 drivers print their report paths.
 Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
@@ -216,7 +216,8 @@ The journal defaults to `$XDG_STATE_HOME/gitea-axi/writes.log`, otherwise `~/.lo
 `GITEA_AXI_WRITE_LOG` selects another absolute path; private confirmation receipts live beside it in `write-receipts`.
 The journal records hashes, operation identities and step states, without credentials or request bodies.
 Each attempt is persisted before dispatch.
-Timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
+API timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
+Dispatched local Git failures retain their specific error code and include reconciliation information; stack recovery follows the [metadata and recovery contract](docs/local-stack-contract.md).
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
 Replay guards also treat repository owner and repository name case variants as the same identity.
@@ -275,15 +276,17 @@ Route classification covers all captured methods; this does not claim completion
 ## Standalone Git and owned stacks
 
 Local workflows require an explicit absolute `--workspace` and use native Git argument arrays.
+Select the native repository root, or an existing parent directory for cloning.
 `repo clone OWNER/NAME` clones into a new child directory of the selected parent and checks out the previewed default commit.
 `repo create --source /absolute/repo --push --remote NAME` publishes the current source branch with its complete history.
 `repo fork --clone` clones the verified fork, while `repo fork --remote NAME` configures a new remote in the workspace.
 Existing remotes are never overwritten.
 Use a repository-local Git user name and email for workflows that create commits.
 Git credential helpers, hooks, transport rewrites and redirects are disabled or refused.
+Pushes publish only the explicit branch refspecs, with tag following and submodule recursion disabled regardless of repository configuration.
 Tokens travel through an origin-scoped environment configuration and never enter Git arguments or remote URLs.
 
-`pr checkout NUMBER` fetches the PR's actual head repository and branch and checks out its exact previewed SHA.
+`pr checkout NUMBER` fetches the PR's actual head repository and branch and checks out its exact previewed SHA with HEAD detached.
 Dirty workspaces refuse before checkout.
 `pr revert NUMBER` first prepares a local revert of a two-parent merge.
 Repeat its preview/confirmation cycle to publish the recorded generated commit and create the revert PR.
@@ -296,19 +299,17 @@ Preview creates only policy state; it changes no worktree, refs, stack metadata 
 One owned stack is recorded per native Git common directory, shared by its worktrees.
 Initialize ordered existing branches with `stack init one two three --base main`, then navigate with checkout/up/down/top/bottom/trunk.
 All commands require `--workspace`; stack commands reject `--repo`, `-R` and `GH_REPO`.
+Check out a named branch before stack mutations; recorded rebase recovery remains available during a native conflict with HEAD detached.
 Use `stack link` with existing branches, PR numbers or same-repository PR URLs to reconcile PR bases without creating duplicates.
 `stack push --remote NAME` uses atomic updates and leases bound to the previewed remote tips.
 `stack merge STACK --merge-method merge` checks heads, merges dependencies in order, retargets descendants to trunk and stops on failure.
 `--merge`, `--squash` and `--rebase` select the other captured method spellings; reviewed confirmation supplies the workflow's noninteractive yes semantics.
 `stack sync --prune` preserves trunk, checked-out and unrelated branches and requires verified merged history before deleting owned branches.
-An interrupted push can be reconciled by `stack sync` when the selected remote confirms every recorded branch tip; it never repeats that push.
-`stack view` exposes pending checkpoints for inspection after other interruptions.
+`stack view` exposes pending checkpoints for inspection after interruptions.
 `stack unstack --local` removes only local relationships; without `--local`, linked PR bases are restored to trunk first.
 
 Rebase supports selected branches, `--downstack`, `--upstack`, `--no-trunk`, `--committer-date-is-author-date`, and recorded `--continue`/`--abort` recovery.
-At the repository root, stack-add `--all` and `--update` both stage tracked modifications and deletions, leave untracked files untouched, cannot be combined and require `--message`.
-Without either flag, a requested commit uses only the staged index.
-See the [metadata and recovery contract](docs/local-stack-contract.md).
+See the [metadata and recovery contract](docs/local-stack-contract.md) for stack-add staging rules and recovery prerequisites.
 
 `stack submit` reports an explicit compatibility gap before effects because its required automatic merge scheduling is not yet verified.
 `stack rebase --preserve-dates` remains pending until upstream date semantics are evidenced.

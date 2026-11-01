@@ -14,12 +14,16 @@ Hosted admission refuses every stack command and local checkout option.
    Local and API writes use the shared effect policy and secret-free journal, with explicit local operation grants alongside vendor grants.
    Preview performs no Git, stack metadata or API mutation.
 4. Before a multi-step mutation, a pending record persists the original branch and tips and ordered step states.
-   After interruption, recovery inspects actual Git and API state and reports completed, pending or uncertain work without automatically repeating a dispatched effect.
+   After interruption, `stack view` exposes the recorded checkpoint; inspect it alongside native Git and API state.
+   `stack sync` can recover a pending sync or a push whose selected remote confirms every recorded branch tip; it never repeats the push.
+   Other pending operations require inspection rather than automatic replay.
    Unrelated mutations refuse while recovery is pending.
 5. Rebase recovery retains the ordered original branch tips and current step.
    Native conflicts stop execution and retain Git's conflict state.
    `--continue` and `--abort` operate on the recorded rebase.
+   They remain usable while native Git has HEAD detached, using the checkpoint's originally named branch.
    Abort restores the original stack tips and branch only when the recorded state still matches; otherwise it refuses and reports recovery instructions.
+   If a native index lock stops abort, remove the lock only after its owning process has stopped, then preview and confirm abort again against the same checkpoint.
 6. Sync pruning deletes only owned stack branches whose recorded PR is verified merged and whose local tip is included in the verified merged history.
    Trunk, the current branch, branches checked out in another worktree and unowned branches are never pruned.
 7. Submit requests automatic merge scheduling semantics and reports a compatibility gap when the retained Gitea contract cannot establish actual scheduling.
