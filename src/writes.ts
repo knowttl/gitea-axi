@@ -179,7 +179,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   };
   const effectSteps = plan.steps.map(effectStep);
   const attempt = digest({ origin: client.origin, steps: effectSteps });
-  const guards = [...new Set(effectSteps.map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
+  const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);

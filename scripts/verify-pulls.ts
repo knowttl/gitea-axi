@@ -205,6 +205,10 @@ try {
     expect('Partial creation never retries either write', requests.slice(afterRejectedCreate).filter(row => row.method !== 'GET'), []);
     const reconciliation = await invoke(['write', 'reconcile', createPreview.confirmation]);
     expect('Partial creation reconciles the created PR directly', (reconciliation.observations.find(row => row.path === base + '/pulls/' + partialCreated.number)!.data as Row).id, partialCreated.id);
+    branches.set('other-feature', headSHA);
+    await execute(['create', '--title', 'Unrelated creation', '--body', 'Unrelated PR body', '--head', 'other-feature', '--base', 'main', '--reviewer', 'new'], 'repoCreatePullRequest,repoCreatePullReviewRequests');
+    const unrelated = pulls.at(-1)!;
+    expect('Unrelated create with the same reviewers succeeds after a partial creation', [unrelated.title, (unrelated.head as Row).ref, (unrelated.requested_reviewers as Row[]).map(row => row.login), partialCreated.requested_reviewers, pulls.length], ['Unrelated creation', 'other-feature', ['new'], [], 4]);
     reset();
     const beforeAuthorEdit = requests.length;
     await execute(['create', '--title', 'Created PR', '--body', 'Exact PR body', '--head', 'feature', '--base', 'main', '--assignee', 'synthetic', '--label', 'added', '--milestone', 'Release', '--reviewer', 'new', '--team-reviewer', 'new-team'], 'repoCreatePullRequest,repoCreatePullReviewRequests');
