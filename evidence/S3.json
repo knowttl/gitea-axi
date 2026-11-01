@@ -11,6 +11,30 @@
     { "command": "node scripts/verify.mjs --task S3.2", "result": "passed with the real public client and sealed Artium fixture" },
     { "command": "pnpm exec vitest run --configLoader runner --no-cache test/gitea-admission.test.ts test/admission-fixture.test.ts", "result": "202 passed against the sealed fixture" }
   ],
-  "blockingRegressionForValidation": "Encoded path separators can select a metadata classification while the vendor reaches a credential-issuing GET. The installed-CLI regression requires refusal before any vendor request. This must be fixed and revalidated before shipping.",
+  "blockingRegressionForValidation": "Resolved in the review working tree: encoded route separators refuse before HTTP dispatch for reads and writes, while encoded query text remains accepted.",
+  "reviewFixes": {
+    "findings": ["R1", "R2", "R3", "R4", "R5"],
+    "sourceHeadBeforeReviewFixCommit": "02cc51d133206c25ade210fe36705f0427e09442",
+    "testedWorkingTreeDirty": true,
+    "testedPackageSha256": "fa95c8b745136492006f6d10bce1e97e7bd922dd88e9509dd9aa6bd6176b472b",
+    "checks": [
+      { "command": "node --import ./scripts/deny-network.ts scripts/verify.mjs --task S3.1", "result": "passed against the freshly packed, offline-installed working tree; Artium fixture unset" },
+      { "command": "node --import ./scripts/deny-network.ts scripts/verify.mjs --task S3.2", "result": "passed against the freshly packed, offline-installed working tree; Artium fixture unset" }
+    ],
+    "regressions": [
+      "Encoded slash and backslash write paths refuse without dispatch; encoded query text remains readable",
+      "Equivalent encoded paths and query variants cannot replay an unresolved named create",
+      "Credential-bearing request schemas refuse before previews and HTTP dispatch",
+      "Fresh reads reject unintended issue identity, title, body, state, label, assignee and milestone changes across named issue actions",
+      "Label rename rejects replacement identity even when response and readback agree",
+      "Issue and label deletions reject missing or changed control records and refuse without a remaining control"
+    ]
+  },
+  "finalCandidateEvidence": {
+    "status": "pending outer executor validation and final candidate commit",
+    "configuredNpmTest": "not run in the review phase",
+    "hostedFixtureVerification": "pending repin for the final candidate package; earlier frozen-package checks above do not verify these review fixes",
+    "candidateArtifact": "final committed candidate head, preserved tarball and SHA-256 remain the outer executor's responsibility"
+  },
   "coverageBoundary": "All captured routes are classified; this does not mean all 73 business workflows, uploads or merges are implemented."
 }

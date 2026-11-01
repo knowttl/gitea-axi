@@ -981,7 +981,7 @@
     "path": "/api/v1/repos/migrate",
     "method": "POST",
     "operation": "repoMigrate",
-    "effect": "write",
+    "effect": "credential",
     "requestSchema": {
       "$ref": "#/definitions/MigrateRepoOptions"
     },
@@ -2829,7 +2829,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors",
     "method": "POST",
     "operation": "repoAddPushMirror",
-    "effect": "write",
+    "effect": "credential",
     "requestSchema": {
       "$ref": "#/definitions/CreatePushMirrorOption"
     },

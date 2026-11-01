@@ -35,6 +35,7 @@ let disconnect = false;
 let stall = false;
 let ignoreWrite = false;
 let failComment = false;
+let corruptWrite: (() => void) | undefined;
 let origin = '';
 let bin = '';
 let packageSha256 = '';
@@ -46,7 +47,7 @@ const requests: { method: string; path: string }[] = [];
 const assertions: string[] = [];
 const invocations: { executable: string; argv: string[]; code: number | null }[] = [];
 const server = createServer(async (request, response) => {
-  const path = new URL(request.url!, origin).pathname.replace('/repos/sample/other', '/repos/sample/demo');
+  const path = decodeURIComponent(new URL(request.url!, origin).pathname).replace('/repos/sample/other', '/repos/sample/demo');
   const method = request.method!;
   requests.push({ method, path });
   assert(['token ' + token, 'token ROTATED-CANARY'].includes(String(request.headers.authorization)));
@@ -100,6 +101,7 @@ const server = createServer(async (request, response) => {
       else if (label && method === 'PATCH') { Object.assign(label, payload); data = label; }
       else if (label && method === 'DELETE') { labels.splice(labels.indexOf(label), 1); status = 204; }
     }
+    corruptWrite?.();
     server.emit('effect-applied');
     if (disconnect) { request.socket.destroy(); return; }
     if (stall) return;
@@ -203,6 +205,20 @@ try {
     const encoded = ['api', 'GET', 'repos/sample/demo%2Factions%2Frunners%2Fregistration-token'];
     expect('Encoded route separators cannot bypass effect policy', (await invoke(encoded, 1)).error.code, 'READ_ONLY');
     expect('Encoded route refusal dispatches no HTTP request', requests.length, beforeEncoded);
+    for (const path of ['repos/sample/demo/issues/comments%2F123/reactions', 'repos/sample/demo/issues/comments%5c123/reactions']) {
+      const before = requests.length;
+      expect('Encoded write separator refusal ' + path, (await invoke(['api', 'POST', path, '--raw-field', 'content=+1', '--allow-write', 'issuePostIssueReaction', '--preview'], 1)).error.code, 'READ_ONLY');
+      expect('Encoded write dispatches no HTTP request ' + path, requests.length, before);
+    }
+    await invoke(['api', 'GET', 'repos/sample/demo/issues?q=space%20slash%2Fpercent%25question%3F']);
+    assertions.push('Encoded query text remains readable');
+    const protectedInput = join(scratch, 'mirror.json');
+    await writeFile(protectedInput, JSON.stringify({ remote_address: 'https://example.test/repo', remote_password: 'MIRROR-PASSWORD-CANARY' }), { mode: 0o600 });
+    const beforeMirror = requests.length;
+    const refusedMirror = await invoke(['api', 'POST', 'repos/sample/demo/push_mirrors', '--input', protectedInput, '--allow-write', 'repoAddPushMirror', '--preview'], 1);
+    expect('Credential request schema refuses business preview', refusedMirror.error.code, 'READ_ONLY');
+    assert(!JSON.stringify(refusedMirror).includes('MIRROR-PASSWORD-CANARY'));
+    expect('Credential schema refusal precedes HTTP dispatch', requests.length, beforeMirror);
     for (const [method, path, payload, operation] of [
       ['POST', 'issues', { title: 'Raw created' }, 'issueCreateIssue'],
       ['PATCH', 'issues/1', { title: 'Raw edited' }, 'issueEditIssue'],
@@ -231,6 +247,9 @@ try {
     await invoke([...uncertain, '--confirm', p.confirmation], 1);
     await invoke([...uncertain, '--preview'], 1);
     expect('Raw API cannot bypass a named uncertain effect', (await invoke(['api', 'POST', 'repos/sample/demo/issues', '--raw-field', 'title=Applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    for (const path of ['repos/sample/%64emo/issues', 'repos/sample/demo/issues?state=all', 'repos/sample/%64emo/issues?b=2&a=1']) {
+      expect('Equivalent raw target cannot replay ' + path, (await invoke(['api', 'POST', path, '--raw-field', 'title=Applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    }
     expect('Unknown create is never repeated', issues.length, count);
     disconnect = false;
     const reconciled = await invoke(['write', 'reconcile', p.confirmation]);
@@ -301,6 +320,62 @@ try {
     await execute(['issue', 'delete', String(created.number)], 'issueDelete');
     expect('Delete intended identity only', issues.map(row => row.number), [1, 2]);
     expect('Unrelated issue unchanged', issues[1], control);
+    for (const [field, value] of [
+      ['id', 999], ['number', 999], ['title', 'Unexpected'], ['body', 'Unexpected'], ['state', 'open'],
+      ['labels', []], ['assignees', []], ['milestone', null],
+    ] as const) {
+      const beforeIssue = structuredClone(issues[0]!);
+      const args = ['issue', 'edit', '1', ...selected, '--body', 'Verify preserved ' + field, '--allow-write', 'issueEditIssue'];
+      const preview = await invoke([...args, '--preview']);
+      corruptWrite = () => { issues[0]![field] = value; };
+      expect('Readback rejects unintended issue ' + field, (await invoke([...args, '--confirm', preview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      corruptWrite = undefined;
+      issues[0] = beforeIssue;
+    }
+    for (const [action, flags, grant] of [
+      ['create', ['--title', 'Corrupt create'], 'issueCreateIssue'],
+      ['edit', ['--add-label', 'existing'], 'issueAddLabel'],
+      ['close', [], 'issueEditIssue'], ['reopen', [], 'issueEditIssue'],
+      ['comment', ['--body', 'Corrupt comment'], 'issueCreateComment'],
+      ['pin', [], 'pinIssue'], ['unpin', [], 'unpinIssue'],
+    ] as const) {
+      const beforeIssues = structuredClone(issues);
+      const args = ['issue', action, ...(action === 'create' ? [] : ['2']), ...selected, ...flags, '--allow-write', grant];
+      const preview = await invoke([...args, '--preview']);
+      corruptWrite = () => { (action === 'create' ? issues.at(-1)! : issues[1]!).body = 'Unexpected body'; };
+      expect(action + ' verifies preserved issue fields', (await invoke([...args, '--confirm', preview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      corruptWrite = undefined;
+      issues.splice(0, issues.length, ...beforeIssues);
+    }
+    const beforeLabels = structuredClone(labels);
+    const rename = ['label', 'edit', 'existing', ...selected, '--name', 'Wrong identity', '--allow-write', 'issueEditLabel'];
+    const renamePreview = await invoke([...rename, '--preview']);
+    corruptWrite = () => { labels[0]!.id = 999; };
+    expect('Label rename rejects a replacement identity in response and readback', (await invoke([...rename, '--confirm', renamePreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    corruptWrite = undefined;
+    labels.splice(0, labels.length, ...beforeLabels);
+    for (const [kind, selector, grant, failure] of [
+      ['issue', '1', 'issueDelete', 'missing'], ['label', 'existing', 'issueDeleteLabel', 'missing'],
+      ['issue', '2', 'issueDelete', 'changed'], ['label', 'keep', 'issueDeleteLabel', 'changed'],
+    ] as const) {
+      const records = kind === 'issue' ? issues : labels;
+      const previous = structuredClone(records);
+      const args = [kind, 'delete', selector, ...selected, '--allow-write', grant];
+      const preview = await invoke([...args, '--preview']);
+      corruptWrite = () => { if (failure === 'missing') records.splice(0); else records[0]![kind === 'issue' ? 'title' : 'name'] = 'Changed control'; };
+      expect(kind + ' deletion rejects ' + failure + ' control records', (await invoke([...args, '--confirm', preview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      corruptWrite = undefined;
+      records.splice(0, records.length, ...previous);
+    }
+    for (const [kind, grant] of [['issue', 'issueDelete'], ['label', 'issueDeleteLabel']] as const) {
+      const records = kind === 'issue' ? issues : labels;
+      const previous = structuredClone(records);
+      records.splice(1);
+      const before = applied;
+      expect(kind + ' deletion requires a control before dispatch', (await invoke([kind, 'delete', kind === 'issue' ? '1' : 'existing', ...selected, '--allow-write', grant, '--preview'], 2)).error.code, 'USAGE');
+      expect(kind + ' deletion without control dispatches no effect', applied, before);
+      records.splice(0, records.length, ...previous);
+    }
   }
   if (process.env.GITEA_AXI_ARTIUM_ROOT) {
     assert(process.env.GITEA_AXI_ARTIUM_MANIFEST, 'Frozen hosted proof requires its manifest');

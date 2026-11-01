@@ -3,7 +3,7 @@ import { constants, existsSync } from 'node:fs';
 import { mkdir, open, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
-import { collect, effectFor, object, read, validatePayload } from './api.js';
+import { canonicalPath, collect, effectFor, object, read, validatePayload } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import { readPrivateFile, writePrivateFile } from './private-file.js';
@@ -70,6 +70,48 @@ function verifyNamed(plan: WritePlan, results: unknown[], observations: Observat
     if (!Array.isArray(data)) return mismatch();
     return data.map(object);
   };
+  const before = object(plan.preconditions);
+  const issueFields = (issue: Row) => ({
+    title: issue.title, body: issue.body ?? '', state: issue.state,
+    assignees: ((issue.assignees ?? []) as unknown[]).map(row => object(row).login).sort(),
+    labels: ((issue.labels ?? []) as unknown[]).map(row => object(row).id).sort(),
+    milestone: issue.milestone == null ? null : object(issue.milestone).id,
+  });
+  const expectedIssues = new Map<string, Row>();
+  for (const [path, value] of Object.entries(before)) {
+    if (/\/issues\/\d+$/.test(path) && !plan.steps.some(step => step.path === path && step.method === 'DELETE')) {
+      const issue = object(value);
+      expectedIssues.set(path, { id: issue.id, number: issue.number, ...issueFields(issue) });
+    }
+  }
+  for (const [index, step] of plan.steps.entries()) {
+    if (/\/issues$/.test(step.path) && step.method === 'POST') {
+      const result = object(results[index]);
+      const actual = collection(step.path).find(row => row.id === result.id && row.number === result.number);
+      if (!actual || (before[step.path + '?state=all&type=issues'] as Row[]).some(row => row.id === result.id || row.number === result.number)) mismatch();
+      const expected = { title: '', body: '', state: 'open', assignees: [], labels: [], milestone: null, ...object(step.payload) };
+      expected.assignees = [...expected.assignees].sort();
+      expected.labels = [...expected.labels].sort();
+      if (canonical(issueFields(actual!)) !== canonical(expected)) mismatch();
+    }
+    const expected = expectedIssues.get(step.path);
+    if (expected && step.method === 'PATCH') Object.assign(expected, object(step.payload));
+    const membership = /^(.*\/issues\/\d+)\/labels(?:\/(\d+))?$/.exec(step.path);
+    if (membership) {
+      const issue = expectedIssues.get(membership[1]!)!;
+      const ids = new Set(issue.labels as unknown[]);
+      if (step.method === 'POST') for (const id of object(step.payload).labels as unknown[]) ids.add(id);
+      else for (const id of ids) if (String(id) === membership[2]) ids.delete(id);
+      issue.labels = [...ids];
+    }
+  }
+  for (const [path, expected] of expectedIssues) {
+    const actual = object(observations.find(row => row.path === path)?.data);
+    const { id, number, ...fields } = expected;
+    fields.assignees = [...fields.assignees as unknown[]].sort();
+    fields.labels = [...fields.labels as unknown[]].sort();
+    if (actual.id !== id || actual.number !== number || canonical(issueFields(actual)) !== canonical(fields)) mismatch();
+  }
   for (const [index, step] of plan.steps.entries()) {
     const pin = /^(.*\/issues)\/(\d+)\/pin$/.exec(step.path);
     if (pin) {
@@ -80,35 +122,25 @@ function verifyNamed(plan: WritePlan, results: unknown[], observations: Observat
       continue;
     }
     const membership = /^(.*\/issues\/\d+)\/labels(?:\/(\d+))?$/.exec(step.path);
-    if (membership) {
-      const issue = object(observations.find(row => row.path === membership[1])?.data);
-      const ids = ((issue.labels ?? []) as unknown[]).map(value => String(object(value).id));
-      const before = object(object(plan.preconditions)[membership[1]!]);
-      const expected = new Set(((before.labels ?? []) as unknown[]).map(value => String(object(value).id)));
-      for (const change of plan.steps.filter(candidate => candidate.path.startsWith(membership[1] + '/labels'))) {
-        if (change.method === 'POST') for (const id of object(change.payload).labels as unknown[]) expected.add(String(id));
-        else expected.delete(change.path.split('/').at(-1)!);
-      }
-      if (canonical(ids.sort()) !== canonical([...expected].sort())) mismatch();
-      continue;
-    }
+    if (membership) continue;
     const deletion = /^(.*\/(?:issues|labels))\/(\d+)$/.exec(step.path);
     if (step.method === 'DELETE' && deletion) {
       const field = deletion[1]!.endsWith('/issues') ? 'number' : 'id';
-      if (collection(deletion[1]!).some(row => String(row[field]) === deletion[2])) mismatch();
+      const actual = collection(deletion[1]!);
+      const previous = Object.entries(before).find(([path]) => path.split('?')[0] === deletion[1])?.[1] as Row[];
+      const remaining = previous.filter(row => String(row[field]) !== deletion[2]);
+      if (actual.some(row => String(row[field]) === deletion[2]) || actual.length !== remaining.length ||
+          remaining.some(row => canonical(actual.find(item => item.id === row.id)) !== canonical(row))) mismatch();
       continue;
     }
+    if (/\/issues(?:\/\d+)?$/.test(step.path)) continue;
     const result = object(results[index]);
     const listPath = step.method === 'POST' ? step.path : step.path.replace(/\/\d+$/, '');
-    const direct = observations.find(row => row.path === step.path && !Array.isArray(row.data));
-    const actual = direct ? object(direct.data) : collection(listPath).find(row => row.id === result.id);
-    if (!actual || actual.id !== result.id) { mismatch(); continue; }
+    const id = step.method === 'PATCH' ? (before[listPath] as Row[]).find(row => String(row.id) === step.path.split('/').at(-1))!.id : result.id;
+    const actual = collection(listPath).find(row => row.id === id);
+    if (!actual || actual.id !== id) { mismatch(); continue; }
     for (const [field, value] of Object.entries(object(step.payload))) {
-      const observed = field === 'milestone' ? object(actual.milestone).id : field === 'assignees' ?
-        ((actual.assignees ?? []) as unknown[]).map(row => object(row).login).sort() : field === 'labels' ?
-          ((actual.labels ?? []) as unknown[]).map(row => object(row).id).sort() : actual[field];
-      const expected = Array.isArray(value) ? [...value].sort() : value;
-      if (canonical(observed) !== canonical(expected)) mismatch();
+      if (canonical(actual[field]) !== canonical(value)) mismatch();
     }
   }
 }
@@ -131,8 +163,9 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   const binding = createHmac('sha256', secret).update(canonical({ identity, revision: process.env.GITEA_AXI_CREDENTIAL_REVISION, origin: client.origin, plan })).digest('hex');
   // Exclude credential revision and preconditions from the attempt key so rotating a credential
   // or changing the remote record cannot bypass an unresolved dispatched effect.
-  const attempt = digest({ origin: client.origin, steps: plan.steps });
-  const guards = [...new Set(plan.steps.map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
+  const effectSteps = plan.steps.map(step => ({ ...step, path: canonicalPath(step.path) }));
+  const attempt = digest({ origin: client.origin, steps: effectSteps });
+  const guards = [...new Set(effectSteps.map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);
@@ -228,6 +261,7 @@ export async function issueLabelPlan(client: Client, operation: string, base: st
     const labels = await fullList(base + '/labels');
     const selected = action === 'create' ? undefined : labels.find(label => label.name === number || String(label.id) === number);
     if (action !== 'create' && !selected) usage('Select an existing exact label name or ID');
+    if (action === 'delete' && labels.length < 2) usage('Deletion requires a remaining control label');
     const path = base + '/labels' + (selected ? '/' + selected.id : '');
     const payload: Row = {};
     if (options.name !== undefined) payload.name = options.name;
@@ -288,7 +322,9 @@ export async function issueLabelPlan(client: Client, operation: string, base: st
       if (!options.body) usage('--body is required');
       await snapshot(path + '/comments'); add('POST', path + '/comments', { body: options.body });
     } else if (action === 'delete') {
-      await fullList(base + '/issues?state=all&type=issues'); add('DELETE', path);
+      const issues = await fullList(base + '/issues?state=all&type=issues');
+      if (!issues.some(issue => String(issue.number) !== number)) usage('Deletion requires a remaining control issue');
+      add('DELETE', path);
       reads.delete(path);
     } else {
       await fullList(base + '/issues/pinned');

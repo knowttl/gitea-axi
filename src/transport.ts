@@ -1,5 +1,6 @@
 import { limits } from './registry.js';
 import { CliError } from './error.js';
+import { canonicalPath } from './api.js';
 
 export class Client {
   readonly deadline: number;
@@ -7,6 +8,7 @@ export class Client {
     this.deadline = Date.now() + timeoutMs;
   }
   async request(path: string, text = false, mutation?: { method: string; payload?: unknown }) {
+    canonicalPath(path);
     const url = new URL(path, this.origin);
     if (url.origin !== this.origin || !path.startsWith('/') || path.startsWith('//')) throw new CliError('UNSAFE_PATH', 'Request must stay within the selected origin');
   try {

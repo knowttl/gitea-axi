@@ -35,7 +35,16 @@ export function object(value: unknown): Row {
 }
 
 export function effectFor(method: string, path: string) {
+  path = canonicalPath(path);
   return routes.find(route => route.method === method && new RegExp('^' + route.path.split(/(\{[^}]+\})/).map(part => /^\{[^}]+\}$/.test(part) ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('') + '$').test(path.split('?')[0]!));
+}
+
+export function canonicalPath(path: string): string {
+  const pathname = path.split('?')[0]!;
+  if (/%(?:2f|5c)/i.test(pathname)) throw new CliError('READ_ONLY', 'Encoded route separators are refused');
+  let decoded: string;
+  try { decoded = decodeURIComponent(pathname); } catch { throw new CliError('USAGE', 'Malformed API path', 2); }
+  return decoded.split('/').map(encodeURIComponent).join('/');
 }
 
 export function validatePayload(method: string, path: string, payload: unknown) {
@@ -70,11 +79,12 @@ export function validate(path: string, value: unknown): unknown {
 }
 
 export function rawPath(input: string, method = 'GET'): string {
-  let decoded: string;
-  try { decoded = decodeURIComponent(input); } catch { throw new CliError('USAGE', 'Malformed API path', 2); }
-  if (/^[a-z]+:/i.test(input) || input.startsWith('//') || /[\\#\s]/.test(decoded) || decoded.includes('%') ||
-      decoded.split(/[/?]/).some(part => part === '.' || part === '..')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
-  const [pathname, query = ''] = input.split('?');
+  if (/^[a-z]+:/i.test(input) || input.startsWith('//') || input.includes('#')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
+  const separator = input.indexOf('?');
+  const pathname = canonicalPath(separator < 0 ? input : input.slice(0, separator));
+  const query = separator < 0 ? '' : input.slice(separator + 1);
+  const decoded = decodeURIComponent(pathname);
+  if (/[\\#\s%]/.test(decoded) || decoded.split('/').some(part => part === '.' || part === '..')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
   for (const key of new URLSearchParams(query).keys()) {
     if (/token|secret|password|authorization|api.?key/i.test(key)) throw new CliError('CONFIG_INVALID', 'Secret query fields are refused');
   }
