@@ -18,7 +18,7 @@
     "labels": [{ "id": 2, "name": "bug", "color": "ff0000", "description": "Defect" }],
     "milestone": { "id": 9, "title": "123" }, "created_at": "2026-02-01T00:00:00Z", "updated_at": "2026-02-02T00:00:00Z",
     "closed_at": null, "merged_at": null, "merged_by": null, "merged": false,
-    "merge_commit_sha": "", "mergeable": true, "allow_maintainer_edit": true, "additions": 4, "deletions": 2, "changed_files": 1,
+    "merge_commit_sha": null, "mergeable": true, "allow_maintainer_edit": true, "additions": 4, "deletions": 2, "changed_files": 1,
     "html_url": "https://example.test/sample/demo/pulls/7", "requested_reviewers": [{ "id": 1, "login": "alice", "full_name": "Alice" }]
   },
   "comments": [{ "id": 11, "body": "Please verify", "user": { "id": 1, "login": "alice", "full_name": "Alice" }, "created_at": "2026-02-03T00:00:00Z" }],

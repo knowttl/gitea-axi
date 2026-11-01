@@ -7,6 +7,7 @@ import type { Client } from './transport.js';
 import type { WritePlan } from './writes.js';
 
 const usage = (message: string): never => { throw new CliError('USAGE', message, 2); };
+export const releaseListFields = ['id', 'tag_name', 'name', 'draft', 'prerelease', 'published_at'];
 async function completeCollection(client: Client, path: string) {
   const page = await collect(client, path);
   if (page.truncated) throw new CliError('INCOMPLETE_READ', 'Exact identity lookup requires a complete collection');
@@ -26,7 +27,7 @@ export async function releaseRead(client: Client, operation: string, base: strin
   if (operation === 'release list') {
     const page = await collect(client, base + '/releases');
     const items = page.items.filter(row => !(options['exclude-drafts'] && row.draft) && !(options['exclude-pre-releases'] && row.prerelease));
-    return boundedList({ ...page, items, total: options['exclude-drafts'] || options['exclude-pre-releases'] ? page.truncated ? null : items.length : page.total }, positive(options.limit, 10, 1000), ['id', 'tag_name', 'name', 'draft', 'prerelease']);
+    return boundedList({ ...page, items, total: options['exclude-drafts'] || options['exclude-pre-releases'] ? page.truncated ? null : items.length : page.total }, positive(options.limit, 10, 1000), releaseListFields);
   }
   const selected = (await completeCollection(client, base + '/releases')).find(row => row.tag_name === tag);
   if (!selected) throw new CliError('NOT_FOUND_OR_HIDDEN', 'The selected release is missing or hidden');

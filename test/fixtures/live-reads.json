@@ -1,0 +1,10 @@
+{
+  "provenance": "Minimal response shapes recorded from Gitea 1.23.4 live testing, with synthetic identities and content.",
+  "pull": { "id": 1, "number": 1, "title": "Open change", "state": "open", "merge_commit_sha": null, "head": { "sha": "abc123", "ref": "topic" }, "base": { "sha": "def456", "ref": "main" } },
+  "contents": { "name": "README.md", "path": "README.md", "type": "file", "submodule_git_url": null, "target": null },
+  "combined": { "state": "", "sha": "", "total_count": 0, "statuses": null, "repository": null, "commit_url": "", "url": "" },
+  "release": { "id": 2, "tag_name": "v1.0.0-rc1", "target_commitish": "main", "name": "Preview", "body": "", "draft": false, "prerelease": true, "published_at": null },
+  "repository": { "id": 3, "full_name": "sample/demo", "default_branch": "main", "private": false, "open_issues_count": 2, "open_pr_counter": 1, "updated_at": "2026-01-01T00:00:00Z", "owner": { "id": 4, "login": "sample", "email": "sample@example.test" } },
+  "account": { "id": 4, "login": "sample", "email": "sample@example.test", "is_admin": true, "last_login": "2026-01-01T00:00:00Z" },
+  "tasks": { "workflow_runs": [], "total_count": 0 }
+}

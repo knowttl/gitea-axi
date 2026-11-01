@@ -209,7 +209,7 @@ try {
     // Unsafe and unclassified paths are refused by hosted admission before CLI execution.
     for (const [path, exitCode, errorCode, admissionCode] of [
       ['https://foreign.test/api/v1/user', 2, 'USAGE', 'INVALID_INPUT'], ['../user', 2, 'USAGE', 'INVALID_INPUT'],
-      ['%2e%2e/user', 2, 'USAGE', 'INVALID_INPUT'], ['user?token=canary', 1, 'CONFIG_INVALID', 'FLAG_BLOCKED'],
+      ['%2e%2e/user', 2, 'USAGE', 'INVALID_INPUT'], ['user?token=canary', 2, 'USAGE', 'FLAG_BLOCKED'],
       ['repos/sample/demo/actions/runners/registration-token', 1, 'READ_ONLY', 'INVALID_INPUT'],
       ['unknown', 1, 'READ_ONLY', 'INVALID_INPUT'],
     ]) {

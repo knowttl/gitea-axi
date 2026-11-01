@@ -3,6 +3,19 @@ import { CliError } from './error.js';
 import { canonicalPath } from './api.js';
 import { transferBytes } from './attachments.js';
 
+function transportCause(error: unknown): string {
+  if (!(error instanceof Error)) return 'connection error';
+  if (error.name === 'TimeoutError' || error.name === 'AbortError') return 'ETIMEDOUT';
+  const cause = error.cause ?? error;
+  const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : undefined;
+  if (typeof code === 'string') {
+    if (['ECONNREFUSED', 'ECONNRESET', 'ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT', 'ENETUNREACH', 'EHOSTUNREACH'].includes(code)) return code;
+    if (code === 'UND_ERR_CONNECT_TIMEOUT') return 'ETIMEDOUT';
+    if (/^(?:ERR_TLS_|ERR_SSL_|CERT_|DEPTH_ZERO_|SELF_SIGNED_|UNABLE_TO_)/.test(code)) return 'TLS error';
+  }
+  return 'connection error';
+}
+
 export class Client {
   readonly deadline: number;
   constructor(readonly origin: string, readonly token?: string, timeoutMs: number = limits.timeoutMs) {
@@ -55,7 +68,7 @@ export class Client {
   } catch (error) {
     if (error instanceof CliError) throw error;
     if (error instanceof SyntaxError) throw new CliError('INVALID_RESPONSE', 'Gitea returned malformed JSON');
-    throw new CliError('TRANSPORT_ERROR', 'Gitea request failed; check the selected origin and connection');
+    throw new CliError('TRANSPORT_ERROR', 'Gitea request failed (' + transportCause(error) + '); check the selected origin and connection');
   }
   }
   async get(path: string): Promise<unknown> { return (await this.request(path)).data; }
@@ -78,7 +91,7 @@ export class Client {
       return { bytes: Buffer.concat(chunks), type };
     } catch (error) {
       if (error instanceof CliError) throw error;
-      throw new CliError('TRANSPORT_ERROR', 'Binary attachment transfer failed; redirects are refused');
+      throw new CliError('TRANSPORT_ERROR', 'Binary attachment transfer failed (' + transportCause(error) + '); redirects are refused');
     }
   }
 }

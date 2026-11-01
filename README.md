@@ -10,7 +10,7 @@ Agents need bounded, predictable output and explicit write controls instead of g
 gitea-axi offers a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, repository, release, issue, label and pull request mutations, and classified raw API requests.
 Output is compact TOON with structured errors.
 Reads are bounded, and writes require an exact operation grant, a preview and a matching confirmation.
-Verification uses offline fakes only; live Gitea access remains unverified.
+See [Limitations](#limitations) for verification scope.
 
 ## Quickstart
 
@@ -53,17 +53,20 @@ Use `gitea-axi capabilities C038` to inspect a command's baseline outcome and ca
 Discussions, gists, projects, issue lock/transfer/subissue workflows, draft transitions, HEAD and jq/template compatibility remain unavailable.
 `setup hooks`, `update` and `update --check` refuse before effects until their installation and distribution contracts are evidenced.
 The generated [skill](generated/SKILL.md), help and host inventory share the executable registry.
+Command groups support `--help` to list their subcommands; unknown-command errors identify the requested command.
 See the [catalogue contract](docs/catalogue-contract.md) for investigated versions and pending checks.
 
 ### Actions runs
 
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
+Versions older than 1.24 may return an empty task list even when workflow runs exist; empty output discloses this limitation.
+An unavailable or hidden task route reports `CAPABILITY_GAP`.
 `--user` and unmapped fields fail explicitly.
 Task IDs and status strings do not establish run identity, job conclusions or terminal run results.
 All seven run commands and five workflow commands remain discoverable with `--help`.
 Run detail, watch, logs, downloads and workflow controls report explicit capability gaps.
 Mutating run and workflow controls remain unsupported pending contract commissioning.
-The retained 1.24.0 workflow, artifact and job-log routes are investigation candidates, not supported target operations.
+Full workflow run APIs require Gitea 1.24 or later; the retained workflow, artifact and job-log routes remain pending commissioning here.
 
 ### Search
 
@@ -108,15 +111,21 @@ Lists default to 30 returned records, except `run list` and `release list` defau
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
 Milestone selectors use exact names, including numeric-looking names.
 List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
-Dashboard sections report permission failures as partial results.
+Issue, PR and run lists expose `unfiltered_total` as the server count before client-side filtering; `total` is the filtered count when the bounded read is complete, otherwise null.
+Truncated output includes guidance to raise `--limit` (maximum 1000), or use raw API pagination when the bounded read is incomplete.
+The dashboard shows a compact repository projection (ID, full name, visibility, default branch, open issue and PR counts, and update time), plus up to five issues, PRs, labels, releases and task summaries per section.
+Dashboard sections report permission failures as partial results and point truncated sections to the corresponding standalone list command with `--repo` and `--limit`.
 Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
+Commits without statuses return an empty check result; watches continue waiting for checks to register until the deadline or cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
 PR statusCheckRollup explicitly identifies partial commit statuses, and `fullDatabaseId` is a numeric vendor ID rather than a GraphQL node ID.
 Raw reads accept `api [GET] <relative-path>` for JSON metadata and refuse absolute URLs, traversal, secret query fields, credential-bearing routes, administrative routes, text or binary downloads and unclassified routes.
+Secret query fields are usage errors with exit code 2.
 Encoded slash and backslash separators are refused in API paths; encoded query text remains supported.
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
+Transport failures include a short safe cause, such as `ECONNRESET` or `TLS error`, for API requests and attachment downloads.
 
 ### Issues and labels
 
@@ -178,7 +187,7 @@ Repository creation `--push` and `--remote` require `--source`.
 Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
 Exact release and tag lookups require complete collections within the collection scan bounds above; incomplete lookups refuse.
 Slash-containing release tags and branch refs are supported without weakening API path separator protections.
-List supports `--exclude-drafts` and `--exclude-pre-releases` and returns compact tag, title and publication flags.
+List supports `--exclude-drafts` and `--exclude-pre-releases`; list and dashboard release rows contain `id`, `tag_name`, `name`, `draft`, `prerelease` and `published_at`.
 View shows up to 1500 note characters; `--full` expands this to 80000 within the output ceiling.
 Create and edit accept `--title`, `--notes` (or `--body`), `--notes-file` (or `--body-file`), `--draft` and `--prerelease`, preserving explicit false values.
 File inputs share the protected body-file contract; stdin uses `-`.
@@ -278,6 +287,7 @@ The config file is `$XDG_CONFIG_HOME/gitea-axi/config.json`, otherwise `~/.confi
 `--config` requires an absolute path.
 The config object contains `version: 1`, a `profiles` object keyed by profile name, and an optional `defaultProfile` name.
 Without `--profile` or `GITEA_AXI_PROFILE`, setting any environment-profile field selects the environment profile instead of the config file; incomplete profiles are refused.
+Incomplete environment profiles report missing variables; profile schema errors identify the invalid or missing field and its correction, including during hostname selection.
 `--hostname` takes precedence over `GH_HOST` and requires the selected profile's origin to match its host and port before secret resolution.
 For file profiles, an explicit profile must match; otherwise exactly one matching profile is required, ignoring `defaultProfile`.
 Without a host selector, file selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile; multiple profiles without a selection or default are refused.
@@ -298,7 +308,7 @@ Keep file references owned by the invoking account with mode 0600 on Linux.
 Windows file protection is PENDING; file SecretRefs are refused until native ACL verification is available.
 Use env SecretRefs on Windows.
 `auth status` resolves the selected credentials locally; its `authenticated` field reports token availability without checking the server.
-`doctor` checks the current identity through Gitea's `/api/v1/user` endpoint.
+`doctor` checks the current identity through Gitea's `/api/v1/user` endpoint and displays only the selected origin, account ID and login.
 
 
 ## Local Git workflows and owned stacks
@@ -348,7 +358,8 @@ Artium checks remain opt-in through the frozen fixture selectors in [Development
 
 ## Limitations
 
-Live Gitea access is unverified; all verification uses local fakes.
+Linux live testing against Gitea 1.23.4 motivated the read fixes covered by `test/fixtures/live-reads.json`.
+Those fixtures retain minimal recorded response shapes with synthetic identities and content; automated verification replays them offline and does not establish broader live commissioning.
 Route classification covers all captured methods; this does not claim completion of every business workflow.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
@@ -378,7 +389,7 @@ Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
-`npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
+`npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the offline live-read regressions in `scripts/verify-live-reads.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
 The package-contract check builds, packs and installs offline, validates the tarball file list and bin entry, smoke-tests the installed `--help` and `--version`, parses the consumed JSON artifacts and imports the modules Artium consumes from the installed package.
 Run it independently with `node --import ./scripts/deny-network.ts scripts/verify-package.ts`.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
