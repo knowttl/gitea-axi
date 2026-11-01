@@ -45,8 +45,8 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1, S2 and S3 drivers print their report paths.
-Set `GITEA_AXI_REPORT` to retain an S1, S2 or S3 report at a chosen path.
+The S1, S2, S3 and S4.1 drivers print their report paths.
+Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
@@ -79,7 +79,7 @@ Issue and PR lists filter before globally sorting the collected records and appl
 Milestone selectors use exact names, including numeric-looking names.
 List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
 Dashboard sections report permission failures as partial results.
-Bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
+Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
@@ -135,6 +135,8 @@ Internal visibility and workspace flags (`--source`, `--push`, `--remote`, `--cl
 `--push` and `--remote` require `--source`; local workspace publishing remains deferred.
 
 Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
+Exact release and tag lookups require complete collections within the collection scan bounds above; incomplete lookups refuse.
+Slash-containing release tags and branch refs are supported without weakening API path separator protections.
 List supports `--exclude-drafts` and `--exclude-pre-releases` and returns compact tag, title and publication flags.
 View shows up to 1500 note characters; `--full` expands this to 80000 within the output ceiling.
 Create and edit accept `--title`, `--notes` (or `--body`), `--notes-file` (or `--body-file`), `--draft` and `--prerelease`, preserving explicit false values.
@@ -234,6 +236,6 @@ Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof 
 The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
 Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
 The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
-The S3 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
+The S3 and S4.1 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
 They report an explicit skip reason when the fixture is absent.
 Route classification covers all captured methods; this does not claim completion of every business workflow.
