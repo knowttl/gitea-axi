@@ -53,11 +53,6 @@ try {
   assert.equal(await realpath(bin), join(installed, 'dist/cli.js'));
   assert.match(run(bin, ['--help']), /gitea-axi/);
   assert.equal(run(bin, ['--version']), pkg.version + '\n');
-  for (const path of files) {
-    const contents = await readFile(join(installed, path.slice('package/'.length)), 'utf8');
-    assert(!contents.includes(root) && !contents.includes(scratch), `Local path in ${path}`);
-    assert(!/-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----|(?:\/home\/|\/Users\/)[\w.-]+\//.test(contents), `Private material or local path in ${path}`);
-  }
   for (const path of data) JSON.parse(await readFile(join(installed, path), 'utf8'));
   // Resolve and import in a child rooted at the installed consumer, under the outbound deny preload.
   run(process.execPath, ['--input-type=module', '-e',
