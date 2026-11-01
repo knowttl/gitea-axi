@@ -148,7 +148,8 @@ function verifyNamed(plan: WritePlan, results: unknown[], observations: Observat
 export async function write(client: Client, identity: { writes?: { allowWrites: boolean; operations: string[] } | undefined }, plan: WritePlan, options: Options) {
   if (process.env.GITEA_AXI_READ_ONLY !== undefined && process.env.GITEA_AXI_READ_ONLY !== 'false') throw new CliError('READ_ONLY', 'Host or native read-only policy refuses writes');
   if (Boolean(options.preview) === Boolean(options.confirm)) usage('Choose exactly --preview or --confirm <confirmation>');
-  const operations = plan.steps.map(step => validatePayload(step.method, step.path, step.payload).operation);
+  const routes = plan.steps.map(step => validatePayload(step.method, step.path, step.payload));
+  const operations = routes.map(route => route.operation);
   const allowed = String(options['allow-write'] ?? '').split(',');
   const hosted = process.env.GITEA_AXI_HOST_WRITE_OPERATIONS;
   for (const operation of operations) {
@@ -163,7 +164,18 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   const binding = createHmac('sha256', secret).update(canonical({ identity, revision: process.env.GITEA_AXI_CREDENTIAL_REVISION, origin: client.origin, plan })).digest('hex');
   // Exclude credential revision and preconditions from the attempt key so rotating a credential
   // or changing the remote record cannot bypass an unresolved dispatched effect.
-  const effectSteps = plan.steps.map(step => ({ ...step, path: canonicalPath(step.path) }));
+  const effectSteps = plan.steps.map((step, index) => {
+    const route = routes[index]!;
+    const segments = canonicalPath(step.path).split('/');
+    if (/\{(?:template_)?repo\}/.test(route.path)) {
+      for (const [index, segment] of route.path.split('/').entries()) {
+        if (/^\{(?:owner|repo|org|template_owner|template_repo)\}$/.test(segment)) {
+          segments[index] = encodeURIComponent(decodeURIComponent(segments[index]!).toLowerCase());
+        }
+      }
+    }
+    return { ...step, path: segments.join('/') };
+  });
   const attempt = digest({ origin: client.origin, steps: effectSteps });
   const guards = [...new Set(effectSteps.map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
   for (const guard of guards) {

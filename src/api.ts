@@ -5,7 +5,7 @@ import type { Client } from './transport.js';
 
 export type Row = Record<string, unknown>;
 const vendor = JSON.parse(readFileSync(new URL('../schemas/vendor.json', import.meta.url), 'utf8'));
-const routes: { path: string; method: string; operation: string; effect: string; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
+const routes: { path: string; method: string; operation: string; effect: string; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
 routes.sort((a, b) => b.path.replace(/\{[^}]+\}/g, '').length - a.path.replace(/\{[^}]+\}/g, '').length);
 const required: Record<string, string[]> = {
   Issue: ['id', 'number', 'title', 'state'], PullRequest: ['id', 'number', 'title', 'state', 'head', 'base'],
@@ -50,6 +50,12 @@ export function canonicalPath(path: string): string {
 export function validatePayload(method: string, path: string, payload: unknown) {
   const route = effectFor(method, path);
   if (!route || route.effect !== 'write') throw new CliError('READ_ONLY', 'Only classified business writes may be enabled');
+  const segments = canonicalPath(path).split('/');
+  for (const [index, segment] of route.path.split('/').entries()) {
+    if (route.integerParameters.some(name => segment === '{' + name + '}') && !/^(?:0|-?[1-9]\d*)$/.test(segments[index]!)) {
+      throw new CliError('USAGE', 'Integer route parameters require canonical decimal spelling', 2);
+    }
+  }
   if (route.requestSchema && !ajv.compile({ ...route.requestSchema, definitions: vendor.definitions })(payload)) {
     throw new CliError('USAGE', 'Invalid request fields for ' + route.operation, 2);
   }

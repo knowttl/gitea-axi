@@ -29,6 +29,7 @@ const issues: Row[] = [{ ...fixture.issues[0], number: 1, id: 101, title: 'Selec
 const control = structuredClone(issues[1]);
 const labels: Row[] = [{ ...fixture.label, id: 10, name: 'existing', color: 'aabbcc' }, { ...fixture.label, id: 11, name: 'keep', color: '112233' }];
 const comments: Row[] = [];
+const wiki = new Map(['Guide', 'guide', '01'].map(title => [title, { title, content_base64: '' }]));
 const pinned = new Set([2]);
 let applied = 0;
 let disconnect = false;
@@ -47,7 +48,9 @@ const requests: { method: string; path: string }[] = [];
 const assertions: string[] = [];
 const invocations: { executable: string; argv: string[]; code: number | null }[] = [];
 const server = createServer(async (request, response) => {
-  const path = decodeURIComponent(new URL(request.url!, origin).pathname).replace('/repos/sample/other', '/repos/sample/demo');
+  const path = decodeURIComponent(new URL(request.url!, origin).pathname)
+    .replace(/\/repos\/sample\/(?:demo|other)(?=\/|$)/i, '/repos/sample/demo')
+    .replace(/\/issues\/0*(\d+)(?=\/|$)/, '/issues/$1');
   const method = request.method!;
   requests.push({ method, path });
   assert(['token ' + token, 'token ROTATED-CANARY'].includes(String(request.headers.authorization)));
@@ -64,6 +67,7 @@ const server = createServer(async (request, response) => {
     else if (path === base) data = { id: 10, full_name: 'sample/demo', default_branch: 'main' };
     else if (path === base + '/labels') data = labels;
     else if (path === base + '/milestones') data = [fixture.milestone];
+    else if (parts[0] === 'wiki' && parts[1] === 'page') data = wiki.get(parts[2]!);
     else if (path === base + '/issues/pinned') data = issues.filter(row => pinned.has(Number(row.number)));
     else if (parts[0] === 'issues' && parts[2] === 'comments') data = comments.filter(row => row.issue === Number(parts[1]));
     else if (parts[0] === 'issues' && parts[2] === 'labels') data = issue?.labels;
@@ -77,6 +81,9 @@ const server = createServer(async (request, response) => {
         labels: labels.filter(row => (payload.labels as number[] ?? []).includes(Number(row.id))),
         assignees: (payload.assignees as string[] ?? []).map(login => ({ id: 50, login })), milestone: payload.milestone ? fixture.milestone : null };
       issues.push(data as Row);
+    } else if (parts[0] === 'wiki' && parts[1] === 'page') {
+      data = { title: parts[2], content_base64: String(payload.content_base64) };
+      wiki.set(parts[2]!, data as { title: string; content_base64: string });
     } else if (parts[0] === 'issues' && issue) {
       if (parts[2] === 'comments') {
         data = { id: 500 + applied, body: payload.body, user: { id: 1, login: 'synthetic' }, issue: issue.number };
@@ -247,10 +254,18 @@ try {
     await invoke([...uncertain, '--confirm', p.confirmation], 1);
     await invoke([...uncertain, '--preview'], 1);
     expect('Raw API cannot bypass a named uncertain effect', (await invoke(['api', 'POST', 'repos/sample/demo/issues', '--raw-field', 'title=Applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
-    for (const path of ['repos/sample/%64emo/issues', 'repos/sample/demo/issues?state=all', 'repos/sample/%64emo/issues?b=2&a=1']) {
+    for (const path of ['repos/sample/%64emo/issues', 'repos/sample/demo/issues?state=all', 'repos/sample/%64emo/issues?b=2&a=1', 'repos/SAMPLE/DEMO/issues', 'repos/Sample/demo/issues', 'repos/sample/DEMO/issues']) {
       expect('Equivalent raw target cannot replay ' + path, (await invoke(['api', 'POST', path, '--raw-field', 'title=Applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
     }
+    expect('Named repository case cannot replay an uncertain create', (await invoke(['issue', 'create', '--repo', 'SAMPLE/DEMO', '--title', 'Applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
     expect('Unknown create is never repeated', issues.length, count);
+    const upperCreate = ['api', 'POST', 'repos/SAMPLE/DEMO/issues', '--raw-field', 'title=Uppercase applied once', '--allow-write', 'issueCreateIssue'];
+    const upperPreview = await invoke([...upperCreate, '--preview']);
+    expect('Uppercase raw create applies before disconnect', (await invoke([...upperCreate, '--confirm', upperPreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    const upperCount = issues.length;
+    expect('Lowercase raw create cannot replay uppercase attempt', (await invoke(upperCreate.map(value => value === 'repos/SAMPLE/DEMO/issues' ? 'repos/sample/demo/issues' : value).concat('--preview'), 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    expect('Lowercase named create cannot replay uppercase attempt', (await invoke(['issue', 'create', ...selected, '--title', 'Uppercase applied once', '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    expect('Uppercase attempt remains exactly once', issues.length, upperCount);
     disconnect = false;
     const reconciled = await invoke(['write', 'reconcile', p.confirmation]);
     expect('Exact reconcile command reads applied issue', (reconciled.observations[0]!.data as Row[]).filter(row => row.title === 'Applied once').length, 1);
@@ -267,6 +282,39 @@ try {
     await run(process.execPath, [bin, ...interrupted, '--confirm', interruptPreview.confirmation], env, null, scratch, true);
     expect('Interruption after application leaves exactly one comment', comments.filter(row => row.body === 'Interrupted comment').length, 1);
     expect('Interrupted comment refuses replay', (await invoke([...interrupted, '--confirm', interruptPreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    const disconnectedComment = ['issue', 'comment', '1', ...selected, '--body', 'Disconnected comment', '--allow-write', 'issueCreateComment'];
+    const disconnectedPreview = await invoke([...disconnectedComment, '--preview']);
+    disconnect = true;
+    expect('Comment applies before disconnect', (await invoke([...disconnectedComment, '--confirm', disconnectedPreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    disconnect = false;
+    const beforeAliases = applied;
+    for (const number of ['01', '001', '+1', '%2B1']) {
+      expect('Noncanonical issue index cannot replay ' + number, (await invoke(['api', 'POST', 'repos/SAMPLE/DEMO/issues/' + number + '/comments', '--raw-field', 'body=Disconnected comment', '--allow-write', 'issueCreateComment', '--preview'], 2)).error.code, 'USAGE');
+    }
+    expect('Canonical case alias cannot replay a comment', (await invoke(['api', 'POST', 'repos/SAMPLE/DEMO/issues/1/comments', '--raw-field', 'body=Disconnected comment', '--allow-write', 'issueCreateComment', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    expect('Comment aliases dispatch no duplicate effect', applied, beforeAliases);
+    expect('Disconnected comment remains exactly once', comments.filter(row => row.body === 'Disconnected comment').length, 1);
+    for (const [method, path, grant] of [
+      ['PATCH', 'issues/01', 'issueEditIssue'], ['POST', 'issues/01/labels', 'issueAddLabel'],
+      ['DELETE', 'issues/1/labels/010', 'issueRemoveLabel'], ['POST', 'issues/01/pin', 'pinIssue'],
+      ['PATCH', 'labels/010', 'issueEditLabel'], ['DELETE', 'issues/01', 'issueDelete'],
+      ['POST', 'pulls/01/merge', 'repoMergePullRequest'],
+    ] as const) {
+      const before = requests.length;
+      expect('Noncanonical integer refusal ' + path, (await invoke(['api', method, 'repos/sample/demo/' + path, '--allow-write', grant, '--preview'], 2)).error.code, 'USAGE');
+      expect('Integer refusal precedes HTTP dispatch ' + path, requests.length, before);
+    }
+    const wikiArgs = ['api', 'PATCH', 'repos/SAMPLE/DEMO/wiki/page/Guide', '--raw-field', 'content_base64=Ym9keQ==', '--allow-write', 'repoEditWikiPage'];
+    const wikiPreview = await invoke([...wikiArgs, '--preview']);
+    disconnect = true;
+    expect('Case-sensitive page write applies before disconnect', (await invoke([...wikiArgs, '--confirm', wikiPreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    disconnect = false;
+    for (const page of ['guide', '01']) {
+      const args = wikiArgs.map(value => value === 'repos/SAMPLE/DEMO/wiki/page/Guide' ? 'repos/sample/demo/wiki/page/' + page : value);
+      const preview = await invoke([...args, '--preview']);
+      await invoke([...args, '--confirm', preview.confirmation]);
+      expect('String path identity remains distinct ' + page, wiki.get(page)!.content_base64, 'Ym9keQ==');
+    }
   } else {
     const bodyFile = join(scratch, 'issue-body.txt');
     await writeFile(bodyFile, 'Exact body', { mode: 0o600 });

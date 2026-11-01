@@ -30,6 +30,24 @@
       "Issue and label deletions reject missing or changed control records and refuse without a remaining control"
     ]
   },
+  "reviewReplayIdentityFix": {
+    "finding": "R10",
+    "sourceHeadBeforeReviewFixCommit": "06a7ed2270bb1130837528881228138c10a03247",
+    "testedWorkingTreeDirty": true,
+    "testedPackageSha256": "76afdc397ab4273a2381d89984b2b1cb5e482924387fe000e10210e973105ae9",
+    "checks": [
+      { "command": "node --import ./scripts/deny-network.ts scripts/verify.mjs --task S3.1", "result": "passed against the freshly packed, offline-installed working tree; Artium fixture unset" },
+      { "command": "node --import ./scripts/deny-network.ts scripts/verify.mjs --task S5.1", "result": "passed against the freshly packed, offline-installed working tree; Artium fixture unset" },
+      { "command": "node --import ./scripts/deny-network.ts scripts/verify.mjs --task S5.2", "result": "passed against the freshly packed, offline-installed working tree; Artium fixture unset" }
+    ],
+    "regressions": [
+      "Applied and disconnected creates cannot replay through owner or repository case variants, in either direction through named or raw commands",
+      "Applied and disconnected comments cannot replay through noncanonical integer indices or repository case variants",
+      "Noncanonical integer parameters refuse before HTTP dispatch across issue edits, memberships, pins, labels, deletion and merge",
+      "Case-sensitive string targets remain distinct and numeric-looking string targets remain accepted",
+      "Existing encoded-separator refusal and legitimate query text regressions pass"
+    ]
+  },
   "finalCandidateEvidence": {
     "status": "pending outer executor validation and final candidate commit",
     "configuredNpmTest": "not run in the review phase",
