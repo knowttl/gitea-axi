@@ -16,7 +16,6 @@ async function readTag(client: Client, base: string, tag: string) {
   return (await completeCollection(client, base + '/tags')).find(row => row.name === tag) ?? null;
 }
 export function validateRelease(options: Options) {
-  if (options.latest !== undefined || options['discussion-category'] !== undefined) throw new CliError('CAPABILITY_GAP', 'Latest and discussion settings are unsupported by the Gitea contract');
   if (options['notes-start-tag'] && !options['generate-notes']) usage('--notes-start-tag requires --generate-notes');
   if (options['fail-on-no-commits'] && !options['generate-notes']) usage('--fail-on-no-commits requires --generate-notes');
   if (options.notes !== undefined && options.body !== undefined || options['notes-file'] !== undefined && options['body-file'] !== undefined) usage('Choose one notes input');

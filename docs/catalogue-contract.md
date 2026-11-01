@@ -28,6 +28,10 @@ Hosted invocations refuse credential/configuration overrides and ignore ambient 
 
 ## Pending hooks and updater contracts
 
+Scope amendment: firstmate decision `gitea-s6-3-semantics`.
+S6.4 hook install/repair (C096) and update installation/rollback (C122/C123) are deferred because no retained evidence defines agent targets, escaping or an update channel; they ship as explicit refusals and remain pending acceptance items.
+Public follow-up: https://github.com/knowttl/gitea-axi/issues/38
+
 C096's retained setup help establishes agent SessionStart hooks but no supported agent path, configuration schema or repair contract.
 C121's root help establishes the dashboard but not its exact sections and limits.
 C122/C123 establish upgrade and check-only purposes but not distribution ownership, integrity, rollback or exact check semantics.

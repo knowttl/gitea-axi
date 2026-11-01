@@ -74,6 +74,34 @@ try {
   const baseline = (JSON.parse(await readFile(join(installed, 'schemas/catalogue.json'), 'utf8')) as { commands: Baseline[] }).commands;
   check('Catalogue IDs are complete and unique', (summary.commands as Row[]).map(row => row.id), Array.from({ length: 124 }, (_, index) => 'C' + String(index + 1).padStart(3, '0')));
   const inventory = JSON.parse(await readFile(join(installed, 'generated/host-inventory.json'), 'utf8')) as { commands: { path: string[]; flags: Record<string, { type: string; gap?: string }>; gap?: string }[] };
+  const refusals: [string, string[]][] = [
+    ['repo create', ['internal']],
+    ['release create', ['latest', 'discussion-category']], ['release edit', ['latest']],
+    ['pr merge', ['auto', 'admin', 'delete-branch']], ['run list', ['user']],
+    ['search issues', ['review', 'language', 'stars', 'revision', 'draft']],
+    ['search prs', ['review', 'language', 'stars', 'revision']],
+    ['search repos', ['state', 'label', 'assignee', 'author', 'review', 'revision', 'draft']],
+    ['search commits', ['owner', 'state', 'label', 'assignee', 'review', 'language', 'stars', 'draft']],
+    ['stack rebase', ['preserve-dates']], ['stack link', ['open']], ['stack submit', ['open']],
+  ];
+  for (const [path, names] of refusals) {
+    const command = inventory.commands.find(command => command.path.join(' ') === path)!;
+    const help = await invoke([...path.split(' '), '--help']);
+    const row = baseline.find(row => row.path === path)!;
+    const detail = await invoke(['capabilities', row.id]);
+    const flags = (detail.commands as Row[])[0]!.flags as Row[];
+    for (const name of names) {
+      const contract = command.flags[name]!.gap;
+      assert(contract, path + ' --' + name + ' is a registry gap');
+      check(path + ' --' + name + ' help gap', (help.flags as Row[]).find(flag => flag.flag === '--' + name)?.gap, contract);
+      if (row.flags.some(flag => flag.name === '--' + name)) {
+        const flag = flags.find(flag => flag.name === '--' + name)!;
+        check(path + ' --' + name + ' capability gap', flag.status, 'gap');
+      }
+      const args = [...path.split(' '), '--' + name, ...(command.flags[name]!.type === 'string' ? ['value'] : [])];
+      check(path + ' --' + name + ' refuses before input or credentials', ((await invoke(args, 1)).error as Row).code, 'CAPABILITY_GAP');
+    }
+  }
   for (const row of baseline) {
     const detail = await invoke(['capabilities', row.id]);
     const entry = (detail.commands as Row[])[0]!;

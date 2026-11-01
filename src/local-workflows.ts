@@ -28,8 +28,6 @@ export function validateLocal(operation: string, options: Options) {
     throw new CliError('READ_ONLY', 'Workspace workflows are standalone only');
   }
   if (operation.startsWith('stack ') && (options.repo || process.env.GH_REPO)) usage('Stack commands reject -R/--repo and GH_REPO; use the explicit local workspace');
-  if (options.open) gap('Browser launch is prohibited outside auth login; --open is unavailable before any Git or API effect');
-  if (options['preserve-dates']) gap('--preserve-dates remains pending until upstream date semantics are evidenced; no effect performed');
   if (typeof options.workspace !== 'string' || !isAbsolute(options.workspace)) usage('--workspace requires an explicit absolute path');
   if (options.config !== undefined && !isAbsolute(String(options.config))) usage('--config must be absolute');
 }

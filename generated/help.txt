@@ -74,17 +74,22 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       dir:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       output:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "asset-id":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       pattern:
         type: string
         multiple: true
       sha256:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       clobber:
         type: boolean
     effect: download
@@ -118,17 +123,22 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       dir:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       output:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "asset-id":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       pattern:
         type: string
         multiple: true
       sha256:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       clobber:
         type: boolean
     effect: download
@@ -162,17 +172,22 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       dir:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       output:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "asset-id":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       pattern:
         type: string
         multiple: true
       sha256:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       clobber:
         type: boolean
     effect: download
@@ -206,6 +221,7 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       limit:
         type: string
         description: "Maximum returned records, default 30, maximum 1000"
@@ -244,6 +260,7 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       limit:
         type: string
         description: "Maximum returned records, default 30, maximum 1000"
@@ -958,6 +975,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: pr,upload
     description: pr upload
@@ -1001,6 +1019,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: release,upload
     description: release upload
@@ -1044,6 +1063,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: secret,set
     description: secret set
@@ -1084,6 +1104,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       input:
         type: string
         description: Protected value file or - for stdin; values never accepted in argv
@@ -1135,6 +1156,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       env:
         type: string
         description: "Compatibility gap: --env has no implemented compatibility contract for secret delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
@@ -1179,8 +1201,10 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       input:
         type: string
         description: Value file or - for stdin; preserves empty values
@@ -1224,6 +1248,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: repo,create
     description: repo create
@@ -1268,16 +1293,21 @@ commands[128]:
         type: boolean
       internal:
         type: boolean
+        gap: "--internal has no implemented compatibility contract for repo create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       description:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       template:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       source:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       push:
         type: boolean
       remote:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       clone:
         type: boolean
       workspace:
@@ -1323,10 +1353,13 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       description:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       visibility:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "default-branch":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "enable-issues":
         type: boolean
       "enable-wiki":
@@ -1371,12 +1404,15 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       org:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       clone:
         type: boolean
       remote:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       source:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       push:
         type: boolean
       workspace:
@@ -1425,6 +1461,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       title:
         type: string
         short: t
@@ -1436,6 +1473,7 @@ commands[128]:
         short: F
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -1447,10 +1485,12 @@ commands[128]:
         short: p
       target:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "generate-notes":
         type: boolean
       "notes-start-tag":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "notes-from-tag":
         type: boolean
       "verify-tag":
@@ -1459,8 +1499,10 @@ commands[128]:
         type: boolean
       latest:
         type: boolean
+        gap: "--latest has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "discussion-category":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: release,edit
     description: release edit
@@ -1504,8 +1546,10 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       title:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       notes:
         type: string
         short: n
@@ -1514,6 +1558,7 @@ commands[128]:
         short: F
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -1523,6 +1568,7 @@ commands[128]:
         type: boolean
       latest:
         type: boolean
+        gap: "--latest has no implemented compatibility contract for release edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: release,delete
     description: release delete
@@ -1601,22 +1647,28 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       title:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
       milestone:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       attach:
         type: string
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       base:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       head:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       assignee:
         type: string
         multiple: true
@@ -1677,20 +1729,25 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       title:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
       milestone:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       attach:
         type: string
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       base:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "add-label":
         type: string
         multiple: true
@@ -1755,6 +1812,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       comment:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: pr,reopen
     description: pr reopen
@@ -1833,6 +1891,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -1841,6 +1900,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: pr,update-branch
     description: pr update-branch
@@ -1919,6 +1979,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       method:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       merge:
         type: boolean
       squash:
@@ -1927,16 +1988,22 @@ commands[128]:
         type: boolean
       "match-head-commit":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       auto:
         type: boolean
+        gap: "--auto has no implemented compatibility contract for pr merge on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       admin:
         type: boolean
+        gap: "--admin has no implemented compatibility contract for pr merge on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "delete-branch":
         type: boolean
+        gap: "--delete-branch has no implemented compatibility contract for pr merge on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       subject:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -1986,8 +2053,10 @@ commands[128]:
         type: boolean
       "match-head-commit":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -2031,18 +2100,22 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       title:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
       milestone:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       attach:
         type: string
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       assignee:
         type: string
         multiple: true
@@ -2097,18 +2170,22 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       title:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
       milestone:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       attach:
         type: string
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "add-label":
         type: string
         multiple: true
@@ -2169,6 +2246,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       comment:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       reason:
         type: string
         description: "Compatibility gap: --reason has no implemented compatibility contract for issue close on Gitea 1.23.4; see capabilities for the retained baseline outcome"
@@ -2255,6 +2333,7 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       body:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       "body-file":
         type: string
         description: Body from an owned file or - for bounded stdin
@@ -2263,6 +2342,7 @@ commands[128]:
         multiple: true
       "content-type":
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: issue,delete
     description: issue delete
@@ -2417,10 +2497,13 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       name:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       color:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       description:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: label,edit
     description: label edit
@@ -2461,10 +2544,13 @@ commands[128]:
         description: Execute the unchanged preview confirmation ID once
       name:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       color:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       description:
         type: string
+        gap: "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: write
   - path[2]: label,delete
     description: label delete
@@ -2542,6 +2628,7 @@ commands[128]:
         type: string
       user:
         type: string
+        gap: "--user has no implemented compatibility contract for run list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       commit:
         type: string
       limit:
@@ -2950,14 +3037,19 @@ commands[128]:
         type: string
       review:
         type: string
+        gap: "--review has no implemented compatibility contract for search issues on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       language:
         type: string
+        gap: "--language has no implemented compatibility contract for search issues on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       stars:
         type: string
+        gap: "--stars has no implemented compatibility contract for search issues on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       revision:
         type: string
+        gap: "--revision has no implemented compatibility contract for search issues on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       draft:
         type: boolean
+        gap: "--draft has no implemented compatibility contract for search issues on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: read
   - path[2]: search,prs
     description: search prs
@@ -3007,12 +3099,16 @@ commands[128]:
         type: string
       review:
         type: string
+        gap: "--review has no implemented compatibility contract for search prs on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       language:
         type: string
+        gap: "--language has no implemented compatibility contract for search prs on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       stars:
         type: string
+        gap: "--stars has no implemented compatibility contract for search prs on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       revision:
         type: string
+        gap: "--revision has no implemented compatibility contract for search prs on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       draft:
         type: boolean
     effect: read
@@ -3048,12 +3144,16 @@ commands[128]:
         type: string
       state:
         type: string
+        gap: "--state has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       label:
         type: string
+        gap: "--label has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       assignee:
         type: string
+        gap: "--assignee has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       author:
         type: string
+        gap: "--author has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       sort:
         type: string
       order:
@@ -3064,14 +3164,17 @@ commands[128]:
         type: string
       review:
         type: string
+        gap: "--review has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       language:
         type: string
       stars:
         type: string
       revision:
         type: string
+        gap: "--revision has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       draft:
         type: boolean
+        gap: "--draft has no implemented compatibility contract for search repos on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: read
   - path[2]: search,commits
     description: search commits
@@ -3103,12 +3206,16 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       owner:
         type: string
+        gap: "--owner has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       state:
         type: string
+        gap: "--state has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       label:
         type: string
+        gap: "--label has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       assignee:
         type: string
+        gap: "--assignee has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       author:
         type: string
       sort:
@@ -3121,14 +3228,18 @@ commands[128]:
         type: string
       review:
         type: string
+        gap: "--review has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       language:
         type: string
+        gap: "--language has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       stars:
         type: string
+        gap: "--stars has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       revision:
         type: string
       draft:
         type: boolean
+        gap: "--draft has no implemented compatibility contract for search commits on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: read
   - path[2]: search,code
     description: search code
@@ -3422,6 +3533,7 @@ commands[128]:
         type: string
       open:
         type: boolean
+        gap: "--open has no implemented compatibility contract for stack submit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
       auto:
         type: string
         description: "Compatibility gap: --auto has no implemented compatibility contract for stack submit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
@@ -3520,6 +3632,7 @@ commands[128]:
         type: boolean
       "preserve-dates":
         type: boolean
+        gap: "--preserve-dates has no implemented compatibility contract for stack rebase on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: local-write
   - path[2]: stack,link
     description: Owned local stack link
@@ -3563,6 +3676,7 @@ commands[128]:
         type: string
       open:
         type: boolean
+        gap: "--open has no implemented compatibility contract for stack link on Gitea 1.23.4; see capabilities for the retained baseline outcome"
     effect: local-write
   - path[2]: stack,unstack
     description: Owned local stack unstack

@@ -157,6 +157,24 @@ for (const command of commands) {
 }
 
 commands.push({ path: ['capabilities'], description: 'Inspect all baseline command IDs, flags, globals and PR fields without claiming full parity', flags: { help: globalFlags.help }, effect: 'local-read' });
+const refusedFlags: [string, string[]][] = [
+  ['repo create', ['internal']],
+  ['release create', ['latest', 'discussion-category']],
+  ['release edit', ['latest']],
+  ['pr merge', ['auto', 'admin', 'delete-branch']],
+  ['run list', ['user']],
+  ['search issues', ['review', 'language', 'stars', 'revision', 'draft']],
+  ['search prs', ['review', 'language', 'stars', 'revision']],
+  ['search repos', ['state', 'label', 'assignee', 'author', 'review', 'revision', 'draft']],
+  ['search commits', ['owner', 'state', 'label', 'assignee', 'review', 'language', 'stars', 'draft']],
+  ['stack rebase', ['preserve-dates']],
+  ['stack link', ['open']],
+  ['stack submit', ['open']],
+];
+for (const [path, names] of refusedFlags) {
+  const command = commands.find(command => command.path.join(' ') === path)!;
+  for (const name of names) command.flags[name]!.gap = flagGap(path, name);
+}
 // Retain unsupported leaves and options in the same registry that owns help and admission metadata.
 const booleanFlags = new Set(['comments', 'full', 'public', 'secret', 'files', 'raw', 'web', 'no-type', 'draft', 'failed', 'fail-fast', 'patch', 'undo', 'all', 'prune', 'open', 'local', 'merge', 'squash', 'rebase', 'downstack', 'upstack', 'no-trunk', 'continue', 'abort', 'committer-date-is-author-date', 'preserve-dates', 'check', 'closed', 'clear', 'remove']);
 for (const row of baseline) {
