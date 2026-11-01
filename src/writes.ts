@@ -15,10 +15,10 @@ import type { WorkflowVerification } from './repo-workflows.js';
 import { actionValues, valuePlan, verifyValue } from './action-values.js';
 import { verifyUploads } from './attachments.js';
 
-export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
+export interface WriteStep { method: string; path: string; payload?: unknown; local?: string; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
 interface Observation { path: string; data: unknown }
-interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
+interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -155,10 +155,20 @@ function verifyNamed(plan: WritePlan, results: unknown[], observations: Observat
   }
 }
 
-export async function write(client: Client, identity: { writes?: { allowWrites: boolean; operations: string[] } | undefined }, plan: WritePlan, options: Options) {
+export async function write(client: Client, identity: { writes?: { allowWrites: boolean; operations: string[] } | undefined }, plan: WritePlan, options: Options,
+  executeLocal?: (step: WriteStep, results: unknown[], confirmation: string) => Promise<unknown>) {
   if (process.env.GITEA_AXI_READ_ONLY !== undefined && process.env.GITEA_AXI_READ_ONLY !== 'false') throw new CliError('READ_ONLY', 'Host or native read-only policy refuses writes');
   if (Boolean(options.preview) === Boolean(options.confirm)) usage('Choose exactly --preview or --confirm <confirmation>');
-  const routes = plan.steps.map(step => validatePayload(step.method, step.path, step.payload));
+  const localOperation = (step: WriteStep) => {
+    if (!executeLocal || !/^gitea\.local\.(?:clone|checkout|revert|composite|stack\.(?:init|add|checkout|push|submit|sync|rebase|continue|abort|link|unstack|merge))$/.test(step.local ?? '')) {
+      throw new CliError('READ_ONLY', 'Unclassified local effect');
+    }
+    if (process.env.GITEA_AXI_HOST_WRITE_OPERATIONS !== undefined || process.env.GITEA_AXI_CREDENTIAL_REVISION !== undefined) {
+      throw new CliError('READ_ONLY', 'Workspace effects are standalone only');
+    }
+    return { operation: step.local! };
+  };
+  const routes = plan.steps.map(step => step.local ? localOperation(step) : validatePayload(step.method, step.path, step.payload));
   const operations = routes.map(route => route.operation);
   const allowed = String(options['allow-write'] ?? '').split(',');
   const hosted = process.env.GITEA_AXI_HOST_WRITE_OPERATIONS;
@@ -171,10 +181,22 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   if (!isAbsolute(logPath())) usage('GITEA_AXI_WRITE_LOG must be absolute');
   const root = directory();
   const secret = await key(root);
+  const recoveries: { id: string; receipt: Receipt }[] = [];
+  for (const previous of plan.recoverLocal ?? []) {
+    if (!/^[a-f0-9-]{36}$/.test(previous) || !plan.steps.every(step => /^gitea\.local\.stack\.(?:continue|abort|sync)$/.test(step.local ?? ''))) {
+      throw new CliError('READ_ONLY', 'Only a verified stack rebase recovery can resolve local attempts');
+    }
+    const receipt: Receipt = JSON.parse(await readPrivateFile(join(root, previous + '.json'), true));
+    if (receipt.origin !== client.origin || receipt.localTarget !== plan.target ||
+        !receipt.operations.every(operation => /^gitea\.local\.stack\.(?:rebase|continue|push)$/.test(operation)) ||
+        !receipt.localGuards?.every(guard => /^[a-f0-9]{64}$/.test(guard))) throw new CliError('READ_ONLY', 'Recovery receipt is not a workspace-bound local rebase');
+    recoveries.push({ id: previous, receipt });
+  }
   const binding = createHmac('sha256', secret).update(canonical({ identity, revision: process.env.GITEA_AXI_CREDENTIAL_REVISION, origin: client.origin, plan })).digest('hex');
   // Exclude credential revision and preconditions from the attempt key so rotating a credential
   // or changing the remote record cannot bypass an unresolved dispatched effect.
   const effectStep = (step: WriteStep) => {
+    if (step.local) return { method: step.method, path: step.path, payload: step.payload, local: localOperation(step).operation };
     const route = validatePayload(step.method, step.path, step.payload);
     const segments = canonicalPath(step.path).split('/');
     if (/\{(?:template_)?repo\}/.test(route.path)) {
@@ -198,7 +220,8 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   }
   if (options.preview) {
     const id = randomUUID();
-    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt };
+    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt,
+      ...(plan.steps.every(step => step.local) ? { localTarget: plan.target, localGuards: guards.map(path => path.slice(root.length + 1, -8)) } : {}) };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
     return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
       ...(plan.notes ? { notes: plan.notes } : {}), help: 'Repeat the same command with --confirm ' + id + ' instead of --preview' };
@@ -258,7 +281,8 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
         await journal.writeFile(JSON.stringify({ confirmation: id, operation: operations[index], attempt, step: index, state: 'dispatched' }) + '\n');
         await journal.sync();
       } finally { await journal.close(); }
-      const result = (await client.request(dispatched.path, false, { ...dispatched, ...(plan.sensitive ? { sensitive: true } : {}) })).data;
+      const result = dispatched.local ? await executeLocal!(dispatched, results, id) :
+        (await client.request(dispatched.path, false, { ...dispatched, ...(plan.sensitive ? { sensitive: true } : {}) })).data;
       results.push(result);
       if (plan.steps.some(step => step.assetParent === index)) {
         const parent = object(result);
@@ -276,7 +300,14 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
       }
       receipt.states[index] = 'completed';
       await writePrivateFile(path, JSON.stringify(receipt));
-    } catch {
+    } catch (error) {
+      if (step.local && index === 0 && error instanceof CliError && ['STACK_LOCKED', 'CONFIRMATION_MISMATCH'].includes(error.code)) {
+        receipt.states[index] = 'refused';
+        await writePrivateFile(path, JSON.stringify(receipt));
+        await Promise.all(guards.map(path => rm(path)));
+        throw error;
+      }
+      if (step.local && error instanceof CliError) throw new CliError(error.code, error.message + '; ' + outcome());
       throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write may have applied; ' + outcome());
     }
   }
@@ -291,6 +322,14 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   }
   catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; ' + outcome()); }
   await Promise.all(guards.map(path => rm(path)));
+  for (const { id: previous, receipt: recovered } of recoveries) {
+    for (const name of recovered.localGuards!) {
+      const guard = join(root, name + '.attempt');
+      if (existsSync(guard) && await readPrivateFile(guard, true) === previous) await rm(guard);
+    }
+    recovered.states = recovered.states.map(state => state === 'completed' ? state : 'recovered');
+    await writePrivateFile(join(root, previous + '.json'), JSON.stringify(recovered));
+  }
   return { confirmation: id, states: receipt.states, results, observations, ...(plan.notes ? { notes: plan.notes } : {}), reconcile: command(id, options) };
 }
 

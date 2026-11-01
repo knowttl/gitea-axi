@@ -133,8 +133,9 @@ Edit supports `--description`, `--visibility public|private`, `--default-branch`
 Boolean flags accept explicit `=true` and `=false`, including disabling issues or wiki.
 Fork takes a source through `--repo` or a positional OWNER/NAME and optionally `--org` for the destination.
 Verification checks the destination identity, requested fields and fork parent.
-Internal visibility and workspace flags (`--source`, `--push`, `--remote`, `--clone`) refuse before mutation.
-`--push` and `--remote` require `--source`; local workspace publishing remains deferred.
+Internal visibility refuses before mutation.
+Workspace flags (`--source`, `--push`, `--remote`, `--clone`) use the standalone Git workflows below and require explicit `--workspace` selection.
+Repository creation `--push` and `--remote` require `--source`.
 
 Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
 Exact release and tag lookups require complete collections within the collection scan bounds above; incomplete lookups refuse.
@@ -253,7 +254,7 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1 and S5.2 under an inherited outbound network guard.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2, S6.1 and S6.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
 Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
 Run the release journey with `node scripts/verify.mjs --task S4.1`.
@@ -270,3 +271,48 @@ They report an explicit skip reason when the fixture is absent.
 The S4.2 and S4.3 journeys additionally require admission for managed uploads, protected inputs and dedicated authenticated artifact transfers.
 Ordinary hosted download calls and arbitrary host file paths remain refused.
 Route classification covers all captured methods; this does not claim completion of every business workflow.
+
+## Standalone Git and owned stacks
+
+Local workflows require an explicit absolute `--workspace` and use native Git argument arrays.
+`repo clone OWNER/NAME` clones into a new child directory of the selected parent and checks out the previewed default commit.
+`repo create --source /absolute/repo --push --remote NAME` publishes the current source branch with its complete history.
+`repo fork --clone` clones the verified fork, while `repo fork --remote NAME` configures a new remote in the workspace.
+Existing remotes are never overwritten.
+Use a repository-local Git user name and email for workflows that create commits.
+Git credential helpers, hooks, transport rewrites and redirects are disabled or refused.
+Tokens travel through an origin-scoped environment configuration and never enter Git arguments or remote URLs.
+
+`pr checkout NUMBER` fetches the PR's actual head repository and branch and checks out its exact previewed SHA.
+Dirty workspaces refuse before checkout.
+`pr revert NUMBER` first prepares a local revert of a two-parent merge.
+Repeat its preview/confirmation cycle to publish the recorded generated commit and create the revert PR.
+Conflicts stop and retain native Git's recovery state.
+
+Each local write uses the existing `--preview` and `--confirm ID` policy with an explicit local grant such as `--allow-write gitea.local.checkout`.
+API composites also require their vendor operation grants, for example `createCurrentUserRepo,gitea.local.composite` or `gitea.local.revert,repoCreatePullRequest`.
+Preview creates only policy state; it changes no worktree, refs, stack metadata or upstream business state.
+
+One owned stack is recorded per native Git common directory, shared by its worktrees.
+Initialize ordered existing branches with `stack init one two three --base main`, then navigate with checkout/up/down/top/bottom/trunk.
+All commands require `--workspace`; stack commands reject `--repo`, `-R` and `GH_REPO`.
+Use `stack link` with existing branches, PR numbers or same-repository PR URLs to reconcile PR bases without creating duplicates.
+`stack push --remote NAME` uses atomic updates and leases bound to the previewed remote tips.
+`stack merge STACK --merge-method merge` checks heads, merges dependencies in order, retargets descendants to trunk and stops on failure.
+`--merge`, `--squash` and `--rebase` select the other captured method spellings; reviewed confirmation supplies the workflow's noninteractive yes semantics.
+`stack sync --prune` preserves trunk, checked-out and unrelated branches and requires verified merged history before deleting owned branches.
+An interrupted push can be reconciled by `stack sync` when the selected remote confirms every recorded branch tip; it never repeats that push.
+`stack view` exposes pending checkpoints for inspection after other interruptions.
+`stack unstack --local` removes only local relationships; without `--local`, linked PR bases are restored to trunk first.
+
+Rebase supports selected branches, `--downstack`, `--upstack`, `--no-trunk`, `--committer-date-is-author-date`, and recorded `--continue`/`--abort` recovery.
+At the repository root, stack-add `--all` and `--update` both stage tracked modifications and deletions, leave untracked files untouched, cannot be combined and require `--message`.
+Without either flag, a requested commit uses only the staged index.
+See the [metadata and recovery contract](docs/local-stack-contract.md).
+
+`stack submit` reports an explicit compatibility gap before effects because its required automatic merge scheduling is not yet verified.
+`stack rebase --preserve-dates` remains pending until upstream date semantics are evidenced.
+Submit/link `--open` refuse before effects because browser launch is prohibited outside authentication.
+Artium admission refuses every stack command and all local checkout/composite options.
+Run `node scripts/verify.mjs --task S6.1` and `node scripts/verify.mjs --task S6.2` for the installed-package fake Git/Gitea journeys.
+Artium checks remain opt-in through the frozen fixture selectors above; native Windows and live commissioning remain pending.

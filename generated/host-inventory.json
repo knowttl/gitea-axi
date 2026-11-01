@@ -1578,6 +1578,10 @@
         },
         "clone": {
           "type": "boolean"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
         }
       },
       "effect": "write"
@@ -1706,6 +1710,10 @@
         },
         "push": {
           "type": "boolean"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
         }
       },
       "effect": "write"
@@ -4059,6 +4067,1024 @@
         }
       },
       "effect": "read"
+    },
+    {
+      "path": [
+        "stack",
+        "view"
+      ],
+      "description": "Owned local stack view",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-read"
+    },
+    {
+      "path": [
+        "stack",
+        "init"
+      ],
+      "description": "Owned local stack init",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "base": {
+          "type": "string"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "add"
+      ],
+      "description": "Owned local stack add",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "message": {
+          "type": "string"
+        },
+        "all": {
+          "type": "boolean"
+        },
+        "update": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "checkout"
+      ],
+      "description": "Owned local stack checkout",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "push"
+      ],
+      "description": "Owned local stack push",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "remote": {
+          "type": "string"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "submit"
+      ],
+      "description": "Owned local stack submit",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "remote": {
+          "type": "string"
+        },
+        "open": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "sync"
+      ],
+      "description": "Owned local stack sync",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "remote": {
+          "type": "string"
+        },
+        "prune": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "rebase"
+      ],
+      "description": "Owned local stack rebase",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "remote": {
+          "type": "string"
+        },
+        "downstack": {
+          "type": "boolean"
+        },
+        "upstack": {
+          "type": "boolean"
+        },
+        "no-trunk": {
+          "type": "boolean"
+        },
+        "continue": {
+          "type": "boolean"
+        },
+        "abort": {
+          "type": "boolean"
+        },
+        "committer-date-is-author-date": {
+          "type": "boolean"
+        },
+        "preserve-dates": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "link"
+      ],
+      "description": "Owned local stack link",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "base": {
+          "type": "string"
+        },
+        "remote": {
+          "type": "string"
+        },
+        "open": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "unstack"
+      ],
+      "description": "Owned local stack unstack",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "local": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "merge"
+      ],
+      "description": "Owned local stack merge",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "merge-method": {
+          "type": "string"
+        },
+        "merge": {
+          "type": "boolean"
+        },
+        "squash": {
+          "type": "boolean"
+        },
+        "rebase": {
+          "type": "boolean"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "up"
+      ],
+      "description": "Owned local stack up",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "down"
+      ],
+      "description": "Owned local stack down",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "top"
+      ],
+      "description": "Owned local stack top",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "bottom"
+      ],
+      "description": "Owned local stack bottom",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "stack",
+        "trunk"
+      ],
+      "description": "Owned local stack trunk",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "repo",
+        "clone"
+      ],
+      "description": "repo clone in an explicit standalone workspace",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "pr",
+        "checkout"
+      ],
+      "description": "pr checkout in an explicit standalone workspace",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
+    },
+    {
+      "path": [
+        "pr",
+        "revert"
+      ],
+      "description": "pr revert in an explicit standalone workspace",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "workspace": {
+          "type": "string",
+          "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "local-write"
     }
   ],
   "limits": {
