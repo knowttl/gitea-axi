@@ -9,9 +9,10 @@ import { CliError } from './error.js';
 import { readPrivateFile, writePrivateFile } from './private-file.js';
 import type { Options } from './reads.js';
 import type { Client } from './transport.js';
+import { verifyPull } from './pulls.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; pull?: { expected: Row; action: string; repository: string } }
 interface Observation { path: string; data: unknown }
 interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string }
 
@@ -233,6 +234,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   let observations;
   try {
     observations = await observe(client, plan.reads);
+    if (plan.pull) await verifyPull(client, plan, results, observations);
     if (plan.named) verifyNamed(plan, results, observations);
   }
   catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; reconcile with ' + command(id, options)); }

@@ -809,6 +809,544 @@
     },
     {
       "path": [
+        "pr",
+        "create"
+      ],
+      "description": "pr create",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Body from an owned file or - for bounded stdin"
+        },
+        "milestone": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "head": {
+          "type": "string"
+        },
+        "assignee": {
+          "type": "string",
+          "multiple": true
+        },
+        "label": {
+          "type": "string",
+          "multiple": true
+        },
+        "reviewer": {
+          "type": "string",
+          "multiple": true
+        },
+        "team-reviewer": {
+          "type": "string",
+          "multiple": true
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "edit"
+      ],
+      "description": "pr edit",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Body from an owned file or - for bounded stdin"
+        },
+        "milestone": {
+          "type": "string"
+        },
+        "base": {
+          "type": "string"
+        },
+        "add-label": {
+          "type": "string",
+          "multiple": true
+        },
+        "remove-label": {
+          "type": "string",
+          "multiple": true
+        },
+        "add-assignee": {
+          "type": "string",
+          "multiple": true
+        },
+        "remove-assignee": {
+          "type": "string",
+          "multiple": true
+        },
+        "add-reviewer": {
+          "type": "string",
+          "multiple": true
+        },
+        "remove-reviewer": {
+          "type": "string",
+          "multiple": true
+        },
+        "add-team-reviewer": {
+          "type": "string",
+          "multiple": true
+        },
+        "remove-team-reviewer": {
+          "type": "string",
+          "multiple": true
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "close"
+      ],
+      "description": "pr close",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "reopen"
+      ],
+      "description": "pr reopen",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "comment"
+      ],
+      "description": "pr comment",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "body": {
+          "type": "string"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Body from an owned file or - for bounded stdin"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "update-branch"
+      ],
+      "description": "pr update-branch",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "merge"
+      ],
+      "description": "pr merge",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "method": {
+          "type": "string"
+        },
+        "merge": {
+          "type": "boolean"
+        },
+        "squash": {
+          "type": "boolean"
+        },
+        "rebase": {
+          "type": "boolean"
+        },
+        "match-head-commit": {
+          "type": "string"
+        },
+        "auto": {
+          "type": "boolean"
+        },
+        "admin": {
+          "type": "boolean"
+        },
+        "delete-branch": {
+          "type": "boolean"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Body from an owned file or - for bounded stdin"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
+        "pr",
+        "review"
+      ],
+      "description": "pr review (unresolved vendor events and atomic stale-head refusal; no posting)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "repo": {
+          "type": "string",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "allow-write": {
+          "type": "string",
+          "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
+        },
+        "preview": {
+          "type": "boolean",
+          "description": "Preview and bind this exact write without dispatch"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Execute the unchanged preview confirmation ID once"
+        },
+        "approve": {
+          "type": "boolean"
+        },
+        "request-changes": {
+          "type": "boolean"
+        },
+        "comment": {
+          "type": "boolean"
+        },
+        "match-head-commit": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Body from an owned file or - for bounded stdin"
+        }
+      },
+      "effect": "write"
+    },
+    {
+      "path": [
         "issue",
         "create"
       ],

@@ -49,6 +49,13 @@ const repeated = { type: 'string', multiple: true } as const;
 const issueBody = { body: text, 'body-file': { type: 'string', description: 'Body from an owned file or - for bounded stdin' } } as const;
 const issueEdit = { title: text, ...issueBody, milestone: text };
 const mutationDefinitions = [
+  ['pr create', { ...issueEdit, base: text, head: text, assignee: repeated, label: repeated, reviewer: repeated, 'team-reviewer': repeated }],
+  ['pr edit', { ...issueEdit, base: text, 'add-label': repeated, 'remove-label': repeated, 'add-assignee': repeated, 'remove-assignee': repeated, 'add-reviewer': repeated, 'remove-reviewer': repeated, 'add-team-reviewer': repeated, 'remove-team-reviewer': repeated }],
+  ['pr close', { comment: text }], ['pr reopen', {}], ['pr comment', issueBody],
+  ['pr update-branch', {}],
+  ['pr merge', { method: text, merge: { type: 'boolean' }, squash: { type: 'boolean' }, rebase: { type: 'boolean' }, 'match-head-commit': text,
+    auto: { type: 'boolean' }, admin: { type: 'boolean' }, 'delete-branch': { type: 'boolean' }, subject: text, ...issueBody }],
+  ['pr review', { approve: { type: 'boolean' }, 'request-changes': { type: 'boolean' }, comment: { type: 'boolean' }, 'match-head-commit': text, ...issueBody }],
   ['issue create', { ...issueEdit, assignee: repeated, label: repeated }],
   ['issue edit', { ...issueEdit, 'add-label': repeated, 'remove-label': repeated, 'add-assignee': repeated, 'remove-assignee': repeated }],
   ['issue close', { comment: text }], ['issue reopen', {}], ['issue comment', issueBody],
@@ -82,7 +89,7 @@ export const commands: Command[] = [
   { ...command, flags: { ...command.flags, ...globalFlags } },
   ...definitions.map(([name, flags]) => ({ path: name.split(' '), description: name === 'dashboard' ? 'Bounded repository dashboard with explicit partial results' : name,
     flags: { ...globalFlags, ...flags }, effect: 'read' })),
-  ...mutationDefinitions.map(([name, flags]) => ({ path: name.split(' '), description: name,
+  ...mutationDefinitions.map(([name, flags]) => ({ path: name.split(' '), description: name === 'pr review' ? 'pr review (unresolved vendor events and atomic stale-head refusal; no posting)' : name,
     flags: { ...globalFlags, ...repo, ...writeFlags, ...flags }, effect: 'write' })),
 ];
 
