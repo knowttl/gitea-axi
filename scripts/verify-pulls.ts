@@ -66,18 +66,21 @@ const server = createServer(async (request, response) => {
     if (path === '/api/v1/version') data = { version: '1.23.4' };
     else if (path === '/swagger.v1.json') data = { info: { version: '1.23.4' }, paths: { '/version': {} } };
     else if (path === '/api/v1/user') data = user;
+    else if (path.startsWith('/api/v1/users/')) data = [user, { id: 2, login: 'retained' }, { id: 4, login: 'new' }].find(row => row.login === path.slice('/api/v1/users/'.length));
     else if (path === base) data = { id: 10, full_name: 'sample/demo', default_branch: 'main' };
     else if (parts[0] === 'branches') data = { name: parts[1], commit: { id: branches.get(parts[1]!) } };
     else if (parts[0] === 'git' && parts[1] === 'commits') data = commits.get(parts[2]!);
     else if (parts[0] === 'labels') data = labels;
     else if (parts[0] === 'milestones') data = [milestone];
-    else if (parts[0] === 'assignees' || parts[0] === 'reviewers') data = [user, { id: 2, login: 'retained' }, { id: 4, login: 'new' }];
+    else if (parts[0] === 'assignees') data = [user, { id: 2, login: 'retained' }, { id: 4, login: 'new' }];
+    else if (parts[0] === 'reviewers') status = 403;
     else if (parts[0] === 'teams') data = [{ id: 3, name: 'retained-team' }, { id: 5, name: 'new-team' }];
     else if (parts[0] === 'issues' && parts[2] === 'comments') data = comments.filter(row => row.issue === Number(parts[1]));
     else if (parts[0] === 'pulls' && parts[2] === 'commits') data = [commits.get(firstSHA), commits.get(headSHA)];
     else if (parts[0] === 'pulls') data = parts.length === 1 ? pulls : pull;
   } else {
     if (mode === 'fail-comment' && parts[2] === 'comments') status = 503;
+    else if (mode === 'reject-reviewer' && parts[2] === 'requested_reviewers') status = 422;
     else if (mode === 'conflict' && parts[2] === 'update') status = 409;
     else if (parts[2] === 'merge' && (mode === 'race' || payload.head_commit_id !== (pull!.head as Row).sha)) {
       // The controlled service moves head after the client's preflight, then applies the vendor precondition.
@@ -171,7 +174,40 @@ try {
     const beforeAuthor = requests.length;
     const authorReview = await invoke(['pr', 'edit', '1', ...selected, '--title', 'X', '--add-reviewer', user.login, '--allow-write', 'repoEditPullRequest,repoCreatePullReviewRequests', '--preview'], 2);
     expect('PR author reviewer refuses the entire edit before writing', [authorReview.error.code, pulls[0], requests.slice(beforeAuthor).filter(row => row.method !== 'GET')], ['USAGE', unchanged, []]);
-    await execute(['create', '--title', 'Created PR', '--body', 'Exact PR body', '--head', 'feature', '--base', 'main', '--assignee', 'synthetic', '--label', 'added', '--milestone', 'Release', '--reviewer', 'new', '--team-reviewer', 'new-team'], 'repoCreatePullRequest');
+    for (const [flag, member] of [['--add-reviewer', 'new'], ['--remove-reviewer', 'retained'], ['--add-team-reviewer', 'new-team'], ['--remove-team-reviewer', 'retained-team']]) {
+      mode = 'reject-reviewer';
+      const previous = structuredClone(pulls[0]);
+      const start = requests.length;
+      const rejected = await execute(['edit', '1', '--title', 'X', '--body', 'Unapplied field body', flag!, member!], 'repoEditPullRequest,repoCreatePullReviewRequests,repoDeletePullReviewRequests', 1);
+      expect(flag + ' rejection leaves field edits unapplied', [rejected.error.code, pulls[0], requests.slice(start).filter(row => row.method !== 'GET').map(row => row.path)], ['WRITE_OUTCOME_UNKNOWN', previous, [base + '/pulls/1/requested_reviewers']]);
+      reset();
+    }
+    mode = '';
+    const createArgs = ['pr', 'create', ...selected, '--title', 'Partial creation', '--head', 'feature', '--base', 'main', '--reviewer', 'new', '--allow-write', 'repoCreatePullRequest,repoCreatePullReviewRequests'];
+    const beforeGrant = requests.length;
+    const missingGrant = createArgs.slice(0, -2).concat('--allow-write', 'repoCreatePullRequest');
+    expect('Create requires a reviewer operation grant before creation', [(await invoke([...missingGrant, '--preview'], 1)).error.code, requests.slice(beforeGrant).filter(row => row.method !== 'GET')], ['READ_ONLY', []]);
+    const createPreview = await invoke([...createArgs, '--preview']);
+    const changedReviewer = [...createArgs];
+    changedReviewer[changedReviewer.indexOf('--reviewer') + 1] = 'retained';
+    expect('Create confirmation binds the dependent reviewer payload', [(await invoke([...changedReviewer, '--confirm', createPreview.confirmation], 1)).error.code, requests.slice(beforeGrant).filter(row => row.method !== 'GET')], ['CONFIRMATION_MISMATCH', []]);
+    mode = 'reject-reviewer';
+    const rejectedCreate = await invoke([...createArgs, '--confirm', createPreview.confirmation], 1);
+    const partialCreated = pulls.at(-1)!;
+    expect('Create reviewer rejection reports created PR identity and step outcomes', [rejectedCreate.error.code, rejectedCreate.error.reason.includes('created PR id=' + partialCreated.id + ' number=' + partialCreated.number), rejectedCreate.error.reason.includes('completed,dispatched'), partialCreated.title, partialCreated.requested_reviewers], ['WRITE_OUTCOME_UNKNOWN', true, true, 'Partial creation', []]);
+    const afterRejectedCreate = requests.length;
+    mode = '';
+    await invoke([...createArgs, '--confirm', createPreview.confirmation], 1);
+    await invoke([...createArgs, '--preview'], 1);
+    const rawReviewer = join(scratch, 'reviewer.json');
+    await writeFile(rawReviewer, JSON.stringify({ reviewers: ['new'], team_reviewers: [] }), { mode: 0o600 });
+    expect('Dependent reviewer replay guard also covers the resolved raw route', (await invoke(['api', base + '/pulls/' + partialCreated.number + '/requested_reviewers', '--method', 'POST', '--input', rawReviewer, '--allow-write', 'repoCreatePullReviewRequests', '--preview'], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    expect('Partial creation never retries either write', requests.slice(afterRejectedCreate).filter(row => row.method !== 'GET'), []);
+    const reconciliation = await invoke(['write', 'reconcile', createPreview.confirmation]);
+    expect('Partial creation reconciles the created PR directly', (reconciliation.observations.find(row => row.path === base + '/pulls/' + partialCreated.number)!.data as Row).id, partialCreated.id);
+    reset();
+    const beforeAuthorEdit = requests.length;
+    await execute(['create', '--title', 'Created PR', '--body', 'Exact PR body', '--head', 'feature', '--base', 'main', '--assignee', 'synthetic', '--label', 'added', '--milestone', 'Release', '--reviewer', 'new', '--team-reviewer', 'new-team'], 'repoCreatePullRequest,repoCreatePullReviewRequests');
     const created = pulls.at(-1)!;
     expect('Create exact refs, body and membership', [created.title, created.body, (created.head as Row).ref, (created.base as Row).ref, created.milestone, created.labels,
       (created.requested_reviewers as Row[]).map(row => row.login), (created.requested_reviewers_teams as Row[]).map(row => row.name)],
@@ -180,6 +216,7 @@ try {
     await execute(['edit', '1', '--remove-reviewer', 'new', '--remove-team-reviewer', 'new-team', '--remove-label', 'added', '--remove-assignee', 'new'], 'repoEditPullRequest,repoDeletePullReviewRequests');
     expect('Reviewer deltas preserve unrelated people and teams', [pulls[0]!.requested_reviewers, pulls[0]!.requested_reviewers_teams], [seed().requested_reviewers, seed().requested_reviewers_teams]);
     expect('Edit preserves identity and applies requested fields', [pulls[0]!.id, pulls[0]!.title, pulls[0]!.body, pulls[0]!.labels], [101, 'Edited', 'Edited body', [labels[0]]]);
+    expect('Non-collaborating author changes reviewers without discovery access', requests.slice(beforeAuthorEdit).filter(row => row.path === base + '/reviewers'), []);
     for (const [action, state] of [['close', 'closed'], ['reopen', 'open']] as const) {
       await execute([action, '1', ...(action === 'close' ? ['--comment', 'Closed exactly once'] : [])], 'repoEditPullRequest,issueCreateComment');
       expect(action + ' same PR identity', [pulls[0]!.number, pulls[0]!.state], [1, state]);
@@ -283,7 +320,7 @@ try {
       try { persisted += await readFile(join(scratch, directory, 'writes.log'), 'utf8'); }
       catch (error) { if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')) throw error; }
     }
-    for (const secret of [token, 'Exact PR body', 'Standalone PR comment', 'Uncertain PR comment']) assert(!persisted.includes(secret));
+    for (const secret of [token, 'Exact PR body', 'Unapplied field body', 'Standalone PR comment', 'Uncertain PR comment']) assert(!persisted.includes(secret));
     assertions.push('PR journal and receipts contain no credentials or request bodies');
   }
   result = 'passed';

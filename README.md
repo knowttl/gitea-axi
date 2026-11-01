@@ -105,6 +105,9 @@ Cross-repository heads, draft, project and attachment inputs remain unavailable.
 Create accepts repeatable `--reviewer` user names and `--team-reviewer` team names, plus issue-style assignees, labels and milestone selectors.
 Edit accepts `--base`, text fields and assignee/label deltas, plus repeatable `--add-reviewer`, `--remove-reviewer`, `--add-team-reviewer` and `--remove-team-reviewer` deltas.
 Existing reviewers and teams remain present unless explicitly removed.
+Reviewer edits run before field edits, so an upstream reviewer rejection leaves requested field edits unapplied.
+Create resolves reviewer user identities first, then creates the PR and requests reviewers as separate guarded steps requiring both `repoCreatePullRequest` and `repoCreatePullReviewRequests` grants.
+If the reviewer step fails after creation, the error reports the created PR ID and number for reconciliation without retrying.
 Close with `--comment` records closure and comment as separate steps and reports partial outcomes without retrying.
 Successful writes verify the same PR identity, expected fields and memberships through fresh reads.
 Update-branch verifies that the resulting head contains both its previous head and base commits; conflicts never report completion.

@@ -56,15 +56,28 @@ export async function pullPlan(client: Client, operation: string, base: string, 
     { title: '', body: '', state: 'open', merged: false, assignees: [], labels: [], milestone: null, reviewers: [], teams: [] };
   if (action === 'create') await snapshot(path + '?state=all', true);
   if (action === 'create' || action === 'edit') {
-    for (const [flag, collection, key] of [['assignee', 'assignees', 'login'], ['reviewer', 'reviewers', 'login'], ['team-reviewer', 'teams', 'name']] as const) {
+    for (const [flag, collection, key] of [['assignee', 'assignees', 'login'], ['team-reviewer', 'teams', 'name']] as const) {
       const requested = action === 'create' ? names(options[flag]) : [...names(options['add-' + flag]), ...names(options['remove-' + flag])];
       if (!requested.length) continue;
       const available = await snapshot(base + '/' + collection, true) as Row[];
-      const author = flag === 'reviewer' ? object(action === 'create' ? await snapshot('/api/v1/user') : before!.user) : undefined;
       for (const name of requested) {
         const selected = available.find(row => row[key] === name);
         if (!selected) usage('Unknown exact ' + flag + ' name: ' + name);
-        if (author && names(action === 'create' ? options.reviewer : options['add-reviewer']).includes(name) && selected!.id === author.id) usage('The PR author cannot be requested as a reviewer');
+      }
+    }
+    const addedReviewers = names(action === 'create' ? options.reviewer : options['add-reviewer']);
+    const requestedReviewers = [...new Set([...addedReviewers, ...names(options['remove-reviewer'])])];
+    if (requestedReviewers.length) {
+      const author = object(action === 'create' ? await snapshot('/api/v1/user') : before!.user);
+      for (const name of requestedReviewers) {
+        let reviewer: Row;
+        try { reviewer = object(await snapshot('/api/v1/users/' + encodeURIComponent(name))); }
+        catch (error) {
+          if (error instanceof CliError && error.code === 'NOT_FOUND_OR_HIDDEN') usage('Unknown exact reviewer name: ' + name);
+          throw error;
+        }
+        if (reviewer.login !== name) usage('Unknown exact reviewer name: ' + name);
+        if (addedReviewers.includes(name) && reviewer.id === author.id) usage('The PR author cannot be requested as a reviewer');
       }
     }
     const payload: Row = {};
@@ -74,10 +87,8 @@ export async function pullPlan(client: Client, operation: string, base: string, 
       if (String(options.head).includes(':')) gap('Cross-repository PR creation requires separate head repository verification');
       payload.head = options.head;
       payload.assignees = names(options.assignee);
-      payload.reviewers = names(options.reviewer);
-      payload.team_reviewers = names(options['team-reviewer']);
-      expected.reviewers = sorted(payload.reviewers as string[]);
-      expected.teams = sorted(payload.team_reviewers as string[]);
+      expected.reviewers = sorted(addedReviewers);
+      expected.teams = sorted(names(options['team-reviewer']));
       const head = object(await snapshot(base + '/branches/' + encodeURIComponent(String(options.head))));
       expected.headSHA = object(head.commit).id;
     } else {
@@ -100,8 +111,11 @@ export async function pullPlan(client: Client, operation: string, base: string, 
       payload.labels = action === 'create' ? ids(options.label) : [...new Set([...(expected.labels as unknown[]), ...ids(options['add-label'])])].filter(id => !ids(options['remove-label']).includes(id));
     }
     for (const field of ['title', 'body', 'base', 'head', 'assignees', 'labels', 'milestone']) if (payload[field] !== undefined) expected[field] = payload[field];
-    if (Object.keys(payload).length) add(action === 'create' ? 'POST' : 'PATCH', path, payload);
-    if (action === 'edit') {
+    if (action === 'create') {
+      add('POST', path, payload);
+      if (addedReviewers.length || names(options['team-reviewer']).length) steps.push({ method: 'POST', path: path + '/0/requested_reviewers',
+        payload: { reviewers: addedReviewers, team_reviewers: names(options['team-reviewer']) }, createdPull: true });
+    } else {
       for (const [flag, field, wire] of [['reviewer', 'reviewers', 'reviewers'], ['team-reviewer', 'teams', 'team_reviewers']] as const) {
         const previous = expected[field] as unknown[];
         const next = delta(previous, options['add-' + flag], options['remove-' + flag]);
@@ -111,6 +125,7 @@ export async function pullPlan(client: Client, operation: string, base: string, 
         if (removed.length) add('DELETE', path + '/requested_reviewers', { [wire]: removed });
         expected[field] = next;
       }
+      if (Object.keys(payload).length) add('PATCH', path, payload);
     }
     if (!steps.length) usage('Choose a PR field or membership to edit');
   } else if (action === 'close' || action === 'reopen') {
