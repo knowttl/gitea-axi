@@ -166,10 +166,11 @@ Existing files require explicit `--clobber`; traversal, symlinks and duplicate b
 No matches is an explicit error; partial transfers identify completed attachment IDs and retain only completed files.
 
 `secret list|set|delete` and `variable list|set|delete` select a repository with `--repo OWNER/NAME` or an organization with `--org NAME`.
-Set and delete take one exact name; environment scopes are unsupported.
+Set and delete take one name, normalized to uppercase for repository and organization operations, including raw secret writes; environment scopes are unsupported.
 `secret set NAME --input -` reads the exact value from protected stdin; `--input FILE` uses an owned mode 0600 file, bounded to 1000000 bytes.
 Secret values are write-only: previews omit them, mutation response bodies are discarded, and verification reads name metadata only.
-Listing returns names without invented timestamps; a successful set confirms name existence, not independently commissioned value consumption.
+Secret listing returns names without invented timestamps; a successful set confirms name existence, not independently commissioned value consumption.
+Variable listing returns names and stored values, including empty strings.
 `variable set NAME --body VALUE` or `--input FILE|-` creates absent variables and updates existing ones, preserving empty strings and verifying the exact value and unrelated variables.
 Use `updateRepoSecret`, `deleteRepoSecret`, `updateOrgSecret` or `deleteOrgSecret` for secret grants.
 Variable grants are `createRepoVariable`, `updateRepoVariable`, `deleteRepoVariable` and their organization counterparts `createOrgVariable`, `updateOrgVariable`, `deleteOrgVariable`.
@@ -217,7 +218,7 @@ Each attempt is persisted before dispatch.
 Timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
-Replay guards treat repository owner and repository name case variants as the same identity, while preserving case-sensitive non-integer path values.
+Replay guards also treat repository owner and repository name case variants as the same identity.
 Keep its private receipts until the outcome has been investigated.
 Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
