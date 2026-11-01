@@ -11,6 +11,18 @@ import { boundedList, issueFields, listIssues, listOptions, positive, prFields, 
 import type { Options } from './reads.js';
 import { tasks, validateTasks } from './ci.js';
 import { search, validateSearch } from './search.js';
+import { issueLabelPlan, rawWritePlan, reconcile, write } from './writes.js';
+import { readPrivateFile } from './private-file.js';
+
+async function input(path: string) {
+  if (path !== '-') return readPrivateFile(path, true, 1_000_000);
+  let body = '';
+  for await (const chunk of process.stdin) {
+    body += String(chunk);
+    if (Buffer.byteLength(body) > 1_000_000) throw new CliError('USAGE', 'Input exceeds 1000000 bytes', 2);
+  }
+  return body;
+}
 
 export async function main(args: string[]) {
   let operation = 'dashboard';
@@ -27,13 +39,14 @@ export async function main(args: string[]) {
     try {
       parsed = parseArgs({
         args: rest, allowPositionals: true, strict: true, tokens: true,
-        options: Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type }])),
+        options: Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,
+          ...(flag.multiple ? { multiple: true } : {}), ...(flag.short ? { short: flag.short } : {}) }])),
       });
     } catch {
       throw new CliError('USAGE', 'Invalid arguments; valid flags: ' + Object.keys(command.flags).map(f => '--' + f).join(', '), 2);
     }
     const { values, positionals } = parsed;
-    const names = parsed.tokens.filter(token => token.kind === 'option').map(token => token.name);
+    const names = parsed.tokens.flatMap(token => token.kind === 'option' && !command.flags[token.name]?.multiple ? [token.name] : []);
     if (new Set(names).size !== names.length) {
       throw new CliError('USAGE', 'Choose each flag only once; --repo requires exactly one selector', 2);
     }
@@ -46,7 +59,6 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
-    const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff'].includes(operation);
     if (operation.startsWith('workflow ') || operation.startsWith('run ') && operation !== 'run list') {
       throw new CliError('CAPABILITY_GAP', operation + ' is pending: the 1.23.4 contract has task summaries only; 1.24.0 candidates require commissioning. Mutating controls also await the shared write gate');
     }
@@ -55,8 +67,17 @@ export async function main(args: string[]) {
       if (positionals.length !== 1) throw new CliError('USAGE', 'Select exactly one quoted search query', 2);
       validateSearch(path[1]!, positionals[0]!, options);
     }
+    if (options['body-file'] !== undefined) {
+      if (options.body !== undefined) throw new CliError('USAGE', 'Choose --body or --body-file', 2);
+      options.body = await input(String(options['body-file']));
+    }
+    const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff'].includes(operation) ||
+      (command.effect === 'write' && operation.startsWith('issue ') && operation !== 'issue create');
     if (takesNumber && (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select exactly one positive item number', 2);
-    if (!takesNumber && !searching && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
+    const takesLabel = operation === 'label edit' || operation === 'label delete';
+    if (takesLabel && positionals.length !== 1) throw new CliError('USAGE', 'Select one exact label name or ID', 2);
+    if (!takesNumber && !takesLabel && !searching && operation !== 'write reconcile' && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
+    if (operation === 'write reconcile' && positionals.length !== 1) throw new CliError('USAGE', 'Select one confirmation ID', 2);
     if (operation === 'org view' && (positionals.length !== 1 || !/^[A-Za-z0-9_.-]+$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select one organization name', 2);
     if (operation.endsWith('list')) listOptions(options);
     if (operation === 'run list') validateTasks(options);
@@ -69,10 +90,36 @@ export async function main(args: string[]) {
       positive(options.timeout, 30, 3600); positive(options.interval, 5, 60);
     }
     let apiPath: string | undefined;
+    let method = 'GET';
+    let payload: unknown;
     if (operation === 'api') {
-      if (positionals.length === 2 && positionals[0] !== 'GET') throw new CliError('READ_ONLY', 'Only GET metadata reads are available');
+      if (options.method && positionals.length === 2) throw new CliError('USAGE', 'Choose -X or a positional method once', 2);
+      method = positionals.length === 2 ? positionals[0]! : String(options.method ?? 'GET');
+      if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) throw new CliError('USAGE', 'Use GET, POST, PUT, PATCH or DELETE', 2);
       if (positionals.length < 1 || positionals.length > 2) throw new CliError('USAGE', 'Use gitea-axi api [GET] <relative-path>', 2);
-      apiPath = rawPath(positionals.at(-1)!);
+      apiPath = rawPath(positionals.at(-1)!, method);
+      const fields = parsed.tokens.filter(token => token.kind === 'option' && ['field', 'raw-field'].includes(token.name));
+      if (fields.length) {
+        if (options.input || method === 'GET') throw new CliError('USAGE', 'Request fields require a write method and cannot combine with --input', 2);
+        const body: Record<string, unknown> = {};
+        for (const token of fields) {
+          if (token.kind !== 'option') continue;
+          const match = /^([A-Za-z_][A-Za-z0-9_]*)=([\s\S]*)$/.exec(token.value ?? '');
+          if (!match || ['__proto__', 'prototype', 'constructor'].includes(match[1]!) || Object.hasOwn(body, match[1]!)) throw new CliError('USAGE', 'Choose unique key=value request fields', 2);
+          if (/secret|token|password|authorization|api.?key/i.test(match[1]!) || /\/secrets\//.test(apiPath)) throw new CliError('CONFIG_INVALID', 'Secret fields require protected --input');
+          const value = match[2]!;
+          body[match[1]!] = token.name === 'field' && /^(?:true|false|null|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)$/.test(value) ? JSON.parse(value) as unknown : value;
+        }
+        if (Buffer.byteLength(JSON.stringify(body)) > 1_000_000) throw new CliError('USAGE', 'Request exceeds 1000000 bytes', 2);
+        payload = body;
+      }
+      if (method !== 'GET' && (!options['allow-write'] || process.env.GITEA_AXI_READ_ONLY && process.env.GITEA_AXI_READ_ONLY !== 'false')) throw new CliError('READ_ONLY', 'Writes require an exact operation grant and a writable policy');
+      if (options.input) {
+        if (method === 'GET') throw new CliError('USAGE', '--input requires a write method', 2);
+        const body = await input(String(options.input));
+        if (Buffer.byteLength(body) > 1_000_000) throw new CliError('USAGE', 'Request exceeds 1000000 bytes', 2);
+        try { payload = JSON.parse(body); } catch { throw new CliError('USAGE', 'Request must be valid JSON', 2); }
+      }
     }
     if (options.config && (typeof options.config !== 'string' || !isAbsolute(options.config))) throw new CliError('USAGE', '--config must be absolute', 2);
     if (operation === 'config path') { console.log(encode({ path: configPath(options.config as string | undefined) })); return; }
@@ -84,17 +131,21 @@ export async function main(args: string[]) {
     let output: unknown;
     if (operation === 'auth status') output = { profile: identity.profile ?? 'anonymous', origin: identity.origin, source: identity.source ?? 'anonymous', authenticated: Boolean(identity.token) };
     else if (operation === 'doctor') output = { origin: identity.origin, identity: await read(client, '/api/v1/user') };
-    else if (operation === 'api') output = await rawRead(client, apiPath!);
     else if (searching) output = await search(client, path[1]!, positionals[0]!, options);
+    else if (operation === 'write reconcile') output = await reconcile(client, positionals[0]!);
+    else if (operation === 'api') output = method === 'GET' ? await rawRead(client, apiPath!) :
+      await write(client, identity, await rawWritePlan(client, method, apiPath!, payload), options);
     else if (operation === 'org view') output = { organization: await read(client, '/api/v1/orgs/' + encodeURIComponent(positionals[0]!)) };
     else if (operation === 'repo list') {
       if (options.fields) throw new CliError('USAGE', 'repo list supports its compact identity fields only', 2);
       const path = options.org ? '/api/v1/orgs/' + encodeURIComponent(String(options.org)) + '/repos' : '/api/v1/repos/search';
       output = boundedList(await collect(client, path, options.org ? undefined : 'data'), positive(options.limit, 30, 1000), ['id', 'full_name', 'default_branch']);
     } else {
-      const repo = repository(values.repo, identity.origin);
+      if (command.effect === 'write' && (!options['allow-write'] || process.env.GITEA_AXI_READ_ONLY && process.env.GITEA_AXI_READ_ONLY !== 'false')) throw new CliError('READ_ONLY', 'Writes require an exact operation grant and a writable policy');
+      const repo = repository(typeof values.repo === 'string' ? values.repo : undefined, identity.origin);
       const base = '/api/v1/repos/' + repo.split('/').map(encodeURIComponent).join('/');
-      if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
+      if (command.effect === 'write') output = await write(client, identity, await issueLabelPlan(client, operation, base, positionals[0], options), options);
+      else if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
       else if (operation === 'dashboard') {
         const sections: Record<string, unknown> = {};
         for (const [name, path, envelope] of [['repository', base], ['issues', base + '/issues?state=open&type=issues'], ['pulls', base + '/pulls?state=open'], ['labels', base + '/labels'], ['releases', base + '/releases'], ['runs', base + '/actions/tasks', 'workflow_runs']]) {

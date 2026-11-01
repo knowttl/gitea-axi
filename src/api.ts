@@ -5,7 +5,7 @@ import type { Client } from './transport.js';
 
 export type Row = Record<string, unknown>;
 const vendor = JSON.parse(readFileSync(new URL('../schemas/vendor.json', import.meta.url), 'utf8'));
-const routes: { path: string; operation: string; effect: string; schema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
+const routes: { path: string; method: string; operation: string; effect: string; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
 routes.sort((a, b) => b.path.replace(/\{[^}]+\}/g, '').length - a.path.replace(/\{[^}]+\}/g, '').length);
 const required: Record<string, string[]> = {
   Issue: ['id', 'number', 'title', 'state'], PullRequest: ['id', 'number', 'title', 'state', 'head', 'base'],
@@ -34,8 +34,36 @@ export function object(value: unknown): Row {
   return value as Row;
 }
 
+export function effectFor(method: string, path: string) {
+  path = canonicalPath(path);
+  return routes.find(route => route.method === method && new RegExp('^' + route.path.split(/(\{[^}]+\})/).map(part => /^\{[^}]+\}$/.test(part) ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('') + '$').test(path.split('?')[0]!));
+}
+
+export function canonicalPath(path: string): string {
+  const pathname = path.split('?')[0]!;
+  if (/%(?:2f|5c)/i.test(pathname)) throw new CliError('READ_ONLY', 'Encoded route separators are refused');
+  let decoded: string;
+  try { decoded = decodeURIComponent(pathname); } catch { throw new CliError('USAGE', 'Malformed API path', 2); }
+  return decoded.split('/').map(encodeURIComponent).join('/');
+}
+
+export function validatePayload(method: string, path: string, payload: unknown) {
+  const route = effectFor(method, path);
+  if (!route || route.effect !== 'write') throw new CliError('READ_ONLY', 'Only classified business writes may be enabled');
+  const segments = canonicalPath(path).split('/');
+  for (const [index, segment] of route.path.split('/').entries()) {
+    if (route.integerParameters.some(name => segment === '{' + name + '}') && !/^(?:0|-?[1-9]\d*)$/.test(segments[index]!)) {
+      throw new CliError('USAGE', 'Integer route parameters require canonical decimal spelling', 2);
+    }
+  }
+  if (route.requestSchema && !ajv.compile({ ...route.requestSchema, definitions: vendor.definitions })(payload)) {
+    throw new CliError('USAGE', 'Invalid request fields for ' + route.operation, 2);
+  }
+  return route;
+}
+
 export function routeFor(path: string) {
-  const route = routes.find(route => new RegExp('^' + route.path.replace(/[.]/g, '\\.').replace(/\{[^}]+\}/g, '[^/]+') + '$').test(path));
+  const route = effectFor('GET', path);
   if (route?.effect === 'admin') throw new CliError('READ_ONLY', 'Administrative API routes are refused; only metadata reads are available');
   if (route?.effect === 'credential') throw new CliError('READ_ONLY', 'Credential-bearing API routes are refused; only metadata reads are available');
   if (route?.effect === 'download') throw new CliError('READ_ONLY', 'Text and binary download routes are refused; only JSON metadata reads are available');
@@ -56,21 +84,24 @@ export function validate(path: string, value: unknown): unknown {
   return value;
 }
 
-export function rawPath(input: string): string {
-  let decoded: string;
-  try { decoded = decodeURIComponent(input); } catch { throw new CliError('USAGE', 'Malformed API path', 2); }
-  if (/^[a-z]+:/i.test(input) || input.startsWith('//') || /[\\#\s]/.test(decoded) || decoded.includes('%') ||
-      decoded.split(/[/?]/).some(part => part === '.' || part === '..')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
-  const [pathname, query = ''] = input.split('?');
+export function rawPath(input: string, method = 'GET'): string {
+  if (/^[a-z]+:/i.test(input) || input.startsWith('//') || input.includes('#')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
+  const separator = input.indexOf('?');
+  const pathname = canonicalPath(separator < 0 ? input : input.slice(0, separator));
+  const query = separator < 0 ? '' : input.slice(separator + 1);
+  const decoded = decodeURIComponent(pathname);
+  if (/[\\#\s%]/.test(decoded) || decoded.split('/').some(part => part === '.' || part === '..')) throw new CliError('USAGE', 'Use a relative API path without traversal', 2);
   for (const key of new URLSearchParams(query).keys()) {
     if (/token|secret|password|authorization|api.?key/i.test(key)) throw new CliError('CONFIG_INVALID', 'Secret query fields are refused');
   }
   const path = pathname === '/swagger.v1.json' ? pathname : pathname?.startsWith('/api/v1/') ? pathname : '/api/v1/' + pathname?.replace(/^\//, '');
-  if (path !== '/swagger.v1.json') routeFor(path);
+  if (path !== '/swagger.v1.json' && method === 'GET') routeFor(path);
+  else if (method !== 'GET' && !effectFor(method, path)) throw new CliError('READ_ONLY', 'Unclassified API route');
   return path + (query ? '?' + query : '');
 }
 
 export async function read(client: Client, path: string): Promise<unknown> {
+  routeFor(path.split('?')[0]!);
   const value = await client.get(path);
   return validate(path.split('?')[0]!, value);
 }

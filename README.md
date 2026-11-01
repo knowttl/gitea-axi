@@ -1,7 +1,7 @@
 # gitea-axi
 
-An agent CLI for Gitea repository, issue and pull request reads with private credential profiles.
-It includes a bounded repository dashboard, list and detail views, reviews, checks, diffs, Actions task summaries, bounded search and classified raw GET requests.
+An agent CLI for Gitea repository workflows with private credential profiles.
+It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, issue and label mutations, and classified raw API requests.
 Verification uses offline fakes only; live Gitea access remains unverified.
 
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
@@ -9,7 +9,7 @@ Verification uses offline fakes only; live Gitea access remains unverified.
 Task IDs and status strings do not establish run identity, job conclusions or terminal run results.
 All seven run commands and five workflow commands remain discoverable with `--help`.
 Run detail, watch, logs, downloads and workflow controls report explicit capability gaps.
-Mutating controls remain pending on the shared write gate.
+Mutating run and workflow controls remain unsupported pending contract commissioning.
 The retained 1.24.0 workflow, artifact and job-log routes are investigation candidates, not supported target operations.
 
 `search issues|prs|repos|commits "text"` searches at most 20 pages and 1000 candidates per collection, then filters, sorts and applies the total output limit (default 1000).
@@ -45,8 +45,8 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1 and S2 drivers print their report paths.
-Set `GITEA_AXI_REPORT` to retain an S1 or S2 report at a chosen path.
+The S1, S2 and S3 drivers print their report paths.
+Set `GITEA_AXI_REPORT` to retain an S1, S2 or S3 report at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
@@ -83,8 +83,60 @@ Bodies default to 1000 characters, diffs to 10000 characters, and rendered outpu
 `--full` expands bodies and diffs within the response and output ceilings.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
-Raw requests accept `api [GET] <relative-path>` for JSON metadata and refuse absolute URLs, traversal, secret query fields, credential-bearing routes, administrative routes, text or binary downloads and unclassified routes.
+Raw reads accept `api [GET] <relative-path>` for JSON metadata and refuse absolute URLs, traversal, secret query fields, credential-bearing routes, administrative routes, text or binary downloads and unclassified routes.
+Encoded slash and backslash separators are refused in API paths; encoded query text remains supported.
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
+
+Issue mutations include `create`, `edit`, `close`, `reopen`, `comment`, `delete`, `pin` and `unpin`.
+Label mutations include `create`, `edit` and `delete`; edit and delete accept an exact label name or ID.
+Create accepts repeatable `--assignee` and `--label` names and an exact `--milestone` title.
+Edit uses repeatable `--add-assignee`, `--remove-assignee`, `--add-label` and `--remove-label`, preserving unrelated memberships.
+Create, edit and comment accept `--body` or `--body-file`; body files must be owned, mode 0600, and at most 1000000 bytes.
+Use `--body-file -` for bounded stdin.
+Close accepts an optional `--comment`, recorded as a separate write step.
+GitHub-only type, project, close-reason and duplicate flags are refused before mutation.
+Attachments remain pending; attachment flags are refused before creating an issue.
+Label colours normalize to six lowercase hexadecimal digits, and renaming preserves the label ID.
+Issue and label deletion require a complete collection and at least one remaining control record before dispatch.
+
+Writes are disabled unless `--allow-write` names every exact vendor operation needed by the command.
+A profile's optional `writes` object can narrow this grant with `allowWrites` and an `operations` array.
+When set, `GITEA_AXI_READ_ONLY` refuses writes unless its value is exactly `false`.
+A hosted operation allow-list and read-only policy always take precedence over command-line grants.
+Preview and confirm the same arguments:
+
+```sh
+gitea-axi issue create --repo OWNER/NAME --title 'Fix login' --body 'Reproduction steps' --allow-write issueCreateIssue --preview
+gitea-axi issue create --repo OWNER/NAME --title 'Fix login' --body 'Reproduction steps' --allow-write issueCreateIssue --confirm CONFIRMATION_ID
+gitea-axi issue close 42 --repo OWNER/NAME --comment 'Resolved' --allow-write issueEditIssue,issueCreateComment --preview
+gitea-axi label create --repo OWNER/NAME --name bug --color ff0000 --allow-write issueCreateLabel --preview
+```
+
+The preview identifies the exact operations, payload and current preconditions without sending a mutation.
+Confirmation binds the credential revision, origin, target, operations, canonical payload and preconditions.
+Changing any binding requires a fresh preview.
+For issues that remain present, successful named writes verify identity and the expected final title, body, assignees, labels, milestone and state through fresh reads.
+Pin changes verify the complete expected pin membership; deletion verifies absence of the selected identity and preservation of all remaining records.
+A mismatched or failed verification reports an unknown outcome.
+
+Raw POST, PUT, PATCH and DELETE requests use this same policy and journal.
+Use a positional method or `-X METHOD`, repeatable `--field key=value` for typed numbers, booleans and null, or `--raw-field key=value` for strings.
+Protected JSON `--input FILE` and `--input -` are alternatives to argv fields, with the same 1000000-byte bound.
+Secret-bearing routes and secret argv fields remain refused.
+Routes with credential-bearing request schemas are refused even with protected `--input`.
+Integer route parameters on writes require canonical decimal spelling, so an issue index such as `01` is refused.
+Multipart uploads, named pull request writes, merge workflows and secret updates are pending.
+
+The journal defaults to `$XDG_STATE_HOME/gitea-axi/writes.log`, otherwise `~/.local/state/gitea-axi/writes.log` on Linux.
+`GITEA_AXI_WRITE_LOG` selects another absolute path; private confirmation receipts live beside it in `write-receipts`.
+The journal records hashes, operation identities and step states, without credentials or request bodies.
+Each attempt is persisted before dispatch.
+Timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
+Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
+An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
+Replay guards treat repository owner and repository name case variants as the same identity, while preserving case-sensitive non-integer path values.
+Keep its private receipts until the outcome has been investigated.
+Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
 `src/registry.ts` owns command metadata, help and the host inventory.
 `npm run generate` generates those artifacts plus the consumed response schemas, route types and classified raw-route registry from the retained Swagger.
@@ -117,8 +169,9 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S5.1 and S5.2 under a process preload that denies outbound connections except loopback.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1, S3.2, S5.1 and S5.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
+Run the S3 journeys independently with `node scripts/verify.mjs --task S3.1` and `node scripts/verify.mjs --task S3.2`.
 Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
@@ -126,3 +179,6 @@ Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof 
 The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
 Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
 The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
+The S3 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
+They report an explicit skip reason when the fixture is absent.
+Route classification covers all captured methods; this does not claim completion of every business workflow.

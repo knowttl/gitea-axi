@@ -5,7 +5,7 @@ import { collect, object, read } from './api.js';
 import type { Row, Page } from './api.js';
 import type { Client } from './transport.js';
 
-export type Options = Record<string, string | boolean | undefined>;
+export type Options = Record<string, string | string[] | boolean | undefined>;
 const scalarFields: Record<string, string> = {
   additions: 'additions', body: 'body', changedFiles: 'changed_files', closedAt: 'closed_at', createdAt: 'created_at',
   deletions: 'deletions', fullDatabaseId: 'id', isDraft: 'draft', maintainerCanModify: 'allow_maintainer_edit',
@@ -27,7 +27,7 @@ export function selectedFields(options: Options, allowed: string[], unavailable 
   return fields;
 }
 
-export function positive(value: string | boolean | undefined, fallback: number, maximum: number): number {
+export function positive(value: Options[string], fallback: number, maximum: number): number {
   if (value === undefined) return fallback;
   if (typeof value !== 'string' || !/^\d+$/.test(value) || Number(value) < 1 || Number(value) > maximum) throw new CliError('USAGE', 'Expected a positive integer up to ' + maximum, 2);
   return Number(value);

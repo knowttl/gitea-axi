@@ -97,7 +97,7 @@ try {
   report.sourceHead = (await run('git', ['-C', root, 'rev-parse', 'HEAD'])).trim();
   report.sourceDirty = Boolean((await run('git', ['-C', root, 'status', '--porcelain'])).trim());
   const prefix = join(scratch, 'installed');
-  await run('npm', ['install', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(scratch, packed.filename)]);
+  await run('npm', ['install', '--offline', '--prefix', prefix, '--ignore-scripts', '--no-audit', '--no-fund', join(scratch, packed.filename)]);
   bin = join(prefix, 'node_modules/@knowttl/gitea-axi/dist/cli.js');
   foreign.listen(0, '127.0.0.1'); await once(foreign, 'listening');
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
