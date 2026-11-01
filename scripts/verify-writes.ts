@@ -199,6 +199,10 @@ try {
     ];
     for (const args of denyCases) expect('Read-only refusal ' + args.join(' '), (await invoke(args, 1)).error.code, 'READ_ONLY');
     expect('Refusals dispatch no effects', applied, before);
+    const beforeEncoded = requests.length;
+    const encoded = ['api', 'GET', 'repos/sample/demo%2Factions%2Frunners%2Fregistration-token'];
+    expect('Encoded route separators cannot bypass effect policy', (await invoke(encoded, 1)).error.code, 'READ_ONLY');
+    expect('Encoded route refusal dispatches no HTTP request', requests.length, beforeEncoded);
     for (const [method, path, payload, operation] of [
       ['POST', 'issues', { title: 'Raw created' }, 'issueCreateIssue'],
       ['PATCH', 'issues/1', { title: 'Raw edited' }, 'issueEditIssue'],
@@ -307,6 +311,9 @@ try {
       testedHostDirty: Boolean((await run('git', ['-C', process.env.GITEA_AXI_ARTIUM_ROOT, 'status', '--porcelain'])).trim()) };
     process.env.NODE_OPTIONS = deny;
     host = await readHost({ host: process.env.GITEA_AXI_ARTIUM_ROOT, bin, scratch, origin, token });
+    const beforeEncoded = requests.length;
+    await host.invokeClient(['api', 'GET', 'repos/sample/demo%2Factions%2Frunners%2Fregistration-token'], 1);
+    expect('Hosted encoded route refusal dispatches no vendor HTTP request', requests.length, beforeEncoded);
     const args = ['issue', 'create', ...selected, '--title', 'Hosted exact issue', '--body', 'Hosted exact body', '--allow-write', 'issueCreateIssue'];
     await host.refuse([...args, '--preview'], 'FLAG_BLOCKED');
     await host.grantWrites(['issueCreateIssue']);

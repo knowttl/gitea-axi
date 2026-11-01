@@ -1,0 +1,16 @@
+{
+  "tasks": ["S3.1", "S3.2"],
+  "scope": "Offline fake services and synthetic credentials only; Windows and live commissioning remain pending.",
+  "fixtureRevision": "ead6d32934ecc3d02add08a2f5798555f81c0a3c",
+  "fixtureManifestSha256": "f50ed91cda0b4507fe8f64399b54bd706bc346e15c13d00589b2addb5949a420",
+  "packageSha256BeforeValidationFixes": "49bc84aee9f38bbe7b0d936aa9a9eda675fcec40350d303b3188433012f30602",
+  "verifiedSourceBeforeValidationFixes": "f880d8e8d36399640bdc7e3eb40730b6c3635c84",
+  "checksBeforeValidationFixes": [
+    { "command": "npm test", "result": "passed all nine offline task drivers without Artium" },
+    { "command": "node scripts/verify.mjs --task S3.1", "result": "passed with the real public client and sealed Artium fixture" },
+    { "command": "node scripts/verify.mjs --task S3.2", "result": "passed with the real public client and sealed Artium fixture" },
+    { "command": "pnpm exec vitest run --configLoader runner --no-cache test/gitea-admission.test.ts test/admission-fixture.test.ts", "result": "202 passed against the sealed fixture" }
+  ],
+  "blockingRegressionForValidation": "Encoded path separators can select a metadata classification while the vendor reaches a credential-issuing GET. The installed-CLI regression requires refusal before any vendor request. This must be fixed and revalidated before shipping.",
+  "coverageBoundary": "All captured routes are classified; this does not mean all 73 business workflows, uploads or merges are implemented."
+}
