@@ -87,7 +87,8 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
   if (options.continue && options.abort) usage('Choose --continue or --abort');
   const recoveringRebase = action === 'rebase' && (options.continue || options.abort);
   const recoveringPush = action === 'sync' && before?.pending?.action === 'push';
-  const recovering = recoveringRebase || recoveringPush;
+  const recoveringSync = action === 'sync' && before?.pending?.action === 'sync';
+  const recovering = recoveringRebase || recoveringPush || recoveringSync;
   if (recoveringRebase && (args.length || ['downstack', 'upstack', 'no-trunk', 'committer-date-is-author-date', 'remote'].some(key => options[key]))) usage('Recovery uses the recorded rebase options only');
   if (before?.pending && !recovering) throw new CliError('STACK_RECOVERY_REQUIRED', 'Stack operation is pending; inspect stack view and the native Git state before recovery');
   if (!recovering && !(action === 'add' && options.message)) await git.clean();
@@ -191,6 +192,7 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
     commands.push(['checkout', destination!]);
   } else if (action === 'push') {
     if (args.length) usage('stack push takes no positional arguments');
+    if (!state.branches.length) usage('The stack has no remaining branches to push');
     const leases = state.branches.map(name => '--force-with-lease=refs/heads/' + name + ':' +
       (remoteRefs.split('\n').find(line => line.endsWith('\trefs/heads/' + name))?.split('\t')[0] ?? ''));
     commands.push(['push', '--atomic', ...leases, '--', remote.url, ...state.branches.map(name => 'refs/heads/' + name + ':refs/heads/' + name)]);
@@ -210,7 +212,8 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
       linked.head = String(head.sha); linked.base = await git.branch(String(object(pull.base).ref));
       linked.state = pull.state as 'open' | 'closed'; linked.merged = pull.merged === true;
     }
-    commands.push(['fetch', '--no-tags', '--', remote.url, ...[state.trunk, ...state.branches].map(name => 'refs/heads/' + name + ':refs/remotes/' + remote.name + '/' + name)]);
+    const existing = [state.trunk, ...state.branches].filter(name => remoteRefs.split('\n').some(line => line.endsWith('\trefs/heads/' + name)));
+    if (existing.length) commands.push(['fetch', '--no-tags', '--', remote.url, ...existing.map(name => 'refs/heads/' + name + ':refs/remotes/' + remote.name + '/' + name)]);
     if (options.prune) {
       for (const member of [...state.branches]) {
         const linked = state.pulls.find(pull => pull.branch === member);
@@ -221,8 +224,6 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
         if (!/^[a-f0-9]{40}$/.test(merge) || !await git.run(['rev-parse', '--verify', '--quiet', merge + '^{commit}'], [0, 1]) ||
             !await ancestor(git, 'refs/heads/' + member, merge)) continue;
         commands.push(['branch', '-d', member]);
-        state.branches = state.branches.filter(name => name !== member);
-        state.pulls = state.pulls.filter(pull => pull.branch !== member);
       }
     }
   } else if (action === 'unstack') {
@@ -243,6 +244,15 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
     if (!['merge', 'squash', 'rebase'].includes(method)) usage('Use merge, squash or rebase');
     for (const member of state.branches.slice(0, state.branches.indexOf(selected) + 1)) {
       const linked = state.pulls.find(pull => pull.branch === member) ?? usage('Every merged stack branch requires a linked PR');
+      const pull = object(await read(client, base + '/pulls/' + linked.number));
+      apiPreconditions.push(pull);
+      if (pull.merged === true) {
+        const head = object(pull.head);
+        if (pull.state !== 'closed' || head.ref !== member || object(head.repo).full_name !== state.repository ||
+            head.sha !== await git.tip('refs/heads/' + member)) throw new CliError('STALE_HEAD', 'Completed dependency differs from its owned branch');
+        linked.state = 'closed'; linked.merged = true; linked.head = String(head.sha);
+        continue;
+      }
       if (linked.base !== state.trunk) {
         const edit = await pullPlan(client, 'pr edit', base, String(linked.number), { base: state.trunk });
         plans.push(edit); apiPreconditions.push(edit.preconditions);
@@ -277,7 +287,8 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
   const localAction = action === 'rebase' ? options.continue ? 'continue' : options.abort ? 'abort' : 'rebase' :
     ['up', 'down', 'top', 'bottom', 'trunk'].includes(action) ? 'checkout' : action;
   const local = 'gitea.local.stack.' + localAction;
-  const begin: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'begin', action, args, options: { ...options, preview: undefined, confirm: undefined }, remote } };
+  const begin: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'begin', action, args, options: { ...options, preview: undefined, confirm: undefined }, remote,
+    ...(recovering ? { recoverLocal: before!.pending!.confirmations } : {}) } };
   const finish: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'finish', state, commands, remove, destination } };
   const steps: WriteStep[] = [begin];
   const apiResultIndices: number[] = [];
@@ -299,7 +310,8 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
       if (payload.phase === 'begin') {
         unlock = await lock(directory);
         if (!same(before, await stackAt(path, git)) || !same(snapshot, await git.snapshot())) throw new CliError('CONFIRMATION_MISMATCH', 'Stack or workspace changed before dispatch');
-        if (action !== 'rebase') state.pending = { action, confirmations: [], originalBranch: snapshot.branch, originalTips: snapshot.refs,
+        if (action !== 'rebase') state.pending = { action, confirmations: recovering ? [...before!.pending!.confirmations] : [],
+          originalBranch: before?.pending?.originalBranch ?? snapshot.branch, originalTips: before?.pending?.originalTips ?? snapshot.refs,
           steps: [...plans.map(plan => ({ effect: plan.target, state: 'pending' as const })), ...commands.map(command => ({ effect: command[0]!, state: 'pending' as const }))] };
         state.pending!.confirmations.push(confirmation);
         await save(path, state);
@@ -365,6 +377,10 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
         for (const [index, command] of commands.entries()) {
           state.pending!.steps[plans.length + index]!.state = 'dispatched'; await save(path, state);
           await git.run(command);
+          if (action === 'sync' && command[0] === 'branch') {
+            state.branches = state.branches.filter(name => name !== command[2]);
+            state.pulls = state.pulls.filter(pull => pull.branch !== command[2]);
+          }
           state.pending!.steps[plans.length + index]!.state = 'completed'; await save(path, state);
         }
         if (action === 'push') {

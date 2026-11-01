@@ -25,7 +25,8 @@ const requests: { method: string; path: string }[] = [];
 const assertions: string[] = [];
 const repos = new Map<string, Row>();
 const pulls = new Map<string, Row[]>();
-let origin = '', denied = false, mergeFailure = 0, packageSha256 = '', losePushReply = false;
+let origin = '', denied = false, mergeFailure = 0, packageSha256 = '', losePushReply = false, failFetch = false;
+let fetchReads = 0;
 let fixture: unknown = 'skipped: opt-in frozen Artium fixture required';
 let host: Awaited<ReturnType<typeof readHost>> | undefined;
 let result = 'failed';
@@ -78,7 +79,8 @@ async function mergePull(name: string, pull: Row, payload: Row) {
 }
 async function refreshPull(name: string, pull: Row) {
   const head = pull.head as Row, base = pull.base as Row;
-  head.sha = await tip(name, String(head.ref)); base.sha = await tip(name, String(base.ref));
+  if (await serviceGit(name, ['for-each-ref', '--format=%(objectname)', 'refs/heads/' + head.ref])) head.sha = await tip(name, String(head.ref));
+  base.sha = await tip(name, String(base.ref));
 }
 const server = createServer(async (request, response) => {
   try {
@@ -87,6 +89,9 @@ const server = createServer(async (request, response) => {
     requests.push({ method: request.method!, path: url.pathname });
     if (denied) { response.writeHead(403, { 'content-type': 'application/json' }).end(JSON.stringify({ message: 'denied ' + canary })); return; }
     if (url.pathname.includes('.git/')) {
+      if (failFetch && url.pathname.endsWith('/info/refs') && ++fetchReads === 2) {
+        response.writeHead(503).end(); return;
+      }
       const chunks: Buffer[] = [];
       for await (const chunk of request) chunks.push(Buffer.from(chunk as Uint8Array));
       const body = Buffer.concat(chunks);
@@ -208,6 +213,14 @@ try {
     await execute(['stack', 'link', '1', '2', '3', '--base', 'main'], 'gitea.local.stack.link,repoEditPullRequest', workspace);
     return { name, workspace };
   };
+  await git(['config', 'extensions.worktreeConfig', 'true']);
+  await git(['config', '--worktree', 'url.http://127.0.0.1:1/.pushInsteadOf', origin + '/']);
+  const guardedMutations = requests.filter(request => request.method !== 'GET').length;
+  const guardedArgs = task === 'S6.1' ? ['repo', 'create', 'unsafe', '--public', '--source', source, '--push'] : ['stack', 'push'];
+  check('Worktree transport rewrite refuses before publication', (await invoke([...guardedArgs, '--preview', '--allow-write',
+    'createCurrentUserRepo,gitea.local.composite,gitea.local.stack.push'], 1)).error.code, 'UNSAFE_GIT_CONFIG');
+  check('Worktree transport rewrite dispatches no mutation', requests.filter(request => request.method !== 'GET').length, guardedMutations);
+  await git(['config', '--worktree', '--unset', 'url.http://127.0.0.1:1/.pushInsteadOf']);
 
   if (task === 'S6.1') {
     const parent = join(scratch, 'clones'); await mkdir(parent);
@@ -301,6 +314,32 @@ try {
     await git(['checkout', 'main'], merged.workspace);
     await execute(['stack', 'sync', '--prune'], 'gitea.local.stack.sync', merged.workspace);
     check('Prune removes only verified completed owned branches', await git(['for-each-ref', '--format=%(refname:short)', 'refs/heads'], merged.workspace), 'main\nunowned');
+    await git(['config', 'push.default', 'current'], merged.workspace);
+    const emptyPushRequests = requests.filter(request => request.path.endsWith('/git-receive-pack')).length;
+    check('Empty stack refuses implicit publication', (await invoke(['stack', 'push', '--preview', '--allow-write', 'gitea.local.stack.push'], 2, merged.workspace)).error.code, 'USAGE');
+    check('Empty stack publishes nothing', requests.filter(request => request.path.endsWith('/git-receive-pack')).length, emptyPushRequests);
+    const partial = await isolatedStack('partial-merge');
+    pulls.get(partial.name)![0]!.state = 'closed';
+    check('Closed unmerged dependency refuses before merging descendants', (await invoke(['stack', 'merge', '2', '--merge', '--preview', '--allow-write',
+      'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest'], 2, partial.workspace)).error.code, 'USAGE');
+    check('Closed dependency merges no PRs', pulls.get(partial.name)!.map(pull => pull.merged), [false, false, false]);
+    pulls.get(partial.name)![0]!.state = 'open';
+    await execute(['stack', 'merge', '1', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', partial.workspace);
+    await execute(['stack', 'sync'], 'gitea.local.stack.sync', partial.workspace);
+    await execute(['stack', 'merge', '2', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', partial.workspace);
+    check('Partial merge skips completed predecessor after sync', pulls.get(partial.name)!.map(pull => pull.merged), [true, true, false]);
+    await execute(['stack', 'merge', 'one', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', partial.workspace);
+    check('Whole-stack merge skips completed predecessors', pulls.get(partial.name)!.map(pull => pull.merged), [true, true, true]);
+    await git(['fetch', bare(partial.name), 'refs/heads/main:refs/remotes/origin/main'], partial.workspace);
+    for (const name of ['one', 'two', 'three']) await git(['branch', '--unset-upstream', name], partial.workspace);
+    for (const name of ['one', 'two', 'three']) await serviceGit(partial.name, ['update-ref', '-d', 'refs/heads/' + name]);
+    const pruneArgs = ['stack', 'sync', '--prune', '--allow-write', 'gitea.local.stack.sync'];
+    const prunePreview = await invoke([...pruneArgs, '--preview'], 0, partial.workspace);
+    await invoke([...pruneArgs, '--confirm', prunePreview.confirmation], 1, partial.workspace);
+    check('Failed deletion retains ownership and linked PRs', (await invoke(['stack', 'view'], 0, partial.workspace)).stack.branches, ['one', 'two', 'three']);
+    await git(['merge', '--ff-only', 'origin/main'], partial.workspace);
+    await execute(['stack', 'sync', '--prune'], 'gitea.local.stack.sync', partial.workspace);
+    check('Sync resumes and prunes remotely deleted merged heads', (await invoke(['stack', 'view'], 0, partial.workspace)).stack.branches, []);
     const failed = await isolatedStack('merge-failure');
     mergeFailure = 2;
     const mergeArgs = ['stack', 'merge', 'one', '--merge-method', 'merge', '--allow-write', 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest'];
@@ -320,6 +359,13 @@ try {
     check('Interrupted push reached only intended remote', await tip(interrupted.name, 'three'), await git(['rev-parse', 'three'], interrupted.workspace));
     check('Pending push refuses replay', (await invoke([...pushArgs, '--preview'], 1, interrupted.workspace)).error.code, 'STACK_RECOVERY_REQUIRED');
     const receiveCount = requests.filter(request => request.path.endsWith('/git-receive-pack')).length;
+    const syncArgs = ['stack', 'sync', '--allow-write', 'gitea.local.stack.sync'];
+    const syncPreview = await invoke([...syncArgs, '--preview'], 0, interrupted.workspace);
+    failFetch = true;
+    await invoke([...syncArgs, '--confirm', syncPreview.confirmation], 1, interrupted.workspace);
+    failFetch = false;
+    const pendingSync = (await invoke(['stack', 'view'], 0, interrupted.workspace)).recovery as { confirmations: string[] };
+    check('Interrupted recovery retains both confirmation IDs', pendingSync.confirmations, [pushPreview.confirmation, syncPreview.confirmation]);
     await execute(['stack', 'sync'], 'gitea.local.stack.sync', interrupted.workspace);
     check('Recovery clears verified pending state', (await invoke(['stack', 'view'], 0, interrupted.workspace)).recovery, null);
     check('Sync refreshes the published PR head', (await invoke(['stack', 'view'], 0, interrupted.workspace)).stack.pulls.find(pull => pull.branch === 'three')!.head,
