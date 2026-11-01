@@ -16,6 +16,7 @@ interface Profile {
 const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', import.meta.url), 'utf8'));
 const validate = new Ajv({ strict: false }).compile<Profile>(schema);
 const secrets: string[] = [];
+export function registerSecret(value: string) { if (value) secrets.push(value); }
 
 export function redact(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(redact);

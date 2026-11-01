@@ -4,7 +4,7 @@ import { encode } from '@toon-format/toon';
 import { commands } from './registry.js';
 import { CliError } from './error.js';
 import { readRepository } from './repository.js';
-import { configPath, credentials, profileList, redact } from './credentials.js';
+import { configPath, credentials, profileList, redact, registerSecret } from './credentials.js';
 import { Client } from './transport.js';
 import { collect, object, rawPath, rawRead, read } from './api.js';
 import { boundedList, issueFields, listIssues, listOptions, positive, prFields, repository, selectedFields, view, watchChecks } from './reads.js';
@@ -16,9 +16,12 @@ import { readPrivateFile } from './private-file.js';
 import { pullPlan, validatePull } from './pulls.js';
 import { repositoryPlan, validateRepositoryWorkflow } from './repo-workflows.js';
 import { releasePlan, releaseRead, validateRelease } from './releases.js';
+import { actionValues, valuePlan } from './action-values.js';
+import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
+  process.stdin.setEncoding('utf8');
   let body = '';
   for await (const chunk of process.stdin) {
     body += String(chunk);
@@ -30,6 +33,10 @@ async function input(path: string) {
 export async function main(args: string[]) {
   let operation = 'dashboard';
   try {
+    for (const arg of args) {
+      const match = /^(?:--(?:raw-)?field=)?data=([\s\S]*)$/.exec(arg);
+      if (match) registerSecret(match[1]!);
+    }
     if (args.some(arg => /^--(?:token|api-key|password|authorization)(?:=|$)/i.test(arg))) {
       throw new CliError('CONFIG_INVALID', 'token and other secret arguments are not accepted');
     }
@@ -72,6 +79,18 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
+    const valuesCommand = operation.startsWith('secret ') || operation.startsWith('variable ');
+    const secretCommand = operation.startsWith('secret ');
+    let protectedValue: string | undefined;
+    if (valuesCommand) {
+      if (options.org && options.repo) throw new CliError('USAGE', 'Choose --org or --repo', 2);
+      if (options.org && (!/^[A-Za-z0-9_.-]+$/.test(String(options.org)) || ['.', '..'].includes(String(options.org)))) throw new CliError('USAGE', 'Select an organization name', 2);
+      if (operation.endsWith(' set')) {
+        if (options.input !== undefined && options.body !== undefined || options.input === undefined && options.body === undefined) throw new CliError('USAGE', 'Choose exactly one value input', 2);
+        protectedValue = options.input !== undefined ? await input(String(options.input)) : String(options.body);
+        if (secretCommand) registerSecret(protectedValue);
+      }
+    }
     const repositoryMutation = operation.startsWith('repo ') && command.effect === 'write';
     const releasing = operation.startsWith('release ');
     if (repositoryMutation) validateRepositoryWorkflow(operation, options);
@@ -80,7 +99,8 @@ export async function main(args: string[]) {
       if (options.notes !== undefined) options.body = options.notes;
       if (options['notes-file'] !== undefined) options['body-file'] = options['notes-file'];
     }
-    if (operation.startsWith('pr ') && command.effect === 'write') validatePull(operation, options);
+    const transferring = /^(?:issue|pr|release) (?:upload|download)$/.test(operation);
+    if (operation.startsWith('pr ') && command.effect === 'write' && !transferring) validatePull(operation, options);
     if (operation.startsWith('workflow ') || operation.startsWith('run ') && operation !== 'run list') {
       throw new CliError('CAPABILITY_GAP', operation + ' is pending: the 1.23.4 contract has task summaries only; 1.24.0 candidates require commissioning. Mutating controls also await the shared write gate');
     }
@@ -93,15 +113,17 @@ export async function main(args: string[]) {
       if (options.body !== undefined) throw new CliError('USAGE', 'Choose --body or --body-file', 2);
       options.body = await input(String(options['body-file']));
     }
-    const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff'].includes(operation) ||
+    const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff', 'issue download', 'pr download'].includes(operation) ||
       (command.effect === 'write' && (operation.startsWith('issue ') || operation.startsWith('pr ')) && !operation.endsWith(' create'));
     if (takesNumber && (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select exactly one positive item number', 2);
     const takesLabel = operation === 'label edit' || operation === 'label delete';
+    const takesValue = valuesCommand && !operation.endsWith(' list');
+    if (takesValue && (positionals.length !== 1 || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select one secret or variable name using letters, digits and underscores', 2);
     if (takesLabel && positionals.length !== 1) throw new CliError('USAGE', 'Select one exact label name or ID', 2);
     const takesTag = releasing && operation !== 'release list';
-    if (takesTag && (positionals.length !== 1 || !positionals[0])) throw new CliError('USAGE', 'Select exactly one release tag; asset transfers are deferred', 2);
+    if (takesTag && (positionals.length !== 1 || !positionals[0])) throw new CliError('USAGE', 'Select exactly one release tag', 2);
     if (repositoryMutation && positionals.length > 1) throw new CliError('USAGE', 'Select at most one repository', 2);
-    if (!takesNumber && !takesLabel && !takesTag && !repositoryMutation && !searching && operation !== 'write reconcile' && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
+    if (!takesNumber && !takesLabel && !takesTag && !takesValue && !repositoryMutation && !searching && operation !== 'write reconcile' && operation !== 'api' && operation !== 'org view' && positionals.length) throw new CliError('USAGE', 'Unexpected positional argument', 2);
     if (operation === 'write reconcile' && positionals.length !== 1) throw new CliError('USAGE', 'Select one confirmation ID', 2);
     if (operation === 'org view' && (positionals.length !== 1 || !/^[A-Za-z0-9_.-]+$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select one organization name', 2);
     if (operation.endsWith('list')) listOptions(options);
@@ -142,8 +164,10 @@ export async function main(args: string[]) {
       if (options.input) {
         if (method === 'GET') throw new CliError('USAGE', '--input requires a write method', 2);
         const body = await input(String(options.input));
+        registerSecret(body);
         if (Buffer.byteLength(body) > 1_000_000) throw new CliError('USAGE', 'Request exceeds 1000000 bytes', 2);
         try { payload = JSON.parse(body); } catch { throw new CliError('USAGE', 'Request must be valid JSON', 2); }
+        if (/\/actions\/secrets\//.test(apiPath) && typeof object(payload).data === 'string') registerSecret(String(object(payload).data));
       }
     }
     if (options.config && (typeof options.config !== 'string' || !isAbsolute(options.config))) throw new CliError('USAGE', '--config must be absolute', 2);
@@ -161,6 +185,12 @@ export async function main(args: string[]) {
     else if (operation === 'api') output = method === 'GET' ? await rawRead(client, apiPath!) :
       await write(client, identity, await rawWritePlan(client, method, apiPath!, payload), options);
     else if (operation === 'org view') output = { organization: await read(client, '/api/v1/orgs/' + encodeURIComponent(positionals[0]!)) };
+    else if (valuesCommand) {
+      const scope = options.org ? '/api/v1/orgs/' + encodeURIComponent(String(options.org)) : '/api/v1/repos/' + repository(typeof options.repo === 'string' ? options.repo : undefined, identity.origin).split('/').map(encodeURIComponent).join('/');
+      const path = scope + '/actions/' + (secretCommand ? 'secrets' : 'variables');
+      output = operation.endsWith(' list') ? boundedList({ items: await actionValues(client, path), total: null, next: null, truncated: false }, positive(options.limit, 30, 1000), secretCommand ? ['name'] : ['name', 'data']) :
+        await write(client, identity, await valuePlan(client, path, positionals[0]!, operation.split(' ')[1]!, protectedValue), options);
+    }
     else if (repositoryMutation) output = await write(client, identity, await repositoryPlan(client, operation, positionals[0], options), options);
     else if (operation === 'repo list') {
       if (options.fields) throw new CliError('USAGE', 'repo list supports its compact identity fields only', 2);
@@ -170,8 +200,12 @@ export async function main(args: string[]) {
       if (command.effect === 'write' && (!options['allow-write'] || process.env.GITEA_AXI_READ_ONLY && process.env.GITEA_AXI_READ_ONLY !== 'false')) throw new CliError('READ_ONLY', 'Writes require an exact operation grant and a writable policy');
       const repo = repository(typeof values.repo === 'string' ? values.repo : undefined, identity.origin);
       const base = '/api/v1/repos/' + repo.split('/').map(encodeURIComponent).join('/');
-      if (releasing) output = command.effect === 'write' ? await write(client, identity, await releasePlan(client, operation, base, positionals[0]!, options), options) : await releaseRead(client, operation, base, positionals[0], options);
-      else if (command.effect === 'write') output = await write(client, identity, await (operation.startsWith('pr ') ? pullPlan : issueLabelPlan)(client, operation, base, positionals[0], options), options);
+      if (transferring) {
+        const path = await assetPath(client, base, operation.split(' ')[0]!, positionals[0]!);
+        output = operation.endsWith(' upload') ? await write(client, identity, await uploadPlan(client, path, options), options) : await download(client, path, options);
+      }
+      else if (releasing) output = command.effect === 'write' ? await write(client, identity, await attachToPlan(client, await releasePlan(client, operation, base, positionals[0]!, options), operation, base, positionals[0], options), options) : await releaseRead(client, operation, base, positionals[0], options);
+      else if (command.effect === 'write') output = await write(client, identity, await attachToPlan(client, await (operation.startsWith('pr ') ? pullPlan : issueLabelPlan)(client, operation, base, positionals[0], options), operation, base, positionals[0], options), options);
       else if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
       else if (operation === 'dashboard') {
         const sections: Record<string, unknown> = {};

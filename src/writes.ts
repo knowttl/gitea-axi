@@ -12,11 +12,13 @@ import type { Client } from './transport.js';
 import { verifyPull } from './pulls.js';
 import { verifyWorkflow } from './repo-workflows.js';
 import type { WorkflowVerification } from './repo-workflows.js';
+import { valuePlan, verifyValue } from './action-values.js';
+import { verifyUploads } from './attachments.js';
 
-export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string } }
+export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
 interface Observation { path: string; data: unknown }
-interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; createdPull?: { id: number; number: number } }
+interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -116,6 +118,7 @@ function verifyNamed(plan: WritePlan, results: unknown[], observations: Observat
     if (actual.id !== id || actual.number !== number || canonical(issueFields(actual)) !== canonical(fields)) mismatch();
   }
   for (const [index, step] of plan.steps.entries()) {
+    if (step.upload) continue;
     const pin = /^(.*\/issues)\/(\d+)\/pin$/.exec(step.path);
     if (pin) {
       const pins = collection(pin[1] + '/pinned');
@@ -177,11 +180,12 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
         }
       }
     }
-    return { method: step.method, path: segments.join('/'), ...(step.payload === undefined ? {} : { payload: step.payload }) };
+    return { method: step.method, path: segments.join('/'), ...(step.payload === undefined ? {} : { payload: step.payload }), ...(step.upload ? { upload: step.upload } : {}) };
   };
   const effectSteps = plan.steps.map(effectStep);
-  const attempt = digest({ origin: client.origin, steps: effectSteps });
-  const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
+  const effectDigest = (value: unknown) => plan.sensitive ? createHmac('sha256', secret).update(canonical(value)).digest('hex') : digest(value);
+  const attempt = effectDigest({ origin: client.origin, steps: effectSteps });
+  const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, effectDigest({ origin: client.origin, step }) + '.attempt')))];
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);
@@ -192,7 +196,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     const id = randomUUID();
     const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
-    return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps, preconditions: plan.preconditions,
+    return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
       ...(plan.notes ? { notes: plan.notes } : {}), help: 'Repeat the same command with --confirm ' + id + ' instead of --preview' };
   }
   const id = String(options.confirm);
@@ -219,10 +223,21 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     }
   }
   const results: unknown[] = [];
-  const outcome = () => 'steps=' + receipt.states.join(',') + (receipt.createdPull ? '; created PR id=' + receipt.createdPull.id + ' number=' + receipt.createdPull.number : '') + '; reconcile with ' + command(id, options);
+  const outcome = () => 'steps=' + receipt.states.join(',') + (receipt.createdPull ? '; created PR id=' + receipt.createdPull.id + ' number=' + receipt.createdPull.number : '') + (receipt.createdParent ? '; existing parent id=' + receipt.createdParent.id + (receipt.createdParent.number ? ' number=' + receipt.createdParent.number : '') : '') + '; reconcile with ' + command(id, options);
   for (const [index, step] of plan.steps.entries()) {
     try {
       let dispatched = step;
+      if (step.assetParent !== undefined) {
+        const parent = object(results[step.assetParent]);
+        const field = /\/issues\/0\/assets$/.test(step.path) ? 'number' : 'id';
+        if (!Number.isSafeInteger(parent[field]) || Number(parent[field]) <= 0) throw new CliError('INVALID_RESPONSE', 'Parent creation returned no usable identity');
+        dispatched = { ...step, path: step.path.replace('/0/assets', '/' + parent[field] + '/assets') };
+        if (validatePayload(dispatched.method, dispatched.path, dispatched.payload).operation !== operations[index]) throw new CliError('READ_ONLY', 'Resolved attachment operation differs from the approved plan');
+        if (!receipt.reads.includes(dispatched.path)) receipt.reads.push(dispatched.path);
+        plan.assets!.path = dispatched.path;
+        const guard = join(root, effectDigest({ origin: client.origin, step: effectStep(dispatched) }) + '.attempt');
+        if (!guards.includes(guard)) { await reserve(guard); guards.push(guard); }
+      }
       if (step.createdPull) {
         if (plan.pull?.action !== 'create' || index !== 1 || step.method !== 'POST' || step.path !== plan.target + '/0/requested_reviewers' || !receipt.createdPull) throw new CliError('INVALID_RESPONSE', 'Cannot resolve the created PR for reviewer changes');
         dispatched = { method: step.method, path: plan.target + '/' + receipt.createdPull.number + '/requested_reviewers', payload: step.payload };
@@ -239,8 +254,13 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
         await journal.writeFile(JSON.stringify({ confirmation: id, operation: operations[index], attempt, step: index, state: 'dispatched' }) + '\n');
         await journal.sync();
       } finally { await journal.close(); }
-      const result = (await client.request(dispatched.path, false, dispatched)).data;
+      const result = (await client.request(dispatched.path, false, { ...dispatched, ...(plan.sensitive ? { sensitive: true } : {}) })).data;
       results.push(result);
+      if (plan.steps.some(step => step.assetParent === index)) {
+        const parent = object(result);
+        if (!Number.isSafeInteger(parent.id) || Number(parent.id) <= 0) throw new CliError('INVALID_RESPONSE', 'Parent creation returned no identity');
+        receipt.createdParent = { id: Number(parent.id), ...(typeof parent.number === 'number' ? { number: parent.number } : {}) };
+      }
       if (index === 0 && plan.steps.some(step => step.createdPull)) {
         const created = object(result);
         if (!Number.isSafeInteger(created.id) || Number(created.id) <= 0 || !Number.isSafeInteger(created.number) || Number(created.number) <= 0) throw new CliError('INVALID_RESPONSE', 'Creation did not return a PR identity');
@@ -258,10 +278,12 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   }
   let observations;
   try {
-    observations = await observe(client, plan.reads);
+    observations = await observe(client, receipt.reads);
     if (plan.pull) await verifyPull(client, plan, results, observations);
     if (plan.named) verifyNamed(plan, results, observations);
     if (plan.workflow) await verifyWorkflow(client, plan, results, observations);
+    if (plan.value) verifyValue(plan, observations);
+    if (plan.assets) verifyUploads(plan, results, observations);
   }
   catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; ' + outcome()); }
   await Promise.all(guards.map(path => rm(path)));
@@ -270,6 +292,11 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
 
 export async function rawWritePlan(client: Client, method: string, path: string, payload: unknown): Promise<WritePlan> {
   const route = validatePayload(method, path, payload);
+  if (/\/actions\/secrets\//.test(path)) {
+    const base = path.slice(0, path.lastIndexOf('/'));
+    const plan = await valuePlan(client, base, decodeURIComponent(path.slice(path.lastIndexOf('/') + 1)), method === 'DELETE' ? 'delete' : 'set', method === 'PUT' ? String(object(payload).data) : undefined);
+    return { ...plan, steps: [{ method, path, ...(payload === undefined ? {} : { payload }) }] };
+  }
   let verification = path.split('?')[0]!;
   if (method === 'DELETE' || route.operation === 'repoMergePullRequest') verification = verification.slice(0, verification.lastIndexOf('/'));
   while (!effectFor('GET', verification) || effectFor('GET', verification)?.effect !== 'read') {
@@ -351,7 +378,7 @@ export async function issueLabelPlan(client: Client, operation: string, base: st
         for (const id of await labelIds(options['remove-label'])) add('DELETE', path + '/labels/' + id);
       }
       if (Object.keys(payload).length) steps.unshift({ method: action === 'create' ? 'POST' : 'PATCH', path, payload });
-      if (!steps.length) usage('Choose an issue field to edit');
+      if (!steps.length && !options.attach) usage('Choose an issue field to edit');
     } else if (action === 'close' || action === 'reopen') {
       add('PATCH', path, { state: action === 'close' ? 'closed' : 'open' });
       if (options.comment !== undefined) {

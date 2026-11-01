@@ -1,0 +1,13 @@
+{
+  "tasks": ["S4.2", "S4.3"],
+  "channel": "offline-fake",
+  "fixtureProvenance": "Synthetic attachment bytes and secret/variable canaries authored against the retained Gitea 1.23.4 schemas and the separately approved source-derived binary route contract. No live service observations.",
+  "operations": ["OP-035", "OP-040", "OP-041", "OP-042", "OP-057", "OP-058", "OP-069", "OP-010", "OP-011", "OP-021", "OP-022", "OP-023", "OP-054", "OP-072", "OP-073"],
+  "checks": ["node scripts/verify.mjs --task S4.2", "node scripts/verify.mjs --task S4.3"],
+  "transfers": "Multipart uploads bind exact content and verify attachment metadata. Binary downloads use validated UUIDs on a source-derived same-origin route; all redirects refuse. Independent byte ceilings, safe files, exact digests, content types and partial outcomes are exercised. Metadata reads do not prove binary delivery.",
+  "values": "Repository and organization secret writes accept protected inputs only and verify names, never secret values. The fake upstream checks exact canary bytes and targets. Variables verify create, update, empty strings, delete and control preservation.",
+  "effects": "Every business mutation uses shared operation grants, preview binding, durable dispatch receipts, replay guards and a secret-free journal. Secret payloads are absent from preview, response output and persisted bodies; keyed effect hashes prevent plaintext-value dictionary checks against journal hashes.",
+  "artium": "Opt-in frozen fixture journeys record revision, manifest digest, package digest and tested source head in external reports. Missing fixture explicitly skips hosted proof. Managed uploads, protected stdin/files and authenticated artifact custody require the reviewed host delta.",
+  "nativeWindows": "pending",
+  "liveCommissioning": "pending; includes private-token and object-storage compatibility"
+}
