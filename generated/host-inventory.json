@@ -102,28 +102,23 @@
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "output": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "asset-id": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "pattern": {
           "type": "string",
           "multiple": true
         },
         "sha256": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "clobber": {
           "type": "boolean"
@@ -171,28 +166,23 @@
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "output": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "asset-id": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "pattern": {
           "type": "string",
           "multiple": true
         },
         "sha256": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "clobber": {
           "type": "boolean"
@@ -240,28 +230,23 @@
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "output": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "asset-id": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "pattern": {
           "type": "string",
           "multiple": true
         },
         "sha256": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "clobber": {
           "type": "boolean"
@@ -309,8 +294,7 @@
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "limit": {
           "type": "string",
@@ -364,8 +348,7 @@
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "limit": {
           "type": "string",
@@ -1379,8 +1362,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -1441,8 +1423,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -1503,8 +1484,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -1561,8 +1541,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "input": {
           "type": "string",
@@ -1633,8 +1612,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "env": {
           "type": "string",
@@ -1696,12 +1674,10 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "input": {
           "type": "string",
@@ -1762,8 +1738,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -1830,23 +1805,19 @@
           "gap": "--internal has no implemented compatibility contract for repo create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         },
         "description": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "template": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "source": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "push": {
           "type": "boolean"
         },
         "remote": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "clone": {
           "type": "boolean"
@@ -1910,16 +1881,13 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "description": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "visibility": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "default-branch": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "enable-issues": {
           "type": "boolean"
@@ -1982,19 +1950,16 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "org": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "clone": {
           "type": "boolean"
         },
         "remote": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "source": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "push": {
           "type": "boolean"
@@ -2062,8 +2027,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "title": {
           "type": "string",
@@ -2078,8 +2042,7 @@
           "short": "F"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -2094,15 +2057,13 @@
           "short": "p"
         },
         "target": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "generate-notes": {
           "type": "boolean"
         },
         "notes-start-tag": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "notes-from-tag": {
           "type": "boolean"
@@ -2180,12 +2141,10 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "title": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "notes": {
           "type": "string",
@@ -2196,8 +2155,7 @@
           "short": "F"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -2322,36 +2280,30 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "title": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
           "description": "Body from an owned file or - for bounded stdin"
         },
         "milestone": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "attach": {
           "type": "string",
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "base": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "head": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "assignee": {
           "type": "string",
@@ -2434,32 +2386,27 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "title": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
           "description": "Body from an owned file or - for bounded stdin"
         },
         "milestone": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "attach": {
           "type": "string",
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "base": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "add-label": {
           "type": "string",
@@ -2548,8 +2495,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "comment": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -2660,8 +2606,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -2672,8 +2617,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -2784,8 +2728,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "method": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "merge": {
           "type": "boolean"
@@ -2797,8 +2740,7 @@
           "type": "boolean"
         },
         "match-head-commit": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "auto": {
           "type": "boolean",
@@ -2813,12 +2755,10 @@
           "gap": "--delete-branch has no implemented compatibility contract for pr merge on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         },
         "subject": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -2888,12 +2828,10 @@
           "type": "boolean"
         },
         "match-head-commit": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -2954,28 +2892,24 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "title": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
           "description": "Body from an owned file or - for bounded stdin"
         },
         "milestone": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "attach": {
           "type": "string",
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "assignee": {
           "type": "string",
@@ -3050,28 +2984,24 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "title": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
           "description": "Body from an owned file or - for bounded stdin"
         },
         "milestone": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "attach": {
           "type": "string",
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "add-label": {
           "type": "string",
@@ -3154,8 +3084,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "comment": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "reason": {
           "type": "string",
@@ -3276,8 +3205,7 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "body": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "body-file": {
           "type": "string",
@@ -3288,8 +3216,7 @@
           "multiple": true
         },
         "content-type": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -3508,16 +3435,13 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "name": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "color": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "description": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"
@@ -3574,16 +3498,13 @@
           "description": "Execute the unchanged preview confirmation ID once"
         },
         "name": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "color": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         },
         "description": {
-          "type": "string",
-          "gap": "--discussion-category has no implemented compatibility contract for release create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+          "type": "string"
         }
       },
       "effect": "write"

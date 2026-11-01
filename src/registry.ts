@@ -173,7 +173,7 @@ const refusedFlags: [string, string[]][] = [
 ];
 for (const [path, names] of refusedFlags) {
   const command = commands.find(command => command.path.join(' ') === path)!;
-  for (const name of names) command.flags[name]!.gap = flagGap(path, name);
+  for (const name of names) command.flags[name] = { ...command.flags[name]!, gap: flagGap(path, name) };
 }
 // Retain unsupported leaves and options in the same registry that owns help and admission metadata.
 const booleanFlags = new Set(['comments', 'full', 'public', 'secret', 'files', 'raw', 'web', 'no-type', 'draft', 'failed', 'fail-fast', 'patch', 'undo', 'all', 'prune', 'open', 'local', 'merge', 'squash', 'rebase', 'downstack', 'upstack', 'no-trunk', 'continue', 'abort', 'committer-date-is-author-date', 'preserve-dates', 'check', 'closed', 'clear', 'remove']);

@@ -33,6 +33,7 @@ const server = createServer((request, response) => {
     '/api/v1/version': { version: '1.23.4' },
     '/swagger.v1.json': { info: { version: '1.23.4' }, paths: { '/version': {} } },
     '/api/v1/repos/sample/demo': { id: 1008, full_name: 'sample/demo', default_branch: 'main' },
+    '/api/v1/repos/sample/demo/issues': [],
     '/api/v1/repos/sample/demo/contents': [{ type: 'file', name: 'README.md', path: 'README.md', sha: 'a'.repeat(40), size: 5, encoding: 'base64', content: 'aGVsbG8=' }],
     '/api/v1/repos/sample/demo/contents/README.md': { type: 'file', name: 'README.md', path: 'README.md', sha: 'a'.repeat(40), size: 5, encoding: 'base64', content: 'aGVsbG8=' },
   };
@@ -133,6 +134,12 @@ try {
   const config = join(scratch, 'config.json');
   const profile = { origin, tokenOrigin: origin, allowInsecureHttp: true, token: { env: 'S6_TOKEN' } };
   await writeFile(config, JSON.stringify({ version: 1, defaultProfile: 'other', profiles: { test: profile, other: { ...profile, origin: 'https://other.test', tokenOrigin: 'https://other.test', token: { env: 'MISSING_CANARY' } } } }), { mode: 0o600 });
+  const preview = await invoke(['issue', 'create', '--title', 'Example', '--repo', 'sample/demo', '--preview', '--allow-write', 'issueCreateIssue', '--config', config, '--profile', 'test']);
+  const beforeRelease = requests.length;
+  const refusedRelease = await invoke(['release', 'create', 'v1', '--discussion-category', 'announcements', '--config', config, '--profile', 'test'], 1);
+  check('Release flag gaps preserve the supported issue creation preview without business writes',
+    [preview.operations, preview.steps, (refusedRelease.error as Row).code, requests.length],
+    [['issueCreateIssue'], [{ method: 'POST', path: '/api/v1/repos/sample/demo/issues', payload: { title: 'Example' } }], 'CAPABILITY_GAP', beforeRelease]);
   const repo = ['repo', 'view', '-R', 'sample/demo', '--config', config];
   check('Hostname selects matching profile before unrelated default and secrets', (await invoke([...repo, '--hostname', new URL(origin).host])).repository, { id: 1008, full_name: 'sample/demo', default_branch: 'main' });
   check('GH_HOST selects the same bound profile', (await invoke(repo, 0, { GH_HOST: new URL(origin).host })).repository, { id: 1008, full_name: 'sample/demo', default_branch: 'main' });
