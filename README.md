@@ -126,6 +126,7 @@ Create requires exactly one of `--public` or `--private`, and accepts `--descrip
 An unqualified name uses the authenticated user; another owner selects an organization.
 The operation grants are `createCurrentUserRepo`, `createOrgRepo`, `generateRepo`, `repoEdit` and `createFork` respectively.
 Template creation uses the generate endpoint with Git content enabled, then compares the complete resulting Git tree with the template.
+Templates containing `.gitea/template` are refused before mutation with `CAPABILITY_GAP`: `Transforming templates not yet supported`.
 Edit supports `--description`, `--visibility public|private`, `--default-branch`, `--enable-issues` and `--enable-wiki`.
 Boolean flags accept explicit `=true` and `=false`, including disabling issues or wiki.
 Fork takes a source through `--repo` or a positional OWNER/NAME and optionally `--org` for the destination.
@@ -139,7 +140,7 @@ View shows up to 1500 note characters; `--full` expands this to 80000 within the
 Create and edit accept `--title`, `--notes` (or `--body`), `--notes-file` (or `--body-file`), `--draft` and `--prerelease`, preserving explicit false values.
 File inputs share the protected body-file contract; stdin uses `-`.
 Create accepts `--target`, `--verify-tag` and `--notes-from-tag` for an existing annotated tag's message.
-The grants are `repoCreateRelease`, `repoEditRelease` and `repoDeleteReleaseByTag`.
+The grants are `repoCreateRelease`, `repoEditRelease` and `repoDeleteRelease`.
 Deletion verifies release absence, preservation of other releases and the independently observed tag state; it does not delete a tag.
 `--latest`, discussion settings and asset positionals refuse before creation.
 An existing or uncertain release cannot trigger an automatic duplicate create.

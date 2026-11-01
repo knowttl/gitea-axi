@@ -40,22 +40,28 @@ export async function main(args: string[]) {
     const rest = args[0]?.startsWith('--') || !args.length ? args : args.slice(path.length);
     let parsed;
     try {
+      const options = Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,
+        ...(flag.multiple ? { multiple: true } : {}), ...(flag.short ? { short: flag.short } : {}) }]));
+      const tokens = parseArgs({ args: rest, allowPositionals: true, strict: false, tokens: true, options }).tokens;
+      const normalized = [...rest], consumed = new Set<number>();
+      for (const token of tokens) {
+        if (token.kind !== 'option') continue;
+        if (command.flags[token.name]?.type === 'boolean' && /^(true|false)$/.test(token.value ?? '')) normalized[token.index] = '--' + token.name;
+        if (command.flags[token.name]?.type === 'string' && token.inlineValue === false && token.value !== undefined) {
+          normalized[token.index] = '--' + token.name + '=' + token.value;
+          consumed.add(token.index + 1);
+        }
+      }
       parsed = parseArgs({
-        args: rest.map(arg => {
-          const match = /^--([^=]+)=(true|false)$/.exec(arg);
-          return match && command.flags[match[1]!]?.type === 'boolean' ? '--' + match[1] : arg;
-        }), allowPositionals: true, strict: true, tokens: true,
-        options: Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,
-          ...(flag.multiple ? { multiple: true } : {}), ...(flag.short ? { short: flag.short } : {}) }])),
+        args: normalized.filter((_, index) => !consumed.has(index)), allowPositionals: true, strict: true, tokens: true, options,
       });
+      for (const token of tokens) {
+        if (token.kind === 'option' && command.flags[token.name]?.type === 'boolean' && /^(true|false)$/.test(token.value ?? '')) parsed.values[token.name] = token.value === 'true';
+      }
     } catch {
       throw new CliError('USAGE', 'Invalid arguments; valid flags: ' + Object.keys(command.flags).map(f => '--' + f).join(', '), 2);
     }
     const { values, positionals } = parsed;
-    for (const arg of rest) {
-      const match = /^--([^=]+)=(true|false)$/.exec(arg);
-      if (match && command.flags[match[1]!]?.type === 'boolean') values[match[1]!] = match[2] === 'true';
-    }
     const names = parsed.tokens.flatMap(token => token.kind === 'option' && !command.flags[token.name]?.multiple ? [token.name] : []);
     if (new Set(names).size !== names.length) {
       throw new CliError('USAGE', 'Choose each flag only once; --repo requires exactly one selector', 2);

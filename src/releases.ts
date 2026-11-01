@@ -1,18 +1,19 @@
-import { collect, object, read } from './api.js';
+import { collect, object, read, resolveCommit } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import { boundedList, positive } from './reads.js';
 import type { Options } from './reads.js';
-import { optionalRead } from './repo-workflows.js';
 import type { Client } from './transport.js';
 import type { WritePlan } from './writes.js';
 
 const usage = (message: string): never => { throw new CliError('USAGE', message, 2); };
-const tagPath = (base: string, tag: string) => base + '/tags/' + encodeURIComponent(tag);
+async function completeCollection(client: Client, path: string) {
+  const page = await collect(client, path);
+  if (page.truncated) throw new CliError('INCOMPLETE_READ', 'Exact identity lookup requires a complete collection');
+  return page.items;
+}
 async function readTag(client: Client, base: string, tag: string) {
-  const value = await optionalRead(client, tagPath(base, tag));
-  if (value !== null && object(value).name !== tag) throw new CliError('INVALID_RESPONSE', 'Tag identity differs from the selected tag');
-  return value;
+  return (await completeCollection(client, base + '/tags')).find(row => row.name === tag) ?? null;
 }
 export function validateRelease(options: Options) {
   if (options.latest !== undefined || options['discussion-category'] !== undefined) throw new CliError('CAPABILITY_GAP', 'Latest and discussion settings are unsupported by the Gitea contract');
@@ -28,7 +29,9 @@ export async function releaseRead(client: Client, operation: string, base: strin
     const items = page.items.filter(row => !(options['exclude-drafts'] && row.draft) && !(options['exclude-pre-releases'] && row.prerelease));
     return boundedList({ ...page, items, total: options['exclude-drafts'] || options['exclude-pre-releases'] ? page.truncated ? null : items.length : page.total }, positive(options.limit, 10, 1000), ['id', 'tag_name', 'name', 'draft', 'prerelease']);
   }
-  const release = object(await read(client, base + '/releases/tags/' + encodeURIComponent(tag!)));
+  const selected = (await completeCollection(client, base + '/releases')).find(row => row.tag_name === tag);
+  if (!selected) throw new CliError('NOT_FOUND_OR_HIDDEN', 'The selected release is missing or hidden');
+  const release = object(await read(client, base + '/releases/' + selected.id));
   if (release.tag_name !== tag) throw new CliError('INVALID_RESPONSE', 'Release tag identity differs from the selected tag');
   const body = String(release.body ?? ''), limit = options.full ? 80_000 : 1500;
   return { release: { ...release, body: body.slice(0, limit) }, chars: body.length, truncated: body.length > limit,
@@ -42,7 +45,7 @@ async function generatedNotes(client: Client, base: string, target: string, star
     if (typeof row.sha !== 'string' || !Array.isArray(row.parents) || typeof object(row.commit).message !== 'string') throw new CliError('INVALID_RESPONSE', 'Notes require commit identities, parents and messages');
     return row;
   };
-  const end = await commit(target);
+  const end = await resolveCommit(client, base, target);
   const history = await collect(client, base + '/commits?sha=' + encodeURIComponent(String(end.sha)));
   if (history.truncated) throw new CliError('INCOMPLETE_READ', 'Notes require the complete target commit history; narrow the release target');
   for (const row of history.items) cache.set(String(row.sha), row);
@@ -71,20 +74,19 @@ async function generatedNotes(client: Client, base: string, target: string, star
 }
 
 export async function releasePlan(client: Client, operation: string, base: string, tag: string, options: Options): Promise<WritePlan> {
-  const path = base + '/releases', detail = path + '/tags/' + encodeURIComponent(tag);
-  const current = await optionalRead(client, detail);
+  const path = base + '/releases';
+  const releases = await completeCollection(client, path);
+  const current = releases.find(row => row.tag_name === tag) ?? null;
+  const detail = current ? path + '/' + current.id : path;
   const before: Row = { release: current };
   if (operation === 'release create' && current !== null) throw new CliError('ALREADY_EXISTS', 'A release already exists for the selected tag; use release edit');
   if (operation !== 'release create' && current === null) throw new CliError('NOT_FOUND_OR_HIDDEN', 'The selected release is missing or hidden');
-  if (current && object(current).tag_name !== tag) throw new CliError('INVALID_RESPONSE', 'Release identity differs from the selected tag');
   if (operation === 'release delete') {
-    const releases = await collect(client, path);
-    if (releases.truncated) throw new CliError('INCOMPLETE_READ', 'Release deletion requires a complete release collection');
-    before.releases = releases.items;
+    before.releases = releases;
     const tagState = await readTag(client, base, tag);
     before.tag = tagState;
-    return { target: detail, steps: [{ method: 'DELETE', path: detail }], reads: [path], preconditions: before,
-      workflow: { path, expected: { tag_name: tag }, absentId: object(current).id, remaining: releases.items.filter(row => row.id !== object(current).id), tag: { path: tagPath(base, tag), before: tagState } } };
+    return { target: detail, steps: [{ method: 'DELETE', path: detail }], reads: [path, base + '/tags'], preconditions: before,
+      workflow: { path, expected: { tag_name: tag }, absentId: object(current).id, remaining: releases.filter(row => row.id !== object(current).id), tag: { path: base + '/tags', before: tagState } } };
   }
   const payload: Row = {};
   for (const [flag, field] of [['title', 'name'], ['body', 'body'], ['draft', 'draft'], ['prerelease', 'prerelease'], ['target', 'target_commitish']]) {

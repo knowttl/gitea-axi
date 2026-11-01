@@ -13,7 +13,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; error: { code: string }; release: Row; notes: { from: string; to: string; commits: Row[] }; observations: { path: string; data: unknown }[]; items: Row[] }
+interface Output { confirmation: string; error: { code: string; reason: string }; release: Row; notes: { from: string; to: string; commits: Row[] }; observations: { path: string; data: unknown }[]; items: Row[] }
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3]!;
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-repositories-releases-'));
@@ -40,7 +40,7 @@ let host: Awaited<ReturnType<typeof readHost>> | undefined;
 let hosted = false;
 let fixture: unknown = 'skipped: opt-in frozen Artium fixture required';
 const server = createServer(async (request, response) => {
-  const path = new URL(request.url!, origin).pathname;
+  const url = new URL(request.url!, origin), path = url.pathname;
   const method = request.method!;
   requests.push({ method, path });
   assert.equal(request.headers.authorization, 'token ' + token);
@@ -57,10 +57,13 @@ const server = createServer(async (request, response) => {
     else if (path === '/api/v1/user') data = user;
     else if (parts[0] === 'orgs') data = { id: 2, name: parts[1], username: parts[1] };
     else if (repo && parts.length === 3) data = repo;
-    else if (repo && parts[3] === 'git' && parts[4] === 'trees') data = { sha: sha('tree'), truncated: false, tree: mode === 'wrong-content' && full !== 'sample/template' ? [] : tree };
+    else if (repo && parts[3] === 'git' && parts[4] === 'trees' && parts[5] === target) data = { sha: sha('tree'), truncated: false, tree: mode === 'transforming' ? [...tree, { path: '.gitea/template', mode: '100644', type: 'blob', sha: sha('README.md') }] : mode === 'wrong-content' && full !== 'sample/template' ? [] : tree };
     else if (repo && parts[3] === 'git' && parts[4] === 'commits') data = commits[parts[5] === 'main' ? target : parts[5]!];
-    else if (repo && parts[3] === 'commits') data = Object.values(commits);
-    else if (repo && parts[3] === 'tags') data = tags.get(parts[4]!);
+    else if (repo && parts[3] === 'commits') {
+      const ref = url.searchParams.get('sha')!;
+      data = url.searchParams.get('limit') === '1' ? [commits[['main', 'release/1.x'].includes(ref) ? target : ref]].filter(Boolean) : Object.values(commits);
+    }
+    else if (repo && parts[3] === 'tags') data = parts.length === 4 ? [...tags.values()] : tags.get(parts[4]!);
     else if (repo && parts[3] === 'releases') data = parts.length === 4 ? releases : release;
   } else if (mode === 'permission') status = 403;
   else {
@@ -107,9 +110,9 @@ async function invoke(args: string[], expected = 0) {
 }
 const expect = (name: string, actual: unknown, expected: unknown) => { assert.deepEqual(actual, expected, name); assertions.push(name); };
 async function execute(args: string[], grant: string, expected = 0) {
-  const argv = [...args, '--allow-write', grant];
-  const preview = await invoke([...argv, '--preview']);
-  return invoke([...argv, '--confirm', preview.confirmation], expected);
+  const argv = [...args.slice(0, 2), '--allow-write', grant];
+  const preview = await invoke([...argv, '--preview', ...args.slice(2)]);
+  return invoke([...argv, '--confirm', preview.confirmation, ...args.slice(2)], expected);
 }
 const selected = ['--repo', 'sample/demo'];
 let result = 'failed', packageSha256 = '', source: unknown;
@@ -138,6 +141,14 @@ try {
     expect('Edit preserves identity and explicit false fields', repositories.get('sample/demo'), { ...sourceRepo(), description: 'Edited', private: true, has_issues: false, has_wiki: false });
     await execute(['repo', 'fork', ...selected, '--org', 'team'], 'createFork');
     expect('Fork parent and destination', [repositories.get('team/demo')!.full_name, (repositories.get('team/demo')!.parent as Row).id], ['team/demo', 10]);
+    repositories.get('sample/template')!.default_branch = 'release/1.x';
+    await execute(['repo', 'create', 'slash-template', '--public', '--template', 'sample/template'], 'generateRepo');
+    expect('Template generation resolves slash-containing default branch', repositories.get('sample/slash-template')!.default_branch, 'release/1.x');
+    mode = 'transforming';
+    const beforeTransform = effects;
+    const transforming = await invoke(['repo', 'create', 'transforming', '--public', '--template', 'sample/template', '--allow-write', 'generateRepo', '--preview'], 1);
+    expect('Transforming template refusal is stable and precedes mutation', [transforming.error.code, transforming.error.reason, effects, repositories.has('sample/transforming')], ['CAPABILITY_GAP', 'Transforming templates not yet supported', beforeTransform, false]);
+    repositories.get('sample/template')!.default_branch = 'main';
     mode = 'wrong-content';
     expect('Template content mismatch stays uncertain', (await execute(['repo', 'create', 'wrong-content', '--public', '--template', 'sample/template'], 'generateRepo', 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
     mode = 'wrong-field';
@@ -160,17 +171,29 @@ try {
     expect('View and edit preserve explicit false values', [viewed.release.tag_name, viewed.release.body, viewed.release.draft, viewed.release.prerelease], ['v1', 'Edited notes', false, false]);
     expect('Nonempty compact release list', (await invoke(['release', 'list', ...selected])).items.map(row => row.tag_name), ['v0', 'v1']);
     const tagBefore = structuredClone(tags.get('v1'));
-    await execute(['release', 'delete', 'v1', ...selected], 'repoDeleteReleaseByTag');
+    await execute(['release', 'delete', 'v1', ...selected], 'repoDeleteRelease');
     expect('Release absence is separate from retained tag', [releases.some(row => row.tag_name === 'v1'), tags.get('v1')], [false, tagBefore]);
     const notes = await execute(['release', 'create', 'v2', ...selected, '--generate-notes', '--notes-start-tag', 'v0', '--target', target], 'repoCreateRelease');
     expect('Composite notes carry exact graph boundaries', [notes.notes.from, notes.notes.to, notes.notes.commits.map(row => row.sha).sort()], [ancestor, target, [first, side, target].sort()]);
     expect('Generated notes exclude boundary ancestors', releases.at(-1)!.body, '- Merge changes (' + target + ')\n- Side change (' + side + ')\n- First change (' + first + ')');
     await execute(['release', 'create', 'existing', ...selected, '--verify-tag', '--notes-from-tag'], 'repoCreateRelease');
     expect('Notes from existing annotated tag', releases.at(-1)!.body, 'Annotated release notes');
+    tags.set('release/v0', { name: 'release/v0', commit: { sha: ancestor }, message: 'Slash annotation' });
+    const slashNotes = await execute(['release', 'create', 'release/v3', ...selected, '--generate-notes', '--notes-start-tag', 'release/v0', '--target', 'release/1.x'], 'repoCreateRelease');
+    expect('Slash refs retain exact notes boundaries', [slashNotes.notes.from, slashNotes.notes.to], [ancestor, target]);
+    await execute(['release', 'edit', 'release/v3', ...selected, '--notes', '--draft=false', '--draft'], 'repoEditRelease');
+    const slashRelease = await invoke(['release', 'view', 'release/v3', ...selected]);
+    expect('Flag-like notes preserve explicit draft intent', [slashRelease.release.body, slashRelease.release.draft], ['--draft=false', true]);
+    await execute(['release', 'delete', 'release/v3', ...selected], 'repoDeleteRelease');
+    expect('Slash release deletion preserves its tag', [releases.some(row => row.tag_name === 'release/v3'), tags.has('release/v3')], [false, true]);
+    await execute(['release', 'create', ...selected, '--draft', '--', '--draft=false'], 'repoCreateRelease');
+    expect('Boolean-like positional after delimiter stays a tag', [releases.at(-1)!.tag_name, releases.at(-1)!.draft], ['--draft=false', true]);
+    await execute(['release', 'edit', 'existing', ...selected, '--notes=--prerelease=false', '--prerelease'], 'repoEditRelease');
+    expect('Inline flag-like notes stay data', [releases.find(row => row.tag_name === 'existing')!.body, releases.find(row => row.tag_name === 'existing')!.prerelease], ['--prerelease=false', true]);
     for (const failure of ['wrong-field', 'retain-release', 'delete-tag']) {
       journal++; mode = failure;
       const args = failure === 'wrong-field' ? ['release', 'edit', 'existing', ...selected, '--notes', 'Requested notes'] : ['release', 'delete', 'existing', ...selected];
-      expect(failure + ' cannot report verified success', (await execute(args, failure === 'wrong-field' ? 'repoEditRelease' : 'repoDeleteReleaseByTag', 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      expect(failure + ' cannot report verified success', (await execute(args, failure === 'wrong-field' ? 'repoEditRelease' : 'repoDeleteRelease', 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
     }
     mode = ''; journal++;
     const before = effects;
@@ -208,12 +231,12 @@ try {
       expect('Hosted repository lifecycle exact destination', [repositories.get('sample/hosted')!.private, repositories.get('sample/demo')!.description, (repositories.get('team/demo')!.parent as Row).id], [true, 'Hosted edit', 10]);
       await host.refuse(['repo', 'create', 'unsafe', '--public', '--source', '.', '--preview', '--allow-write', 'createCurrentUserRepo'], 'FLAG_BLOCKED');
     } else {
-      await host.grantWrites(['repoCreateRelease', 'repoEditRelease', 'repoDeleteReleaseByTag']);
+      await host.grantWrites(['repoCreateRelease', 'repoEditRelease', 'repoDeleteRelease']);
       await execute(['release', 'create', 'hosted', ...selected, '--draft', '--generate-notes', '--notes-start-tag', 'v0', '--target', target], 'repoCreateRelease');
       await execute(['release', 'edit', 'hosted', ...selected, '--draft=false', '--prerelease=false', '--notes', 'Hosted notes'], 'repoEditRelease');
       expect('Hosted release view', (await invoke(['release', 'view', 'hosted', ...selected])).release.body, 'Hosted notes');
       await invoke(['release', 'list', ...selected]);
-      await execute(['release', 'delete', 'hosted', ...selected], 'repoDeleteReleaseByTag');
+      await execute(['release', 'delete', 'hosted', ...selected], 'repoDeleteRelease');
       expect('Hosted deletion preserves tag', [releases.some(row => row.tag_name === 'hosted'), tags.has('hosted')], [false, true]);
     }
   }

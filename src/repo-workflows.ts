@@ -1,4 +1,4 @@
-import { object, read } from './api.js';
+import { object, read, resolveCommit } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import type { Options } from './reads.js';
@@ -68,7 +68,7 @@ export async function repositoryPlan(client: Client, operation: string, selectio
   else before.owner = user;
   let path: string, payload: Row;
   let expected: Row;
-  let content: { path: string; expected: unknown } | undefined;
+  let content: { base: string; ref: string; expected: unknown } | undefined;
   if (action === 'fork') {
     path = sourcePath + '/forks'; payload = owner === user.login ? {} : { organization: owner };
     expected = { full_name: owner + '/' + name!, private: source!.private, description: source!.description, fork: true, parent: { id: source!.id } };
@@ -78,21 +78,22 @@ export async function repositoryPlan(client: Client, operation: string, selectio
     if (source) {
       path = sourcePath + '/generate';
       Object.assign(payload, { owner, git_content: true });
-      const treePath = '/git/trees/' + encodeURIComponent(String(source.default_branch)) + '?recursive=true';
-      const tree = object(await read(client, sourcePath + treePath));
+      const commit = await resolveCommit(client, sourcePath!, String(source.default_branch));
+      const tree = object(await read(client, sourcePath + '/git/trees/' + commit.sha + '?recursive=true'));
       if (tree.truncated !== false || !Array.isArray(tree.tree)) throw new CliError('INCOMPLETE_READ', 'Template content requires a complete tree');
+      if (tree.tree.some(item => object(item).path === '.gitea/template')) throw new CliError('CAPABILITY_GAP', 'Transforming templates not yet supported');
       before.content = tree;
-      content = { path: base + treePath, expected: treeEntries(tree.tree) };
+      content = { base, ref: String(source.default_branch), expected: treeEntries(tree.tree) };
       expected.default_branch = source.default_branch;
       payload.default_branch = source.default_branch;
     } else path = owner === user.login ? '/api/v1/user/repos' : '/api/v1/orgs/' + encodeURIComponent(owner) + '/repos';
   }
   expected.owner = { login: owner };
-  return { target: base, steps: [{ method: 'POST', path, payload }], reads: [base, ...(content ? [content.path] : [])], preconditions: before,
+  return { target: base, steps: [{ method: 'POST', path, payload }], reads: [base], preconditions: before,
     workflow: { path: base, expected, created: true, ...(content ? { content } : {}) } };
 }
 
-export interface WorkflowVerification { path: string; expected: Row; created?: boolean; absentId?: unknown; remaining?: Row[]; tag?: { path: string; before: unknown }; content?: { path: string; expected: unknown } }
+export interface WorkflowVerification { path: string; expected: Row; created?: boolean; absentId?: unknown; remaining?: Row[]; tag?: { path: string; before: unknown }; content?: { base: string; ref: string; expected: unknown } }
 
 function treeEntries(value: unknown) {
   if (!Array.isArray(value)) throw new CliError('INVALID_RESPONSE', 'Expected a complete Git tree');
@@ -107,17 +108,18 @@ export async function verifyWorkflow(client: Client, plan: WritePlan, results: u
     if (!Array.isArray(data) || data.some(value => object(value).id === verification.absentId || object(value).tag_name === verification.expected.tag_name)) mismatch();
     const rows = data as Row[];
     if (rows.length !== verification.remaining!.length || verification.remaining!.some(row => JSON.stringify(rows.find(item => item.id === row.id)) !== JSON.stringify(row))) mismatch();
-    if (await optionalRead(client, verification.path + '/tags/' + encodeURIComponent(String(verification.expected.tag_name))) !== null) mismatch();
-    if (JSON.stringify(await optionalRead(client, verification.tag!.path)) !== JSON.stringify(verification.tag!.before)) mismatch();
+    const tags = observations.find(row => row.path === verification.tag!.path)?.data;
+    if (!Array.isArray(tags) || JSON.stringify(tags.find(row => object(row).name === verification.expected.tag_name) ?? null) !== JSON.stringify(verification.tag!.before)) mismatch();
     return;
   }
-  const actual = object(data);
+  const actual = object(Array.isArray(data) ? data.find(row => object(row).tag_name === verification.expected.tag_name) : data);
   const matches = (actual: Row, expected: Row): boolean => Object.entries(expected).every(([key, value]) =>
     value !== null && typeof value === 'object' && !Array.isArray(value) ? matches(object(actual[key]), object(value)) : JSON.stringify(actual[key]) === JSON.stringify(value));
   if (!matches(actual, verification.expected)) mismatch();
   if (verification.created && (actual.id !== object(results[0]).id || !Number.isSafeInteger(actual.id) || Number(actual.id) <= 0)) mismatch();
   if (verification.content) {
-    const tree = object(observations.find(row => row.path === verification.content!.path)?.data);
+    const commit = await resolveCommit(client, verification.content.base, verification.content.ref);
+    const tree = object(await read(client, verification.content.base + '/git/trees/' + commit.sha + '?recursive=true'));
     if (tree.truncated !== false || JSON.stringify(treeEntries(tree.tree)) !== JSON.stringify(verification.content.expected)) mismatch();
   }
 }
