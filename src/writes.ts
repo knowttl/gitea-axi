@@ -10,9 +10,11 @@ import { readPrivateFile, writePrivateFile } from './private-file.js';
 import type { Options } from './reads.js';
 import type { Client } from './transport.js';
 import { verifyPull } from './pulls.js';
+import { verifyWorkflow } from './repo-workflows.js';
+import type { WorkflowVerification } from './repo-workflows.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; pull?: { expected: Row; action: string; repository: string } }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string } }
 interface Observation { path: string; data: unknown }
 interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; createdPull?: { id: number; number: number } }
 
@@ -191,7 +193,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
     return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps, preconditions: plan.preconditions,
-      help: 'Repeat the same command with --confirm ' + id + ' instead of --preview' };
+      ...(plan.notes ? { notes: plan.notes } : {}), help: 'Repeat the same command with --confirm ' + id + ' instead of --preview' };
   }
   const id = String(options.confirm);
   if (!/^[a-f0-9-]{36}$/.test(id)) usage('Use the confirmation ID returned by --preview');
@@ -259,10 +261,11 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     observations = await observe(client, plan.reads);
     if (plan.pull) await verifyPull(client, plan, results, observations);
     if (plan.named) verifyNamed(plan, results, observations);
+    if (plan.workflow) await verifyWorkflow(client, plan, results, observations);
   }
   catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; ' + outcome()); }
   await Promise.all(guards.map(path => rm(path)));
-  return { confirmation: id, states: receipt.states, results, observations, reconcile: command(id, options) };
+  return { confirmation: id, states: receipt.states, results, observations, ...(plan.notes ? { notes: plan.notes } : {}), reconcile: command(id, options) };
 }
 
 export async function rawWritePlan(client: Client, method: string, path: string, payload: unknown): Promise<WritePlan> {

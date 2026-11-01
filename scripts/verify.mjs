@@ -11,6 +11,10 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
+if (args.length === 2 && args[0] === '--task' && ['S3.5', 'S4.1'].includes(args[1])) {
+  await import('./verify-repositories-releases.ts');
+  process.exit(0);
+}
 if (args.length === 2 && args[0] === '--task' && ['S3.3', 'S3.4'].includes(args[1])) {
   await import('./verify-pulls.ts');
   process.exit(0);

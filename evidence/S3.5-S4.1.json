@@ -1,0 +1,13 @@
+{
+  "tasks": ["S3.5", "S4.1"],
+  "channel": "offline-fake",
+  "fixtureProvenance": "Synthetic repository, release, tag and commit graph records follow the retained Gitea 1.23.4 Swagger. They are not observations of a business service.",
+  "checks": ["node scripts/verify.mjs --task S3.5", "node scripts/verify.mjs --task S4.1"],
+  "repository": "API-only personal and organization creation, template generation with complete tree comparison, edit with explicit false fields, and fork parent verification. Workspace publishing is deferred.",
+  "releases": "Exact tag, target, notes, draft and prerelease verification. Deletion independently verifies release absence, retained tag state and unrelated releases.",
+  "notes": "Declared local-composite result from complete commit history and exact ancestry boundaries, including merged branches and excluding the start tag ancestry. New tag targets use the resolved SHA.",
+  "effects": "All named writes use the shared preview binding, operation grants, ordered dispatch, canonical replay guard and secret-free journal. Asset positionals and unsupported latest/discussion settings refuse before mutation.",
+  "artium": "Opt-in. Standalone checks explicitly skip hosted proof when no frozen fixture is selected. Exact fixture revision, manifest digest, package digest and source head are recorded in external journey reports.",
+  "nativeWindows": "pending",
+  "liveCommissioning": "pending"
+}

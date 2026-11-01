@@ -49,6 +49,16 @@ const repeated = { type: 'string', multiple: true } as const;
 const issueBody = { body: text, 'body-file': { type: 'string', description: 'Body from an owned file or - for bounded stdin' } } as const;
 const issueEdit = { title: text, ...issueBody, milestone: text };
 const mutationDefinitions = [
+  ['repo create', { public: { type: 'boolean' }, private: { type: 'boolean' }, internal: { type: 'boolean' }, description: text, template: text,
+    source: text, push: { type: 'boolean' }, remote: text, clone: { type: 'boolean' } }],
+  ['repo edit', { description: text, visibility: text, 'default-branch': text, 'enable-issues': { type: 'boolean' }, 'enable-wiki': { type: 'boolean' } }],
+  ['repo fork', { org: text, clone: { type: 'boolean' }, remote: text, source: text, push: { type: 'boolean' } }],
+  ['release create', { title: { ...text, short: 't' }, notes: { ...text, short: 'n' }, 'notes-file': { ...text, short: 'F' }, ...issueBody,
+    draft: { type: 'boolean', short: 'd' }, prerelease: { type: 'boolean', short: 'p' }, target: text,
+    'generate-notes': { type: 'boolean' }, 'notes-start-tag': text, 'notes-from-tag': { type: 'boolean' }, 'verify-tag': { type: 'boolean' },
+    'fail-on-no-commits': { type: 'boolean' }, latest: { type: 'boolean' }, 'discussion-category': text }],
+  ['release edit', { title: text, notes: { ...text, short: 'n' }, 'notes-file': { ...text, short: 'F' }, ...issueBody, draft: { type: 'boolean' }, prerelease: { type: 'boolean' }, latest: { type: 'boolean' } }],
+  ['release delete', {}],
   ['pr create', { ...issueEdit, base: text, head: text, assignee: repeated, label: repeated, reviewer: repeated, 'team-reviewer': repeated }],
   ['pr edit', { ...issueEdit, base: text, 'add-label': repeated, 'remove-label': repeated, 'add-assignee': repeated, 'remove-assignee': repeated, 'add-reviewer': repeated, 'remove-reviewer': repeated, 'add-team-reviewer': repeated, 'remove-team-reviewer': repeated }],
   ['pr close', { comment: text }], ['pr reopen', {}], ['pr comment', issueBody],
@@ -72,7 +82,8 @@ const definitions = [
   ['pr view', { ...repo, ...detail, reviews: { type: 'boolean' }, checks: { type: 'boolean' } }],
   ['pr checks', { ...repo, watch: { type: 'boolean' }, timeout: { type: 'string', description: 'Watch deadline seconds, required with --watch' }, interval: { type: 'string', description: 'Watch interval seconds, default 5' } }],
   ['pr diff', { ...repo, full: detail.full }],
-  ['release list', { ...repo, limit: list.limit }], ['api', { ...writeFlags,
+  ['release list', { ...repo, limit: list.limit, 'exclude-drafts': { type: 'boolean' }, 'exclude-pre-releases': { type: 'boolean' } }],
+  ['release view', { ...repo, full: detail.full }], ['api', { ...writeFlags,
     method: { type: 'string', short: 'X', description: 'HTTP method; cannot combine with a positional method' },
     field: { type: 'string', multiple: true, description: 'Repeatable key=value; numbers, booleans and null become JSON values' },
     'raw-field': { type: 'string', multiple: true, description: 'Repeatable key=value string' },

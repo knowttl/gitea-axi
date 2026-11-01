@@ -1,0 +1,6 @@
+{
+  "task": "S4.1",
+  "provenance": "Synthetic releases, tags and commit DAG, constrained by retained Gitea 1.23.4 Swagger. No business service observations.",
+  "operations": ["OP-008", "OP-017", "OP-024", "OP-040", "OP-043", "OP-052", "OP-068"],
+  "outcomes": ["AC-008", "AC-017", "AC-024", "AC-040", "AC-043", "AC-052", "AC-068"]
+}

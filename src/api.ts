@@ -14,6 +14,9 @@ const required: Record<string, string[]> = {
   CommitStatus: ['id', 'context', 'status'], Milestone: ['id', 'title'],
   PRBranchInfo: ['sha', 'ref'], CombinedStatus: ['sha', 'statuses', 'total_count'],
   Branch: ['name', 'commit'], PayloadCommit: ['id'],
+  Release: ['id', 'tag_name', 'target_commitish', 'name', 'body', 'draft', 'prerelease'],
+  Tag: ['name', 'commit'], CommitMeta: ['sha'],
+  GitTreeResponse: ['tree', 'truncated'], GitEntry: ['path', 'mode', 'type', 'sha'],
   ActionTask: ['id', 'name', 'status'], ActionTaskResponse: ['workflow_runs', 'total_count'],
 };
 for (const [name, fields] of Object.entries(required)) {
@@ -107,6 +110,14 @@ export async function read(client: Client, path: string): Promise<unknown> {
   return validate(path.split('?')[0]!, value);
 }
 
+export async function resolveCommit(client: Client, base: string, ref: string): Promise<Row> {
+  const rows = await read(client, base + '/commits?sha=' + encodeURIComponent(ref) + '&limit=1');
+  if (!Array.isArray(rows) || rows.length !== 1) throw new CliError('NOT_FOUND_OR_HIDDEN', 'The selected commit ref is missing or hidden');
+  const row = object(rows[0]);
+  if (typeof row.sha !== 'string' || !/^[a-f0-9]{40}$/.test(row.sha)) throw new CliError('INVALID_RESPONSE', 'Expected an immutable commit identity');
+  return row;
+}
+
 export interface Page { items: Row[]; total: number | null; next: string | null; truncated: boolean }
 
 function nextPage(headers: Headers, path: string, origin: string): string | null {
@@ -140,7 +151,7 @@ export async function collect(client: Client, path: string, envelope?: string): 
     if (!Array.isArray(rows)) throw new CliError('INVALID_RESPONSE', 'Expected a Gitea list' + (envelope ? ' envelope ' + envelope : ''));
     for (const value of rows) {
       const row = object(value);
-      const id = row.id ?? row.number ?? row.sha ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
+      const id = path.split('?')[0]!.endsWith('/tags') ? row.name : row.id ?? row.number ?? row.sha ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
       if (typeof id !== 'number' && typeof id !== 'string') throw new CliError('INVALID_RESPONSE', 'List record has no identity');
       items.set(String(id), row);
     }
