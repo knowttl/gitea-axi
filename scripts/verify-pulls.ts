@@ -70,6 +70,8 @@ const server = createServer(async (request, response) => {
     else if (parts[0] === 'git' && parts[1] === 'commits') data = commits.get(parts[2]!);
     else if (parts[0] === 'labels') data = labels;
     else if (parts[0] === 'milestones') data = [milestone];
+    else if (parts[0] === 'assignees' || parts[0] === 'reviewers') data = [user, { id: 2, login: 'retained' }, { id: 4, login: 'new' }];
+    else if (parts[0] === 'teams') data = [{ id: 3, name: 'retained-team' }, { id: 5, name: 'new-team' }];
     else if (parts[0] === 'issues' && parts[2] === 'comments') data = comments.filter(row => row.issue === Number(parts[1]));
     else if (parts[0] === 'pulls' && parts[2] === 'commits') data = [commits.get(firstSHA), commits.get(headSHA)];
     else if (parts[0] === 'pulls') data = parts.length === 1 ? pulls : pull;
@@ -161,6 +163,10 @@ try {
   env.GITEA_AXI_ORIGIN = origin; env.GITEA_AXI_TOKEN_ORIGIN = origin;
   if (task === 'S3.3') {
     const control = structuredClone(pulls[1]);
+    const unchanged = structuredClone(pulls[0]);
+    const beforeInvalid = requests.length;
+    const invalid = await invoke(['pr', 'edit', '1', ...selected, '--title', 'X', '--add-reviewer', 'nonexistent', '--allow-write', 'repoEditPullRequest,repoCreatePullReviewRequests', '--preview'], 2);
+    expect('Unknown reviewer refuses the entire edit before writing', [invalid.error.code, pulls[0], requests.slice(beforeInvalid).filter(row => row.method !== 'GET')], ['USAGE', unchanged, []]);
     await execute(['create', '--title', 'Created PR', '--body', 'Exact PR body', '--head', 'feature', '--base', 'main', '--assignee', 'synthetic', '--label', 'added', '--milestone', 'Release', '--reviewer', 'new', '--team-reviewer', 'new-team'], 'repoCreatePullRequest');
     const created = pulls.at(-1)!;
     expect('Create exact refs, body and membership', [created.title, created.body, (created.head as Row).ref, (created.base as Row).ref, created.milestone, created.labels,

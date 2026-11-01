@@ -56,6 +56,14 @@ export async function pullPlan(client: Client, operation: string, base: string, 
     { title: '', body: '', state: 'open', merged: false, assignees: [], labels: [], milestone: null, reviewers: [], teams: [] };
   if (action === 'create') await snapshot(path + '?state=all', true);
   if (action === 'create' || action === 'edit') {
+    for (const [flag, collection, key] of [['assignee', 'assignees', 'login'], ['reviewer', 'reviewers', 'login'], ['team-reviewer', 'teams', 'name']] as const) {
+      const requested = action === 'create' ? names(options[flag]) : [...names(options['add-' + flag]), ...names(options['remove-' + flag])];
+      if (!requested.length) continue;
+      const available = await snapshot(base + '/' + collection, true) as Row[];
+      for (const name of requested) {
+        if (!available.some(row => row[key] === name)) usage('Unknown exact ' + flag + ' name: ' + name);
+      }
+    }
     const payload: Row = {};
     for (const field of ['title', 'body', 'base']) if (options[field] !== undefined) payload[field] = options[field];
     if (action === 'create') {
