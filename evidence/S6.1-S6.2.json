@@ -1,0 +1,25 @@
+{
+  "tasks": ["S6.1", "S6.2"],
+  "channel": "offline-fake",
+  "fixtureProvenance": "Synthetic repository history, PRs and token canaries authored against the retained Gitea 1.23.4 schemas. A loopback git http-backend serves temporary native Git repositories. No live Gitea observations.",
+  "operations": ["OP-004", "OP-006", "OP-034", "OP-048", "OP-051", "OP-053", "OP-055", "OP-063", "OP-064", "OP-070", "OP-071"],
+  "checks": ["node scripts/verify.mjs --task S6.1", "node scripts/verify.mjs --task S6.2"],
+  "checkout": "Installed clone and PR checkout verify exact commits and credential-free remotes. Dirty work is preserved. Repository creation publishes exact source history; forks retain their parent and cloned history. Revert preparation verifies the inverse merge tree; separately confirmed publication creates a PR for the recorded generated commit.",
+  "stacks": "Three owned branches exercise navigation, selected-remote publication, PR linking and base reconciliation, dependency-ordered merge into trunk, stop-on-failure checkpoints, safe completed-branch pruning, tracked-only staging, rebase date handling, native conflict abort/continue and interrupted-push reconciliation without replay.",
+  "effects": "Local and API mutations use the shared effect policy, exact operation grants, bound confirmations, durable receipts and a secret-free journal. Preview leaves work, refs, stack metadata and upstream business state unchanged. Changed workspace state invalidates confirmation. Native Git uses argument arrays and an origin-scoped credential environment.",
+  "metadataContract": "docs/local-stack-contract.md",
+  "artium": {
+    "fixtureRevision": "d8ea6a6d73ffb4dba52c0f99f88389653873b477",
+    "manifestSha256": "be84503a318280ecaeb3e40e1b7c82b08a317d94d307ef2bf0f128b8fc04fadb",
+    "results": { "S6.1": "passed", "S6.2": "passed" },
+    "channels": "Real bundled local client, server, credential writer and runner with fake Gitea; admission refuses local checkout commands and composite workspace flags, and every stack command. No host source change is needed.",
+    "reports": "Final-head opt-in reports retain tested source head, fixture revision, manifest digest, package digest and result outside the public repository. Ordinary npm test explicitly skips Artium when its frozen fixture selectors are absent."
+  },
+  "pending": {
+    "submit": "Required automatic merge scheduling is not verified; submit refuses before effects with an explicit compatibility gap.",
+    "preserveDates": "Explicit compatibility-gap refusal before effects until upstream date semantics are evidenced.",
+    "browser": "Submit/link --open refuse before effects; browser canaries verify no launch. Browser launch outside auth login remains prohibited.",
+    "nativeWindows": "pending",
+    "liveCommissioning": "pending"
+  }
+}

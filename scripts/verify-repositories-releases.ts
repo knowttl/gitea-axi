@@ -156,9 +156,9 @@ try {
     mode = '';
     const before = effects;
     for (const flags of [['--internal'], ['--public', '--push'], ['--public', '--source', '.'], ['--public', '--clone']]) {
-      await invoke(['repo', 'create', 'refused', ...flags, '--allow-write', 'createCurrentUserRepo', '--preview'], flags.includes('--push') ? 2 : 1);
+      await invoke(['repo', 'create', 'refused', ...flags, '--allow-write', 'createCurrentUserRepo', '--preview'], flags.includes('--internal') ? 1 : 2);
     }
-    expect('Unsupported workspace and internal requests never mutate', effects, before);
+    expect('Missing workspace and unsupported internal requests never mutate', effects, before);
     const args = ['repo', 'create', 'bound', '--public', '--description', 'Before', '--allow-write', 'createCurrentUserRepo'];
     const preview = await invoke([...args, '--preview']);
     expect('Confirmation binds repository payload', (await invoke([...args.map(value => value === 'Before' ? 'After' : value), '--confirm', preview.confirmation], 1)).error.code, 'CONFIRMATION_MISMATCH');

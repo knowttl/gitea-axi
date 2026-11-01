@@ -45,7 +45,7 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1, S2, S3 and S4 drivers print their report paths.
+The S1, S2, S3, S4 and S6 drivers print their report paths.
 Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
@@ -133,8 +133,9 @@ Edit supports `--description`, `--visibility public|private`, `--default-branch`
 Boolean flags accept explicit `=true` and `=false`, including disabling issues or wiki.
 Fork takes a source through `--repo` or a positional OWNER/NAME and optionally `--org` for the destination.
 Verification checks the destination identity, requested fields and fork parent.
-Internal visibility and workspace flags (`--source`, `--push`, `--remote`, `--clone`) refuse before mutation.
-`--push` and `--remote` require `--source`; local workspace publishing remains deferred.
+Internal visibility refuses before mutation.
+Workspace flags (`--source`, `--push`, `--remote`, `--clone`) use the standalone Git workflows below and require explicit `--workspace` selection.
+Repository creation `--push` and `--remote` require `--source`.
 
 Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
 Exact release and tag lookups require complete collections within the collection scan bounds above; incomplete lookups refuse.
@@ -215,7 +216,8 @@ The journal defaults to `$XDG_STATE_HOME/gitea-axi/writes.log`, otherwise `~/.lo
 `GITEA_AXI_WRITE_LOG` selects another absolute path; private confirmation receipts live beside it in `write-receipts`.
 The journal records hashes, operation identities and step states, without credentials or request bodies.
 Each attempt is persisted before dispatch.
-Timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
+API timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
+Dispatched local Git failures retain their specific error code and include reconciliation information; stack recovery follows the [metadata and recovery contract](docs/local-stack-contract.md).
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
 Replay guards also treat repository owner and repository name case variants as the same identity.
@@ -253,7 +255,7 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1 and S5.2 under an inherited outbound network guard.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2, S6.1 and S6.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
 Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
 Run the release journey with `node scripts/verify.mjs --task S4.1`.
@@ -270,3 +272,48 @@ They report an explicit skip reason when the fixture is absent.
 The S4.2 and S4.3 journeys additionally require admission for managed uploads, protected inputs and dedicated authenticated artifact transfers.
 Ordinary hosted download calls and arbitrary host file paths remain refused.
 Route classification covers all captured methods; this does not claim completion of every business workflow.
+
+## Standalone Git and owned stacks
+
+Local workflows require an explicit absolute `--workspace` and use native Git argument arrays.
+Select the native repository root, or an existing parent directory for cloning.
+`repo clone OWNER/NAME` clones into a new child directory of the selected parent and checks out the previewed default commit.
+`repo create --source /absolute/repo --push --remote NAME` publishes the current source branch with its complete history.
+`repo fork --clone` clones the verified fork, while `repo fork --remote NAME` configures a new remote in the workspace.
+Existing remotes are never overwritten.
+Use a repository-local Git user name and email for workflows that create commits.
+Git credential helpers, hooks, transport rewrites and redirects are disabled or refused.
+Pushes publish only the explicit branch refspecs, with tag following and submodule recursion disabled regardless of repository configuration.
+Tokens travel through an origin-scoped environment configuration and never enter Git arguments or remote URLs.
+
+`pr checkout NUMBER` fetches the PR's actual head repository and branch and checks out its exact previewed SHA with HEAD detached.
+Dirty workspaces refuse before checkout.
+`pr revert NUMBER` first prepares a local revert of a two-parent merge.
+Repeat its preview/confirmation cycle to publish the recorded generated commit and create the revert PR.
+Conflicts stop and retain native Git's recovery state.
+
+Each local write uses the existing `--preview` and `--confirm ID` policy with an explicit local grant such as `--allow-write gitea.local.checkout`.
+API composites also require their vendor operation grants, for example `createCurrentUserRepo,gitea.local.composite` or `gitea.local.revert,repoCreatePullRequest`.
+Preview creates only policy state; it changes no worktree, refs, stack metadata or upstream business state.
+
+One owned stack is recorded per native Git common directory, shared by its worktrees.
+Initialize ordered existing branches with `stack init one two three --base main`, then navigate with checkout/up/down/top/bottom/trunk.
+All commands require `--workspace`; stack commands reject `--repo`, `-R` and `GH_REPO`.
+Check out a named branch before stack mutations; recorded rebase recovery remains available during a native conflict with HEAD detached.
+Use `stack link` with existing branches, PR numbers or same-repository PR URLs to reconcile PR bases without creating duplicates.
+`stack push --remote NAME` uses atomic updates and leases bound to the previewed remote tips.
+`stack merge STACK --merge-method merge` checks heads, merges dependencies in order, retargets descendants to trunk and stops on failure.
+`--merge`, `--squash` and `--rebase` select the other captured method spellings; reviewed confirmation supplies the workflow's noninteractive yes semantics.
+`stack sync --prune` preserves trunk, checked-out and unrelated branches and requires verified merged history before deleting owned branches.
+`stack view` exposes pending checkpoints for inspection after interruptions.
+`stack unstack --local` removes only local relationships; without `--local`, linked PR bases are restored to trunk first.
+
+Rebase supports selected branches, `--downstack`, `--upstack`, `--no-trunk`, `--committer-date-is-author-date`, and recorded `--continue`/`--abort` recovery.
+See the [metadata and recovery contract](docs/local-stack-contract.md) for stack-add staging rules and recovery prerequisites.
+
+`stack submit` reports an explicit compatibility gap before effects because its required automatic merge scheduling is not yet verified.
+`stack rebase --preserve-dates` remains pending until upstream date semantics are evidenced.
+Submit/link `--open` refuse before effects because browser launch is prohibited outside authentication.
+Artium admission refuses every stack command and all local checkout/composite options.
+Run `node scripts/verify.mjs --task S6.1` and `node scripts/verify.mjs --task S6.2` for the installed-package fake Git/Gitea journeys.
+Artium checks remain opt-in through the frozen fixture selectors above; native Windows and live commissioning remain pending.

@@ -18,6 +18,7 @@ import { repositoryPlan, validateRepositoryWorkflow } from './repo-workflows.js'
 import { releasePlan, releaseRead, validateRelease } from './releases.js';
 import { actionValues, valuePlan } from './action-values.js';
 import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
+import { isLocal, localWorkflow, validateLocal } from './local-workflows.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -79,6 +80,17 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
+    if (isLocal(operation, options)) {
+      validateLocal(operation, options);
+      const identity = await credentials(typeof options.origin === 'string' ? options.origin : undefined, Boolean(options['allow-insecure-http']), {
+        ...(typeof options.config === 'string' ? { config: options.config } : {}), ...(typeof options.profile === 'string' ? { profile: options.profile } : {}),
+      });
+      const output = await localWorkflow(new Client(identity.origin, identity.token, 300_000), identity, operation, positionals, options);
+      const rendered = encode(redact(output));
+      if (rendered.length > 100_000) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters');
+      console.log(rendered);
+      return;
+    }
     const valuesCommand = operation.startsWith('secret ') || operation.startsWith('variable ');
     const secretCommand = operation.startsWith('secret ');
     let protectedValue: string | undefined;

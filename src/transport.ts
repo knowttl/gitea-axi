@@ -20,7 +20,7 @@ export class Client {
       ...(form ? { body: form } : mutation?.payload === undefined ? {} : { body: JSON.stringify(mutation.payload) }),
       headers: { accept: text ? 'text/plain' : 'application/json', ...(mutation && !form ? { 'content-type': 'application/json' } : {}), ...(this.token ? { authorization: 'token ' + this.token } : {}) },
       redirect: 'error',
-      signal: AbortSignal.timeout(Math.max(1, this.deadline - Date.now())),
+      signal: AbortSignal.timeout(Math.max(1, Math.min(limits.timeoutMs, this.deadline - Date.now()))),
     });
     if (mutation?.sensitive) {
       await response.body?.cancel();

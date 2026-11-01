@@ -133,3 +133,21 @@ const stageFive: [string, Command['flags'], string][] = [
   ]),
 ];
 commands.push(...stageFive.map(([name, flags, effect]) => ({ path: name.split(' '), description: name + (effect === 'pending-write' ? ' (pending shared write gate)' : ''), flags: { ...globalFlags, ...repo, ...flags }, effect })));
+
+const workspace = { workspace: { ...text, description: 'Absolute native Git repository root; clone uses an existing absolute parent directory' } };
+const stackDefinitions: [string, Command['flags']][] = [
+  ['view', {}], ['init', strings('base')], ['add', { ...strings('message'), ...booleans('all', 'update') }],
+  ['checkout', {}], ['push', strings('remote')], ['submit', { ...strings('remote'), ...booleans('open') }],
+  ['sync', { ...strings('remote'), ...booleans('prune') }],
+  ['rebase', { ...strings('remote'), ...booleans('downstack', 'upstack', 'no-trunk', 'continue', 'abort', 'committer-date-is-author-date', 'preserve-dates') }],
+  ['link', { ...strings('base', 'remote'), ...booleans('open') }], ['unstack', booleans('local')],
+  ['merge', { ...strings('merge-method'), ...booleans('merge', 'squash', 'rebase') }],
+  ...['up', 'down', 'top', 'bottom', 'trunk'].map((name): [string, Command['flags']] => [name, {}]),
+];
+commands.push(...stackDefinitions.map(([name, flags]) => ({ path: ['stack', name], description: 'Owned local stack ' + name,
+  flags: { ...globalFlags, ...workspace, ...writeFlags, ...flags }, effect: name === 'view' ? 'local-read' : 'local-write' })));
+commands.push(...['repo clone', 'pr checkout', 'pr revert'].map(name => ({ path: name.split(' '), description: name + ' in an explicit standalone workspace',
+  flags: { ...globalFlags, ...repo, ...workspace, ...writeFlags }, effect: 'local-write' })));
+for (const command of commands) {
+  if (['repo create', 'repo fork'].includes(command.path.join(' '))) Object.assign(command.flags, workspace);
+}
