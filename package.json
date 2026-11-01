@@ -1,18 +1,31 @@
 {
   "name": "@knowttl/gitea-axi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An agent CLI for Gitea repository workflows",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/knowttl/gitea-axi.git"
   },
   "type": "module",
-  "bin": { "gitea-axi": "dist/cli.js" },
-  "publishConfig": { "access": "public" },
-  "files": ["dist", "schemas", "generated", "axi-credential.schema.json"],
-  "engines": { "node": ">=24.11.0 <25" },
+  "bin": {
+    "gitea-axi": "dist/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "generated",
+    "axi-credential.schema.json"
+  ],
+  "engines": {
+    "node": ">=24.11.0 <25"
+  },
   "packageManager": "npm@11.9.0",
-  "overrides": { "ignore": "7.0.13" },
+  "overrides": {
+    "ignore": "7.0.13"
+  },
   "scripts": {
     "build": "tsc && node scripts/generate.mjs --check",
     "generate": "tsc && node scripts/generate.mjs",
