@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { once } from 'node:events';
 import { existsSync } from 'node:fs';
-import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,7 +12,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; results: Row[]; error: { code: string }; stack: { branches: string[]; trunk: string; pulls: { branch: string; head: string; state: string; merged: boolean }[] }; current: string; recovery: unknown }
+interface Output { confirmation: string; results: Row[]; error: { code: string; reason: string }; stack: { branches: string[]; trunk: string; pulls: { branch: string; head: string; state: string; merged: boolean }[] }; current: string; recovery: unknown }
 const task = process.argv[3]!;
 assert(['S6.1', 'S6.2'].includes(task));
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -256,6 +256,30 @@ try {
     check('Credential origin mismatch refuses before Git/API', (await invoke(['repo', 'clone', 'sample/demo', '--origin', 'http://127.0.0.1:1', '--preview', '--allow-write', 'gitea.local.clone'], 1, parent)).error.code, 'AUTH_BINDING_MISMATCH');
     check('Credential mismatch dispatches nothing', requests.length, requestCount);
   } else {
+    const detached = await isolatedStack('detached-stack');
+    await execute(['pr', 'checkout', '1'], 'gitea.local.checkout', detached.workspace);
+    check('PR checkout leaves HEAD detached', await git(['branch', '--show-current'], detached.workspace), '');
+    const detachedState = async () => ({
+      head: await git(['rev-parse', 'HEAD'], detached.workspace), refs: await git(['show-ref'], detached.workspace),
+      status: await git(['status', '--porcelain'], detached.workspace), work: await git(['diff', '--binary', 'HEAD'], detached.workspace),
+      index: await git(['diff', '--cached', '--binary'], detached.workspace),
+      metadata: await readFile(join(detached.workspace, '.git/gitea-axi/stacks.json'), 'utf8'),
+      effects: await Promise.all((await readdir(join(scratch, 'gitea-axi'), { recursive: true, withFileTypes: true }))
+        .filter(entry => entry.isFile()).map(async entry => [join(entry.parentPath, entry.name), await readFile(join(entry.parentPath, entry.name), 'utf8')])),
+    });
+    const beforeDetached = await detachedState(), detachedRequests = requests.length;
+    for (const args of [
+      ['rebase', 'one'], ['init', 'one', '--base', 'main'], ['link', '1', '--base', 'main'], ['add', 'one'],
+      ['push'], ['sync'], ['unstack', '--local'], ['merge', '1', '--merge'], ['checkout', 'one'],
+      ['up'], ['down'], ['top'], ['bottom'], ['trunk'],
+    ]) {
+      const refused = await invoke(['stack', ...args, '--preview', '--allow-write', 'gitea.local.stack.rebase'], 2, detached.workspace);
+      check('Detached stack command refuses ' + args.join(' '), refused.error.code, 'USAGE');
+      check('Detached refusal explains branch prerequisite ' + args[0], refused.error.reason, 'Check out a branch before running stack commands');
+    }
+    check('Detached stack refusals preserve refs, work, metadata and effect state', await detachedState(), beforeDetached);
+    check('Detached stack refusals dispatch no requests', requests.length, detachedRequests);
+    check('Detached stack remains viewable', (await invoke(['stack', 'view'], 0, detached.workspace)).stack.branches, ['one', 'two', 'three']);
     await execute(['stack', 'init', 'one', 'two', 'three', '--base', 'main'], 'gitea.local.stack.init');
     const view = await invoke(['stack', 'view']);
     check('Three-branch stack records exact order and trunk', [view.stack.branches, view.stack.trunk], [['one', 'two', 'three'], 'main']);
@@ -382,6 +406,7 @@ try {
     let conflictPreview = await invoke([...rebaseArgs, '--preview'], 0, conflict.workspace);
     await invoke([...rebaseArgs, '--confirm', conflictPreview.confirmation], 1, conflict.workspace);
     check('Conflicting rebase retains native conflict state', (await git(['status', '--porcelain'], conflict.workspace)).includes('AA one.txt'), true);
+    check('Abort recovery starts with native detached HEAD', await git(['branch', '--show-current'], conflict.workspace), '');
     const abortArgs = ['stack', 'rebase', '--abort', '--allow-write', 'gitea.local.stack.abort'];
     const abortPreview = await invoke([...abortArgs, '--preview'], 0, conflict.workspace);
     const indexLock = join(conflict.workspace, '.git/index.lock');
@@ -398,6 +423,7 @@ try {
     conflictPreview = await invoke([...rebaseArgs, '--preview'], 0, conflict.workspace);
     await invoke([...rebaseArgs, '--confirm', conflictPreview.confirmation], 1, conflict.workspace);
     await writeFile(join(conflict.workspace, 'one.txt'), 'resolved version\n'); await git(['add', 'one.txt'], conflict.workspace);
+    check('Continue recovery starts with native detached HEAD', await git(['branch', '--show-current'], conflict.workspace), '');
     await execute(['stack', 'rebase', '--continue'], 'gitea.local.stack.continue', conflict.workspace);
     check('Continue retains the resolved content through the stack', await git(['show', 'three:one.txt'], conflict.workspace), 'resolved version');
     check('Continue clears recovery and restores original branch', [(await invoke(['stack', 'view'], 0, conflict.workspace)).recovery, await git(['branch', '--show-current'], conflict.workspace)], [null, 'three']);

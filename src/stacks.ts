@@ -86,6 +86,7 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
   if ((options.all || options.update) && !options.message) usage('--all and --update require --message');
   if (options.continue && options.abort) usage('Choose --continue or --abort');
   const recoveringRebase = action === 'rebase' && (options.continue || options.abort);
+  if (!snapshot.branch && !(recoveringRebase && before?.pending?.rebase)) usage('Check out a branch before running stack commands');
   const recoveringPush = action === 'sync' && before?.pending?.action === 'push';
   const recoveringSync = action === 'sync' && before?.pending?.action === 'sync';
   const recovering = recoveringRebase || recoveringPush || recoveringSync;
