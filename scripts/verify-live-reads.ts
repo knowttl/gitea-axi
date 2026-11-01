@@ -26,6 +26,8 @@ const server = createServer((request, response) => {
     [base + '/issues']: [{ id: 5, number: 5, title: 'Open', state: 'open' }, { id: 6, number: 6, title: 'Closed', state: 'closed' }],
     [base + '/labels']: [], [base + '/actions/tasks']: fixture.tasks, '/api/v1/user': fixture.account,
   };
+  if (mode === 'empty-array-check') routes[base + '/commits/abc123/status'] = { ...fixture.combined, statuses: [] };
+  if (mode === 'mismatched-check') routes[base + '/commits/abc123/status'] = { ...fixture.combined, sha: 'def456' };
   if (mode === 'dashboard-truncation') {
     routes[base + '/issues'] = Array.from({ length: 6 }, (_, id) => ({ id, number: id + 1, title: 'Open', state: 'open' }));
     routes[base + '/pulls'] = Array.from({ length: 6 }, (_, id) => ({ ...fixture.pull, id, number: id + 1 }));
@@ -81,6 +83,11 @@ try {
   // D4: a status-less commit has a normal empty check result.
   const checks = await invoke(['pr', 'checks', '1', ...repo], 1);
   assert.deepEqual([checks.items, checks.passed, checks.failed, checks.pending], [[], 0, 0, 0]);
+  mode = 'empty-array-check';
+  assert.deepEqual((await invoke(['pr', 'checks', '1', ...repo], 1)).items, []);
+  mode = 'mismatched-check';
+  assert.equal((await invoke(['pr', 'checks', '1', ...repo], 1)).error.code, 'INVALID_RESPONSE');
+  assert.equal((await invoke(['pr', 'checks', '1', ...repo, '--watch', '--timeout', '3'], 1)).error.code, 'INVALID_RESPONSE');
   mode = 'register-check';
   assert.equal((await invoke(['pr', 'checks', '1', ...repo, '--watch', '--timeout', '3', '--interval', '1'])).passed, 1);
   mode = '';

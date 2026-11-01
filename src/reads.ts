@@ -121,7 +121,7 @@ async function reviews(client: Client, path: string, full: boolean) {
 
 export async function checks(client: Client, base: string, sha: string) {
   const combined = object(await read(client, base + '/commits/' + encodeURIComponent(sha) + '/status'));
-  if (combined.sha !== sha && !(combined.sha === '' && combined.total_count === 0 && Array.isArray(combined.statuses) && !combined.statuses.length)) throw new CliError('INVALID_RESPONSE', 'Check response does not match the pull request head SHA');
+  if (combined.sha !== sha && !(combined.sha === '' && combined.total_count === 0 && (combined.statuses === null || Array.isArray(combined.statuses) && !combined.statuses.length))) throw new CliError('INVALID_RESPONSE', 'Check response does not match the pull request head SHA');
   const statuses = await complete(client, base + '/commits/' + encodeURIComponent(sha) + '/statuses');
   statuses.sort((a, b) => Number(b.id) - Number(a.id));
   const latest = new Map<unknown, Row>();
