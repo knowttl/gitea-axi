@@ -378,13 +378,16 @@ Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2, S6.1 and S6.2 under an inherited outbound network guard.
+`npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
+The package-contract check builds, packs and installs offline, validates the tarball file list and bin entry, smoke-tests the installed `--help` and `--version`, parses the consumed JSON artifacts and imports the modules Artium consumes from the installed package.
+Run it independently with `node --import ./scripts/deny-network.ts scripts/verify-package.ts`.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
 Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
 Run the release journey with `node scripts/verify.mjs --task S4.1`.
 Run attachments with `node scripts/verify.mjs --task S4.2` and protected values with `node scripts/verify.mjs --task S4.3`.
 Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
+Run Artium hosted proof once per release or in one nightly batch; individual slices merge on this repository's gate, including the package-contract check and outbound network deny.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
 Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
 The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
