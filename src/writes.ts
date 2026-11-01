@@ -188,7 +188,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     }
     const receipt: Receipt = JSON.parse(await readPrivateFile(join(root, previous + '.json'), true));
     if (receipt.origin !== client.origin || receipt.localTarget !== plan.target ||
-        !receipt.operations.every(operation => /^gitea\.local\.stack\.(?:rebase|continue|push|sync)$/.test(operation)) ||
+        !receipt.operations.every(operation => /^gitea\.local\.stack\.(?:rebase|continue|abort|push|sync)$/.test(operation)) ||
         !receipt.localGuards?.every(guard => /^[a-f0-9]{64}$/.test(guard))) throw new CliError('READ_ONLY', 'Recovery receipt is not a workspace-bound local rebase');
     recoveries.push({ id: previous, receipt });
   }

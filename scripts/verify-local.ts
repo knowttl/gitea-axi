@@ -235,8 +235,11 @@ try {
     check('Dirty checkout refuses', (await invoke(['pr', 'checkout', '1', '--preview', '--allow-write', 'gitea.local.checkout'], 1, clone)).error.code, 'DIRTY_WORKSPACE');
     check('Dirty work survives', await readFile(join(clone, 'one.txt'), 'utf8'), 'dirty\n');
     await git(['restore', '--', 'one.txt'], clone);
+    await git(['config', 'push.followTags', 'true']);
+    await git(['tag', '-a', 'unreviewed', '-m', 'Temporary publication canary']);
     await execute(['repo', 'create', 'published', '--public', '--source', source, '--push', '--remote', 'published'], 'createCurrentUserRepo,gitea.local.composite');
     check('Source publication preserves exact history', await tip('sample/published', 'three'), await git(['rev-parse', 'three']));
+    check('Source publication excludes ambient annotated tags', await serviceGit('sample/published', ['for-each-ref', '--format=%(refname)']), 'refs/heads/three');
     check('Conflicting remote refuses before repository creation', (await invoke(['repo', 'create', 'conflict', '--public', '--source', source, '--remote', 'published', '--preview', '--allow-write', 'createCurrentUserRepo,gitea.local.composite'], 2)).error.code, 'USAGE');
     check('Conflicting remote creates no repository', repos.has('sample/conflict'), false);
     await createRepo('upstream/forkable'); await git(['push', bare('upstream/forkable'), 'main']);
@@ -379,7 +382,16 @@ try {
     let conflictPreview = await invoke([...rebaseArgs, '--preview'], 0, conflict.workspace);
     await invoke([...rebaseArgs, '--confirm', conflictPreview.confirmation], 1, conflict.workspace);
     check('Conflicting rebase retains native conflict state', (await git(['status', '--porcelain'], conflict.workspace)).includes('AA one.txt'), true);
+    const abortArgs = ['stack', 'rebase', '--abort', '--allow-write', 'gitea.local.stack.abort'];
+    const abortPreview = await invoke([...abortArgs, '--preview'], 0, conflict.workspace);
+    const indexLock = join(conflict.workspace, '.git/index.lock');
+    await writeFile(indexLock, 'test-owned native index lock');
+    check('Abort blocked by native index lock fails explicitly', (await invoke([...abortArgs, '--confirm', abortPreview.confirmation], 1, conflict.workspace)).error.code, 'GIT_FAILED');
+    check('Failed abort retains its recovery confirmation', ((await invoke(['stack', 'view'], 0, conflict.workspace)).recovery as { confirmations: string[] }).confirmations,
+      [conflictPreview.confirmation, abortPreview.confirmation]);
+    await rm(indexLock);
     await execute(['stack', 'rebase', '--abort'], 'gitea.local.stack.abort', conflict.workspace);
+    check('Retried abort clears pending recovery', (await invoke(['stack', 'view'], 0, conflict.workspace)).recovery, null);
     check('Abort restores the original branch', await git(['branch', '--show-current'], conflict.workspace), 'three');
     for (const name of ['one', 'two', 'three']) check('Abort restores original tip ' + name,
       await git(['rev-parse', name], conflict.workspace), originalTips.split('\n').find(line => line.endsWith('refs/heads/' + name))!.split(' ')[0]);

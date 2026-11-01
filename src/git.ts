@@ -19,7 +19,8 @@ export class Git {
     return new Promise((resolve, reject) => {
       const child = spawn('git', ['-c', 'core.hooksPath=' + (process.platform === 'win32' ? 'NUL' : '/dev/null'),
         '-c', 'core.fsmonitor=false', '-c', 'credential.helper=', '-c', 'http.followRedirects=false', '-c', 'protocol.allow=never',
-        '-c', 'protocol.http.allow=always', '-c', 'protocol.https.allow=always', ...args], {
+        '-c', 'protocol.http.allow=always', '-c', 'protocol.https.allow=always',
+        ...(args[0] === 'push' ? ['push', '--no-follow-tags', '--recurse-submodules=no', ...args.slice(1)] : args)], {
         cwd: this.cwd, env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000,
       });
       let output = '', size = 0;
