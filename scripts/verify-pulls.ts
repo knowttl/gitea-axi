@@ -26,7 +26,7 @@ const baseSHA = sha('base'), headSHA = sha('head'), oldSHA = sha('common');
 const firstSHA = sha('feature-first'), rebasedFirstSHA = sha('rebased-first');
 const user = { id: 1, login: 'synthetic' };
 // Synthetic wire fixtures follow the retained Gitea 1.23.4 schemas.
-const seed = () => ({ id: 101, number: 1, title: 'Selected', body: 'Before', state: 'open', merged: false,
+const seed = () => ({ id: 101, number: 1, title: 'Selected', body: 'Before', state: 'open', merged: false, user,
   head: { ref: 'feature', sha: headSHA }, base: { ref: 'main', sha: baseSHA },
   assignees: [user], labels: [{ id: 10, name: 'keep', color: 'aabbcc' }], milestone: null,
   requested_reviewers: [{ id: 2, login: 'retained' }], requested_reviewers_teams: [{ id: 3, name: 'retained-team' }] });
@@ -65,6 +65,7 @@ const server = createServer(async (request, response) => {
   if (method === 'GET') {
     if (path === '/api/v1/version') data = { version: '1.23.4' };
     else if (path === '/swagger.v1.json') data = { info: { version: '1.23.4' }, paths: { '/version': {} } };
+    else if (path === '/api/v1/user') data = user;
     else if (path === base) data = { id: 10, full_name: 'sample/demo', default_branch: 'main' };
     else if (parts[0] === 'branches') data = { name: parts[1], commit: { id: branches.get(parts[1]!) } };
     else if (parts[0] === 'git' && parts[1] === 'commits') data = commits.get(parts[2]!);
@@ -167,6 +168,9 @@ try {
     const beforeInvalid = requests.length;
     const invalid = await invoke(['pr', 'edit', '1', ...selected, '--title', 'X', '--add-reviewer', 'nonexistent', '--allow-write', 'repoEditPullRequest,repoCreatePullReviewRequests', '--preview'], 2);
     expect('Unknown reviewer refuses the entire edit before writing', [invalid.error.code, pulls[0], requests.slice(beforeInvalid).filter(row => row.method !== 'GET')], ['USAGE', unchanged, []]);
+    const beforeAuthor = requests.length;
+    const authorReview = await invoke(['pr', 'edit', '1', ...selected, '--title', 'X', '--add-reviewer', user.login, '--allow-write', 'repoEditPullRequest,repoCreatePullReviewRequests', '--preview'], 2);
+    expect('PR author reviewer refuses the entire edit before writing', [authorReview.error.code, pulls[0], requests.slice(beforeAuthor).filter(row => row.method !== 'GET')], ['USAGE', unchanged, []]);
     await execute(['create', '--title', 'Created PR', '--body', 'Exact PR body', '--head', 'feature', '--base', 'main', '--assignee', 'synthetic', '--label', 'added', '--milestone', 'Release', '--reviewer', 'new', '--team-reviewer', 'new-team'], 'repoCreatePullRequest');
     const created = pulls.at(-1)!;
     expect('Create exact refs, body and membership', [created.title, created.body, (created.head as Row).ref, (created.base as Row).ref, created.milestone, created.labels,

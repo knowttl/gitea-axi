@@ -60,8 +60,11 @@ export async function pullPlan(client: Client, operation: string, base: string, 
       const requested = action === 'create' ? names(options[flag]) : [...names(options['add-' + flag]), ...names(options['remove-' + flag])];
       if (!requested.length) continue;
       const available = await snapshot(base + '/' + collection, true) as Row[];
+      const author = flag === 'reviewer' ? object(action === 'create' ? await snapshot('/api/v1/user') : before!.user) : undefined;
       for (const name of requested) {
-        if (!available.some(row => row[key] === name)) usage('Unknown exact ' + flag + ' name: ' + name);
+        const selected = available.find(row => row[key] === name);
+        if (!selected) usage('Unknown exact ' + flag + ' name: ' + name);
+        if (author && names(action === 'create' ? options.reviewer : options['add-reviewer']).includes(name) && selected!.id === author.id) usage('The PR author cannot be requested as a reviewer');
       }
     }
     const payload: Row = {};
