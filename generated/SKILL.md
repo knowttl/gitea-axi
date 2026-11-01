@@ -1,0 +1,141 @@
+---
+name: gitea-axi
+description: Read Gitea repository context and perform explicitly authorized repository workflows using gitea-axi.
+---
+
+# Gitea workflows
+
+Use `npx -y @knowttl/gitea-axi capabilities` to discover compatibility gaps and retained baseline IDs.
+Use `npx -y @knowttl/gitea-axi <command> --help` for flags and owned semantics.
+Select a configured credential profile; secrets are never accepted in arguments.
+Writes require exact operation grants, preview and a bound confirmation.
+Hook installation and updates remain compatibility gaps; hosted calls refuse configuration overrides.
+
+- `npx -y @knowttl/gitea-axi repo view --help`
+- `npx -y @knowttl/gitea-axi issue download --help`
+- `npx -y @knowttl/gitea-axi pr download --help`
+- `npx -y @knowttl/gitea-axi release download --help`
+- `npx -y @knowttl/gitea-axi secret list --help`
+- `npx -y @knowttl/gitea-axi variable list --help`
+- `npx -y @knowttl/gitea-axi dashboard --help`
+- `npx -y @knowttl/gitea-axi auth status --help`
+- `npx -y @knowttl/gitea-axi profile list --help`
+- `npx -y @knowttl/gitea-axi config path --help`
+- `npx -y @knowttl/gitea-axi doctor --help`
+- `npx -y @knowttl/gitea-axi repo list --help`
+- `npx -y @knowttl/gitea-axi org view --help`
+- `npx -y @knowttl/gitea-axi issue list --help`
+- `npx -y @knowttl/gitea-axi issue view --help`
+- `npx -y @knowttl/gitea-axi label list --help`
+- `npx -y @knowttl/gitea-axi pr list --help`
+- `npx -y @knowttl/gitea-axi pr view --help`
+- `npx -y @knowttl/gitea-axi pr checks --help`
+- `npx -y @knowttl/gitea-axi pr diff --help`
+- `npx -y @knowttl/gitea-axi release list --help`
+- `npx -y @knowttl/gitea-axi release view --help`
+- `npx -y @knowttl/gitea-axi api --help`
+- `npx -y @knowttl/gitea-axi write reconcile --help`
+- `npx -y @knowttl/gitea-axi issue upload --help`
+- `npx -y @knowttl/gitea-axi pr upload --help`
+- `npx -y @knowttl/gitea-axi release upload --help`
+- `npx -y @knowttl/gitea-axi secret set --help`
+- `npx -y @knowttl/gitea-axi secret delete --help`
+- `npx -y @knowttl/gitea-axi variable set --help`
+- `npx -y @knowttl/gitea-axi variable delete --help`
+- `npx -y @knowttl/gitea-axi repo create --help`
+- `npx -y @knowttl/gitea-axi repo edit --help`
+- `npx -y @knowttl/gitea-axi repo fork --help`
+- `npx -y @knowttl/gitea-axi release create --help`
+- `npx -y @knowttl/gitea-axi release edit --help`
+- `npx -y @knowttl/gitea-axi release delete --help`
+- `npx -y @knowttl/gitea-axi pr create --help`
+- `npx -y @knowttl/gitea-axi pr edit --help`
+- `npx -y @knowttl/gitea-axi pr close --help`
+- `npx -y @knowttl/gitea-axi pr reopen --help`
+- `npx -y @knowttl/gitea-axi pr comment --help`
+- `npx -y @knowttl/gitea-axi pr update-branch --help`
+- `npx -y @knowttl/gitea-axi pr merge --help`
+- `npx -y @knowttl/gitea-axi pr review --help`
+- `npx -y @knowttl/gitea-axi issue create --help`
+- `npx -y @knowttl/gitea-axi issue edit --help`
+- `npx -y @knowttl/gitea-axi issue close --help`
+- `npx -y @knowttl/gitea-axi issue reopen --help`
+- `npx -y @knowttl/gitea-axi issue comment --help`
+- `npx -y @knowttl/gitea-axi issue delete --help`
+- `npx -y @knowttl/gitea-axi issue pin --help`
+- `npx -y @knowttl/gitea-axi issue unpin --help`
+- `npx -y @knowttl/gitea-axi label create --help`
+- `npx -y @knowttl/gitea-axi label edit --help`
+- `npx -y @knowttl/gitea-axi label delete --help`
+- `npx -y @knowttl/gitea-axi run list --help`
+- `npx -y @knowttl/gitea-axi run view --help`
+- `npx -y @knowttl/gitea-axi run watch --help`
+- `npx -y @knowttl/gitea-axi run rerun --help`
+- `npx -y @knowttl/gitea-axi run cancel --help`
+- `npx -y @knowttl/gitea-axi run delete --help`
+- `npx -y @knowttl/gitea-axi run download --help`
+- `npx -y @knowttl/gitea-axi workflow list --help`
+- `npx -y @knowttl/gitea-axi workflow view --help`
+- `npx -y @knowttl/gitea-axi workflow run --help`
+- `npx -y @knowttl/gitea-axi workflow enable --help`
+- `npx -y @knowttl/gitea-axi workflow disable --help`
+- `npx -y @knowttl/gitea-axi search issues --help`
+- `npx -y @knowttl/gitea-axi search prs --help`
+- `npx -y @knowttl/gitea-axi search repos --help`
+- `npx -y @knowttl/gitea-axi search commits --help`
+- `npx -y @knowttl/gitea-axi search code --help`
+- `npx -y @knowttl/gitea-axi stack view --help`
+- `npx -y @knowttl/gitea-axi stack init --help`
+- `npx -y @knowttl/gitea-axi stack add --help`
+- `npx -y @knowttl/gitea-axi stack checkout --help`
+- `npx -y @knowttl/gitea-axi stack push --help`
+- `npx -y @knowttl/gitea-axi stack submit --help`
+- `npx -y @knowttl/gitea-axi stack sync --help`
+- `npx -y @knowttl/gitea-axi stack rebase --help`
+- `npx -y @knowttl/gitea-axi stack link --help`
+- `npx -y @knowttl/gitea-axi stack unstack --help`
+- `npx -y @knowttl/gitea-axi stack merge --help`
+- `npx -y @knowttl/gitea-axi stack up --help`
+- `npx -y @knowttl/gitea-axi stack down --help`
+- `npx -y @knowttl/gitea-axi stack top --help`
+- `npx -y @knowttl/gitea-axi stack bottom --help`
+- `npx -y @knowttl/gitea-axi stack trunk --help`
+- `npx -y @knowttl/gitea-axi repo clone --help`
+- `npx -y @knowttl/gitea-axi pr checkout --help`
+- `npx -y @knowttl/gitea-axi pr revert --help`
+- `npx -y @knowttl/gitea-axi capabilities --help`
+- `npx -y @knowttl/gitea-axi discussion list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi discussion view --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi discussion comment --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist view --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist edit --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist rename --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist create --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist delete --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi gist clone --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue lock --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue unlock --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue transfer --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue subissue add --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue subissue remove --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi issue subissue list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi pr ready --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project view --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project field-list --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project field-create --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project field-delete --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-add --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-create --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-edit --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-archive --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project item-delete --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project create --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project edit --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project close --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project copy --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi project delete --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi setup hooks --help` (compatibility gap)
+- `npx -y @knowttl/gitea-axi update --help` (compatibility gap)

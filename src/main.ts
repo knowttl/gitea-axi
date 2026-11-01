@@ -19,6 +19,7 @@ import { releasePlan, releaseRead, validateRelease } from './releases.js';
 import { actionValues, valuePlan } from './action-values.js';
 import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
 import { isLocal, localWorkflow, validateLocal } from './local-workflows.js';
+import { capabilityOutput, commandGap } from './catalogue.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -41,9 +42,10 @@ export async function main(args: string[]) {
     if (args.some(arg => /^--(?:token|api-key|password|authorization)(?:=|$)/i.test(arg))) {
       throw new CliError('CONFIG_INVALID', 'token and other secret arguments are not accepted');
     }
-    const path = args.length === 0 || args[0]?.startsWith('--') ? ['dashboard'] : args.slice(0, ['api', 'doctor', 'dashboard'].includes(args[0]!) ? 1 : 2);
-    const command = commands.find(command => command.path.join(' ') === path.join(' '));
+    const command = args.length === 0 || args[0]?.startsWith('--') ? commands.find(command => command.path[0] === 'dashboard') :
+      [...commands].sort((a, b) => b.path.length - a.path.length).find(command => command.path.every((part, index) => args[index] === part));
     if (!command) throw new CliError('USAGE', 'Unknown command; use gitea-axi --help', 2);
+    const path = command.path;
     operation = command.path.join(' ');
     const rest = args[0]?.startsWith('--') || !args.length ? args : args.slice(path.length);
     let parsed;
@@ -80,10 +82,25 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
+    if (operation === 'capabilities') {
+      if (positionals.length > 1) throw new CliError('USAGE', 'Use capabilities [C001-C124]', 2);
+      console.log(encode(capabilityOutput(commands, prFields, positionals[0])));
+      return;
+    }
+    if (command.gap) throw new CliError('CAPABILITY_GAP', command.gap);
+    for (const name of Object.keys(values)) {
+      if (command.flags[name]?.gap) throw new CliError('CAPABILITY_GAP', command.flags[name]!.gap!);
+    }
+    if (operation === 'api' && (options.method === 'HEAD' || positionals[0] === 'HEAD')) throw new CliError('CAPABILITY_GAP', commandGap('api HEAD')!);
+    if ((process.env.GITEA_AXI_PROFILE === 'artium' || process.env.GITEA_AXI_CREDENTIAL_REVISION !== undefined) &&
+        ['origin', 'profile', 'config', 'hostname', 'allow-insecure-http'].some(name => options[name] !== undefined)) {
+      throw new CliError('READ_ONLY', 'Hosted calls refuse credential and configuration overrides');
+    }
     if (isLocal(operation, options)) {
       validateLocal(operation, options);
       const identity = await credentials(typeof options.origin === 'string' ? options.origin : undefined, Boolean(options['allow-insecure-http']), {
         ...(typeof options.config === 'string' ? { config: options.config } : {}), ...(typeof options.profile === 'string' ? { profile: options.profile } : {}),
+        ...(typeof options.hostname === 'string' ? { hostname: options.hostname } : {}),
       });
       const output = await localWorkflow(new Client(identity.origin, identity.token, 300_000), identity, operation, positionals, options);
       const rendered = encode(redact(output));
@@ -187,6 +204,7 @@ export async function main(args: string[]) {
     if (operation === 'profile list') { console.log(encode(await profileList(options.config as string | undefined))); return; }
     const identity = await credentials(typeof values.origin === 'string' ? values.origin : undefined, Boolean(values['allow-insecure-http']), {
       ...(typeof options.config === 'string' ? { config: options.config } : {}), ...(typeof options.profile === 'string' ? { profile: options.profile } : {}),
+      ...(typeof options.hostname === 'string' ? { hostname: options.hostname } : {}),
     });
     const client = new Client(identity.origin, identity.token, operation === 'pr checks' && options.watch ? positive(options.timeout, 30, 3600) * 1000 : 30_000);
     let output: unknown;

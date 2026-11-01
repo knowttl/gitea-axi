@@ -347,8 +347,8 @@ try {
     await execute(['label', 'delete', 'renamed'], 'issueDeleteLabel');
     expect('Label deletion with control intact', labels.map(row => row.id), [10, 11]);
     const before = applied;
-    for (const [action, flag] of [['create', '--type'], ['edit', '--project'], ['close', '--reason'], ['close', '--duplicate'], ['create', '--attachment']] as const) {
-      expect('Unsupported ' + flag, (await invoke(['issue', action, ...(action === 'create' ? [] : ['1']), ...selected, flag, 'unsupported'], 2)).error.code, 'USAGE');
+    for (const [action, flag, code, error] of [['create', '--type', 1, 'CAPABILITY_GAP'], ['edit', '--project', 2, 'USAGE'], ['close', '--reason', 1, 'CAPABILITY_GAP'], ['close', '--duplicate', 2, 'USAGE'], ['create', '--attachment', 2, 'USAGE']] as const) {
+      expect('Unsupported ' + flag, (await invoke(['issue', action, ...(action === 'create' ? [] : ['1']), ...selected, flag, 'unsupported'], code)).error.code, error);
     }
     expect('Unsupported flags dispatch no effects', applied, before);
     expect('Unknown milestone refusal', (await invoke(['issue', 'edit', '1', ...selected, '--milestone', 'absent', '--allow-write', 'issueEditIssue', '--preview'], 2)).error.code, 'USAGE');

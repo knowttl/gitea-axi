@@ -258,7 +258,7 @@ try {
     expect('Stale preflight head refuses', (await invoke(['pr', 'merge', '1', ...selected, '--merge', '--match-head-commit', oldSHA, '--allow-write', 'repoMergePullRequest', '--preview'], 1)).error.code, 'STALE_HEAD');
     const before = effects;
     for (const [action, flags] of [['create', ['--draft']], ['create', ['--project', 'unsupported']], ['merge', ['--auto']], ['merge', ['--admin']], ['merge', ['--delete-branch']]] as const) {
-      await invoke(['pr', action, ...(action === 'create' ? [] : ['1']), ...selected, ...flags, '--preview'], action === 'create' ? 2 : 1);
+      expect('Unsupported PR option ' + flags[0], (await invoke(['pr', action, ...(action === 'create' ? [] : ['1']), ...selected, ...flags, '--preview'], 1)).error.code, 'CAPABILITY_GAP');
     }
     expect('Unsupported flags never mutate', effects, before);
     mode = 'disconnect';

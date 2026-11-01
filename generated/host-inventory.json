@@ -25,6 +25,7 @@
       "flags": {
         "repo": {
           "type": "string",
+          "short": "R",
           "default": "matching local origin remote",
           "description": "Repository as OWNER/NAME"
         },
@@ -50,6 +51,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "examples": [
@@ -87,8 +92,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
@@ -146,8 +156,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
@@ -205,8 +220,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "dir": {
@@ -264,8 +284,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "org": {
@@ -274,6 +299,11 @@
         "limit": {
           "type": "string",
           "description": "Maximum returned records, default 30, maximum 1000"
+        },
+        "env": {
+          "type": "string",
+          "description": "Compatibility gap: --env has no implemented compatibility contract for secret list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--env has no implemented compatibility contract for secret list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -308,8 +338,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "org": {
@@ -351,8 +386,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         }
       },
@@ -387,6 +427,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -420,6 +464,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -453,6 +501,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -485,6 +537,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -519,6 +575,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "limit": {
           "type": "string",
           "description": "Maximum returned records, default 30, maximum 1000"
@@ -526,6 +586,21 @@
         "org": {
           "type": "string",
           "description": "List repositories belonging to this organization"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Compatibility gap: --visibility has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--visibility has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "language": {
+          "type": "string",
+          "description": "Compatibility gap: --language has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--language has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "archived": {
+          "type": "string",
+          "description": "Compatibility gap: --archived has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--archived has no implemented compatibility contract for repo list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -559,6 +634,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -593,8 +672,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "limit": {
@@ -662,8 +746,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "fields": {
@@ -711,8 +800,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "limit": {
@@ -752,8 +846,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "limit": {
@@ -787,6 +886,21 @@
         },
         "milestone": {
           "type": "string"
+        },
+        "base": {
+          "type": "string",
+          "description": "Compatibility gap: --base has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--base has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "head": {
+          "type": "string",
+          "description": "Compatibility gap: --head has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--head has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "draft": {
+          "type": "boolean",
+          "description": "Compatibility gap: --draft has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--draft has no implemented compatibility contract for pr list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -821,8 +935,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "fields": {
@@ -876,8 +995,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "watch": {
@@ -890,6 +1014,16 @@
         "interval": {
           "type": "string",
           "description": "Watch interval seconds, default 5"
+        },
+        "failed": {
+          "type": "boolean",
+          "description": "Compatibility gap: --failed has no implemented compatibility contract for pr checks on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--failed has no implemented compatibility contract for pr checks on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "fail-fast": {
+          "type": "boolean",
+          "description": "Compatibility gap: --fail-fast has no implemented compatibility contract for pr checks on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--fail-fast has no implemented compatibility contract for pr checks on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -924,13 +1058,23 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "full": {
           "type": "boolean",
           "description": "Full body within response ceiling"
+        },
+        "patch": {
+          "type": "boolean",
+          "description": "Compatibility gap: --patch has no implemented compatibility contract for pr diff on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--patch has no implemented compatibility contract for pr diff on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -965,8 +1109,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "limit": {
@@ -1012,8 +1161,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "full": {
@@ -1052,6 +1206,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "allow-write": {
           "type": "string",
           "description": "Comma-separated exact vendor operation IDs authorized for this workflow"
@@ -1082,6 +1240,31 @@
         "input": {
           "type": "string",
           "description": "Protected JSON request file; use - for stdin"
+        },
+        "header": {
+          "type": "string",
+          "description": "Compatibility gap: --header has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--header has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "paginate": {
+          "type": "string",
+          "description": "Compatibility gap: --paginate has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--paginate has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "jq": {
+          "type": "string",
+          "description": "Compatibility gap: --jq compatibility is not implemented: no jq evaluator or template engine/grammar has been selected; Gitea 1.23.4 responses do not supply these local semantics",
+          "gap": "--jq compatibility is not implemented: no jq evaluator or template engine/grammar has been selected; Gitea 1.23.4 responses do not supply these local semantics"
+        },
+        "template": {
+          "type": "string",
+          "description": "Compatibility gap: --template compatibility is not implemented: no jq evaluator or template engine/grammar has been selected; Gitea 1.23.4 responses do not supply these local semantics",
+          "gap": "--template compatibility is not implemented: no jq evaluator or template engine/grammar has been selected; Gitea 1.23.4 responses do not supply these local semantics"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Compatibility gap: --full has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--full has no implemented compatibility contract for api on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "read"
@@ -1115,6 +1298,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         }
       },
       "effect": "read"
@@ -1149,8 +1336,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1205,8 +1397,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1261,8 +1458,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1317,8 +1519,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1339,6 +1546,16 @@
         "input": {
           "type": "string",
           "description": "Protected value file or - for stdin; values never accepted in argv"
+        },
+        "env": {
+          "type": "string",
+          "description": "Compatibility gap: --env has no implemented compatibility contract for secret set on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--env has no implemented compatibility contract for secret set on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body": {
+          "type": "string",
+          "description": "Compatibility gap: --body has no implemented compatibility contract for secret set on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body has no implemented compatibility contract for secret set on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -1373,8 +1590,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1391,6 +1613,11 @@
         },
         "org": {
           "type": "string"
+        },
+        "env": {
+          "type": "string",
+          "description": "Compatibility gap: --env has no implemented compatibility contract for secret delete on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--env has no implemented compatibility contract for secret delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -1425,8 +1652,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1484,8 +1716,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1536,8 +1773,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1616,8 +1858,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1680,8 +1927,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1748,8 +2000,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1855,8 +2112,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1938,8 +2200,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -1987,8 +2254,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2044,6 +2316,16 @@
         "team-reviewer": {
           "type": "string",
           "multiple": true
+        },
+        "draft": {
+          "type": "boolean",
+          "description": "Compatibility gap: --draft has no implemented compatibility contract for pr create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--draft has no implemented compatibility contract for pr create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "project": {
+          "type": "string",
+          "description": "Compatibility gap: --project has no implemented compatibility contract for pr create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--project has no implemented compatibility contract for pr create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -2078,8 +2360,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2182,8 +2469,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2234,8 +2526,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2283,8 +2580,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2346,8 +2648,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2395,8 +2702,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2478,8 +2790,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2546,8 +2863,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2589,6 +2911,16 @@
         "label": {
           "type": "string",
           "multiple": true
+        },
+        "project": {
+          "type": "string",
+          "description": "Compatibility gap: --project has no implemented compatibility contract for issue create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--project has no implemented compatibility contract for issue create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "type": {
+          "type": "string",
+          "description": "Compatibility gap: --type has no implemented compatibility contract for issue create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--type has no implemented compatibility contract for issue create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -2623,8 +2955,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2674,6 +3011,16 @@
         "remove-assignee": {
           "type": "string",
           "multiple": true
+        },
+        "type": {
+          "type": "string",
+          "description": "Compatibility gap: --type has no implemented compatibility contract for issue edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--type has no implemented compatibility contract for issue edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "no-type": {
+          "type": "boolean",
+          "description": "Compatibility gap: --no-type has no implemented compatibility contract for issue edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--no-type has no implemented compatibility contract for issue edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -2708,8 +3055,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2726,6 +3078,16 @@
         },
         "comment": {
           "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Compatibility gap: --reason has no implemented compatibility contract for issue close on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--reason has no implemented compatibility contract for issue close on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "duplicate-of": {
+          "type": "string",
+          "description": "Compatibility gap: --duplicate-of has no implemented compatibility contract for issue close on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--duplicate-of has no implemented compatibility contract for issue close on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "write"
@@ -2760,8 +3122,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2809,8 +3176,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2872,8 +3244,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2921,8 +3298,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -2970,8 +3352,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -3019,8 +3406,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -3077,8 +3469,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -3135,8 +3532,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "allow-write": {
@@ -3184,8 +3586,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "workflow": {
@@ -3245,8 +3652,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "job": {
@@ -3297,8 +3709,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "timeout": {
@@ -3340,8 +3757,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "job": {
@@ -3386,8 +3808,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         }
       },
@@ -3423,8 +3850,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         }
       },
@@ -3460,8 +3892,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "name": {
@@ -3503,8 +3940,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "limit": {
@@ -3546,8 +3988,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "yaml": {
@@ -3586,8 +4033,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "ref": {
@@ -3629,8 +4081,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         }
       },
@@ -3666,8 +4123,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         }
       },
@@ -3703,8 +4165,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "owner": {
@@ -3782,8 +4249,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "owner": {
@@ -3861,8 +4333,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "owner": {
@@ -3940,8 +4417,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "owner": {
@@ -4019,8 +4501,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "owner": {
@@ -4098,6 +4585,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4146,6 +4637,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4198,6 +4693,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4257,6 +4756,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4305,6 +4808,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4358,6 +4865,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4379,6 +4890,11 @@
         },
         "open": {
           "type": "boolean"
+        },
+        "auto": {
+          "type": "string",
+          "description": "Compatibility gap: --auto has no implemented compatibility contract for stack submit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--auto has no implemented compatibility contract for stack submit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "local-write"
@@ -4412,6 +4928,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4467,6 +4987,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4541,6 +5065,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4599,6 +5127,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4651,6 +5183,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4678,6 +5214,11 @@
         },
         "rebase": {
           "type": "boolean"
+        },
+        "yes": {
+          "type": "string",
+          "description": "Compatibility gap: --yes has no implemented compatibility contract for stack merge on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--yes has no implemented compatibility contract for stack merge on Gitea 1.23.4; see capabilities for the retained baseline outcome"
         }
       },
       "effect": "local-write"
@@ -4711,6 +5252,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4761,6 +5306,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4809,6 +5358,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4859,6 +5412,10 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "workspace": {
           "type": "string",
           "description": "Absolute native Git repository root; clone uses an existing absolute parent directory"
@@ -4907,6 +5464,10 @@
         "profile": {
           "type": "string",
           "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
         },
         "workspace": {
           "type": "string",
@@ -4957,8 +5518,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "workspace": {
@@ -5010,8 +5576,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "workspace": {
@@ -5063,8 +5634,13 @@
           "type": "string",
           "description": "Select one file profile"
         },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
         "repo": {
           "type": "string",
+          "short": "R",
           "description": "OWNER/NAME; otherwise a matching local origin remote"
         },
         "workspace": {
@@ -5085,6 +5661,1942 @@
         }
       },
       "effect": "local-write"
+    },
+    {
+      "path": [
+        "capabilities"
+      ],
+      "description": "Inspect all baseline command IDs, flags, globals and PR fields without claiming full parity",
+      "flags": {
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        }
+      },
+      "effect": "local-read"
+    },
+    {
+      "path": [
+        "discussion",
+        "list"
+      ],
+      "description": "discussion list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "state": {
+          "type": "string",
+          "description": "Compatibility gap: --state has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--state has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "category": {
+          "type": "string",
+          "description": "Compatibility gap: --category has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--category has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "author": {
+          "type": "string",
+          "description": "Compatibility gap: --author has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--author has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "label": {
+          "type": "string",
+          "description": "Compatibility gap: --label has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--label has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for discussion list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "discussion",
+        "view"
+      ],
+      "description": "discussion view (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "comments": {
+          "type": "boolean",
+          "description": "Compatibility gap: --comments has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--comments has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "order": {
+          "type": "string",
+          "description": "Compatibility gap: --order has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--order has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Compatibility gap: --full has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--full has no implemented compatibility contract for discussion view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "discussion",
+        "comment"
+      ],
+      "description": "discussion comment (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "body": {
+          "type": "string",
+          "description": "Compatibility gap: --body has no implemented compatibility contract for discussion comment on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body has no implemented compatibility contract for discussion comment on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Compatibility gap: --body-file has no implemented compatibility contract for discussion comment on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body-file has no implemented compatibility contract for discussion comment on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "list"
+      ],
+      "description": "gist list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "public": {
+          "type": "boolean",
+          "description": "Compatibility gap: --public has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--public has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "secret": {
+          "type": "boolean",
+          "description": "Compatibility gap: --secret has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--secret has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "fields": {
+          "type": "string",
+          "description": "Compatibility gap: --fields has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--fields has no implemented compatibility contract for gist list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "view"
+      ],
+      "description": "gist view (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "files": {
+          "type": "boolean",
+          "description": "Compatibility gap: --files has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--files has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Compatibility gap: --filename has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--filename has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Compatibility gap: --full has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--full has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "raw": {
+          "type": "boolean",
+          "description": "Compatibility gap: --raw has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--raw has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "web": {
+          "type": "boolean",
+          "description": "Compatibility gap: --web has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--web has no implemented compatibility contract for gist view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "edit"
+      ],
+      "description": "gist edit (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Compatibility gap: --filename has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--filename has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "add": {
+          "type": "string",
+          "description": "Compatibility gap: --add has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--add has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "remove": {
+          "type": "boolean",
+          "description": "Compatibility gap: --remove has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--remove has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "desc": {
+          "type": "string",
+          "description": "Compatibility gap: --desc has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--desc has no implemented compatibility contract for gist edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "rename"
+      ],
+      "description": "gist rename (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "create"
+      ],
+      "description": "gist create (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "public": {
+          "type": "boolean",
+          "description": "Compatibility gap: --public has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--public has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "secret": {
+          "type": "boolean",
+          "description": "Compatibility gap: --secret has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--secret has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "file": {
+          "type": "string",
+          "description": "Compatibility gap: --file has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--file has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Compatibility gap: --filename has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--filename has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "desc": {
+          "type": "string",
+          "description": "Compatibility gap: --desc has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--desc has no implemented compatibility contract for gist create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "delete"
+      ],
+      "description": "gist delete (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "gist",
+        "clone"
+      ],
+      "description": "gist clone (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "issue",
+        "lock"
+      ],
+      "description": "issue lock (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 has no documented issue lock contract; the retained 1.24.0 lock candidate is not commissioned"
+    },
+    {
+      "path": [
+        "issue",
+        "unlock"
+      ],
+      "description": "issue unlock (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 has no documented issue lock contract; the retained 1.24.0 lock candidate is not commissioned"
+    },
+    {
+      "path": [
+        "issue",
+        "transfer"
+      ],
+      "description": "issue transfer (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "to-repo": {
+          "type": "string",
+          "description": "Compatibility gap: --to-repo has no implemented compatibility contract for issue transfer on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--to-repo has no implemented compatibility contract for issue transfer on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 and 1.24.0 provide no evidenced issue transfer or parent/child subissue contract; repository transfer and dependencies are different operations"
+    },
+    {
+      "path": [
+        "issue",
+        "subissue",
+        "add"
+      ],
+      "description": "issue subissue add (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 and 1.24.0 provide no evidenced issue transfer or parent/child subissue contract; repository transfer and dependencies are different operations"
+    },
+    {
+      "path": [
+        "issue",
+        "subissue",
+        "remove"
+      ],
+      "description": "issue subissue remove (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 and 1.24.0 provide no evidenced issue transfer or parent/child subissue contract; repository transfer and dependencies are different operations"
+    },
+    {
+      "path": [
+        "issue",
+        "subissue",
+        "list"
+      ],
+      "description": "issue subissue list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 and 1.24.0 provide no evidenced issue transfer or parent/child subissue contract; repository transfer and dependencies are different operations"
+    },
+    {
+      "path": [
+        "pr",
+        "ready"
+      ],
+      "description": "pr ready (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "undo": {
+          "type": "boolean",
+          "description": "Compatibility gap: --undo has no implemented compatibility contract for pr ready on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--undo has no implemented compatibility contract for pr ready on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "Gitea 1.23.4 and 1.24.0 do not document a draft transition field in EditPullRequestOption"
+    },
+    {
+      "path": [
+        "project",
+        "list"
+      ],
+      "description": "project list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "closed": {
+          "type": "boolean",
+          "description": "Compatibility gap: --closed has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--closed has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for project list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "view"
+      ],
+      "description": "project view (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project view on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project view on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-list"
+      ],
+      "description": "project item-list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "query": {
+          "type": "string",
+          "description": "Compatibility gap: --query has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--query has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for project item-list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "field-list"
+      ],
+      "description": "project field-list (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project field-list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project field-list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "limit": {
+          "type": "string",
+          "description": "Compatibility gap: --limit has no implemented compatibility contract for project field-list on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--limit has no implemented compatibility contract for project field-list on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "field-create"
+      ],
+      "description": "project field-create (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "name": {
+          "type": "string",
+          "description": "Compatibility gap: --name has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--name has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "data-type": {
+          "type": "string",
+          "description": "Compatibility gap: --data-type has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--data-type has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "single-select-options": {
+          "type": "string",
+          "description": "Compatibility gap: --single-select-options has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--single-select-options has no implemented compatibility contract for project field-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "field-delete"
+      ],
+      "description": "project field-delete (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "id": {
+          "type": "string",
+          "description": "Compatibility gap: --id has no implemented compatibility contract for project field-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--id has no implemented compatibility contract for project field-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-add"
+      ],
+      "description": "project item-add (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project item-add on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project item-add on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "url": {
+          "type": "string",
+          "description": "Compatibility gap: --url has no implemented compatibility contract for project item-add on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--url has no implemented compatibility contract for project item-add on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-create"
+      ],
+      "description": "project item-create (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "title": {
+          "type": "string",
+          "description": "Compatibility gap: --title has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--title has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body": {
+          "type": "string",
+          "description": "Compatibility gap: --body has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Compatibility gap: --body-file has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body-file has no implemented compatibility contract for project item-create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-edit"
+      ],
+      "description": "project item-edit (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "id": {
+          "type": "string",
+          "description": "Compatibility gap: --id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "project-id": {
+          "type": "string",
+          "description": "Compatibility gap: --project-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--project-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "field-id": {
+          "type": "string",
+          "description": "Compatibility gap: --field-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--field-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "text": {
+          "type": "string",
+          "description": "Compatibility gap: --text has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--text has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "number": {
+          "type": "string",
+          "description": "Compatibility gap: --number has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--number has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "date": {
+          "type": "string",
+          "description": "Compatibility gap: --date has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--date has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "single-select-option-id": {
+          "type": "string",
+          "description": "Compatibility gap: --single-select-option-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--single-select-option-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "iteration-id": {
+          "type": "string",
+          "description": "Compatibility gap: --iteration-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--iteration-id has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "title": {
+          "type": "string",
+          "description": "Compatibility gap: --title has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--title has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body": {
+          "type": "string",
+          "description": "Compatibility gap: --body has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "body-file": {
+          "type": "string",
+          "description": "Compatibility gap: --body-file has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--body-file has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "clear": {
+          "type": "boolean",
+          "description": "Compatibility gap: --clear has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--clear has no implemented compatibility contract for project item-edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-archive"
+      ],
+      "description": "project item-archive (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "id": {
+          "type": "string",
+          "description": "Compatibility gap: --id has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--id has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "undo": {
+          "type": "boolean",
+          "description": "Compatibility gap: --undo has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--undo has no implemented compatibility contract for project item-archive on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "item-delete"
+      ],
+      "description": "project item-delete (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project item-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project item-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "id": {
+          "type": "string",
+          "description": "Compatibility gap: --id has no implemented compatibility contract for project item-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--id has no implemented compatibility contract for project item-delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "create"
+      ],
+      "description": "project create (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "title": {
+          "type": "string",
+          "description": "Compatibility gap: --title has no implemented compatibility contract for project create on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--title has no implemented compatibility contract for project create on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "edit"
+      ],
+      "description": "project edit (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "title": {
+          "type": "string",
+          "description": "Compatibility gap: --title has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--title has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "description": {
+          "type": "string",
+          "description": "Compatibility gap: --description has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--description has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "readme": {
+          "type": "string",
+          "description": "Compatibility gap: --readme has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--readme has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "visibility": {
+          "type": "string",
+          "description": "Compatibility gap: --visibility has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--visibility has no implemented compatibility contract for project edit on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "close"
+      ],
+      "description": "project close (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project close on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project close on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "undo": {
+          "type": "boolean",
+          "description": "Compatibility gap: --undo has no implemented compatibility contract for project close on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--undo has no implemented compatibility contract for project close on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "copy"
+      ],
+      "description": "project copy (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "source-owner": {
+          "type": "string",
+          "description": "Compatibility gap: --source-owner has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--source-owner has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "target-owner": {
+          "type": "string",
+          "description": "Compatibility gap: --target-owner has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--target-owner has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "title": {
+          "type": "string",
+          "description": "Compatibility gap: --title has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--title has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        },
+        "drafts": {
+          "type": "string",
+          "description": "Compatibility gap: --drafts has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--drafts has no implemented compatibility contract for project copy on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "project",
+        "delete"
+      ],
+      "description": "project delete (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Compatibility gap: --owner has no implemented compatibility contract for project delete on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--owner has no implemented compatibility contract for project delete on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "No corresponding discussion, gist or Projects v2 API is documented in the retained Gitea 1.23.4 or 1.24.0 specifications"
+    },
+    {
+      "path": [
+        "setup",
+        "hooks"
+      ],
+      "description": "setup hooks (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        }
+      },
+      "effect": "gap",
+      "gap": "C096: retained gh-axi 0.1.46 help does not specify supported agent paths, configuration schemas or repair semantics; hook installation remains pending"
+    },
+    {
+      "path": [
+        "update"
+      ],
+      "description": "update (compatibility gap)",
+      "flags": {
+        "origin": {
+          "type": "string",
+          "default": "selected profile",
+          "description": "Gitea origin; HTTPS by default"
+        },
+        "allow-insecure-http": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow HTTP only for the explicitly selected origin"
+        },
+        "help": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show command help"
+        },
+        "config": {
+          "type": "string",
+          "description": "Absolute configuration path"
+        },
+        "profile": {
+          "type": "string",
+          "description": "Select one file profile"
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Select exactly one matching configured host:port; otherwise GH_HOST"
+        },
+        "repo": {
+          "type": "string",
+          "short": "R",
+          "description": "OWNER/NAME; otherwise a matching local origin remote"
+        },
+        "check": {
+          "type": "boolean",
+          "description": "Compatibility gap: --check has no implemented compatibility contract for update on Gitea 1.23.4; see capabilities for the retained baseline outcome",
+          "gap": "--check has no implemented compatibility contract for update on Gitea 1.23.4; see capabilities for the retained baseline outcome"
+        }
+      },
+      "effect": "gap",
+      "gap": "C122/C123: retained gh-axi 0.1.46 help does not establish the distribution, integrity or rollback contract; update and check-only remain pending"
     }
   ],
   "limits": {
