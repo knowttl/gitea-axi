@@ -54,10 +54,13 @@ const server = createServer(async (request, response) => {
   if (method !== 'GET') writes++;
   if (method !== 'GET' && (mode === 'permission' || mode === 'attachment-permission' && assetRoute)) status = 403;
   else if (valueRoute) {
-    const [, collection, kind, name] = valueRoute;
+    const [, collection, kind, inputName] = valueRoute;
+    const name = inputName?.toUpperCase();
     if (!values.has(collection!)) values.set(collection!, new Map([['CONTROL', 'untouched']]));
     const rows = values.get(collection!)!;
-    if (method === 'GET') data = [...rows].map(([name, data]) => kind === 'secrets' ? { name } : { name, data });
+    if (method === 'GET') data = name
+      ? kind === 'variables' && rows.has(name) ? { name, data: rows.get(name) } : undefined
+      : [...rows].map(([name, data]) => kind === 'secrets' ? { name } : { name, data: collection!.startsWith('/api/v1/repos/') ? '' : data });
     else if (method === 'DELETE') { rows.delete(name!); status = 204; }
     else {
       const payload = JSON.parse(body.toString()) as Row;
@@ -69,6 +72,7 @@ const server = createServer(async (request, response) => {
       } else {
         assert.equal(method, rows.has(name!) ? 'PUT' : 'POST');
         rows.set(name!, mode === 'wrong-value' ? 'wrong' : String(payload.value));
+        if (mode === 'changed-control') rows.set('CONTROL', 'changed');
         status = 204;
       }
     }
@@ -157,19 +161,27 @@ try {
       [base, selected, 'updateRepoSecret', 'deleteRepoSecret', ['createRepoVariable', 'updateRepoVariable', 'deleteRepoVariable']],
       ['/api/v1/orgs/team', ['--org', 'team'], 'updateOrgSecret', 'deleteOrgSecret', ['createOrgVariable', 'updateOrgVariable', 'deleteOrgVariable']],
     ] as const) {
-      await execute(['secret', 'set', 'NAMED', ...selector, '--input', '-'], secretOp, secret);
-      await execute(['secret', 'set', 'FILE', ...selector, '--input', secretFile], secretOp);
-      await execute(['api', 'PUT', scope + '/actions/secrets/RAW', '--input', '-'], secretOp, JSON.stringify({ data: secret }));
+      await execute(['secret', 'set', 'named', ...selector, '--input', '-'], secretOp, secret);
+      await execute(['secret', 'set', 'file', ...selector, '--input', secretFile], secretOp);
+      await execute(['api', 'PUT', scope + '/actions/secrets/raw', '--input', '-'], secretOp, JSON.stringify({ data: secret }));
       expect('Exact protected values and targets ' + scope, upstreamSecrets.slice(-3).map(row => ({ path: row.path, matches: row.value === secret })), ['NAMED', 'FILE', 'RAW'].map(name => ({ path: scope + '/actions/secrets/' + name, matches: true })));
       const beforeList = writes;
       expect('Secret list exposes names only ' + scope, (await invoke(['secret', 'list', ...selector])).items, [{ name: 'CONTROL' }, { name: 'NAMED' }, { name: 'FILE' }, { name: 'RAW' }]);
       expect('Listing never mutates ' + scope, writes, beforeList);
-      await execute(['secret', 'delete', 'NAMED', ...selector], deleteOp);
+      await execute(['secret', 'delete', 'named', ...selector], deleteOp);
       expect('Exact secret deletion preserves control ' + scope, [...values.get(scope + '/actions/secrets')!.keys()], ['CONTROL', 'FILE', 'RAW']);
-      await execute(['variable', 'set', 'VALUE', ...selector, '--body', 'initial'], variableOps[0]);
-      await execute(['variable', 'set', 'VALUE', ...selector, '--body='], variableOps[1]);
+      await execute(['api', 'DELETE', scope + '/actions/secrets/raw'], deleteOp);
+      expect('Raw lowercase secret deletion preserves control ' + scope, [...values.get(scope + '/actions/secrets')!.keys()], ['CONTROL', 'FILE']);
+      await execute(['variable', 'set', 'value', ...selector, '--body', 'initial'], variableOps[0]);
+      expect('Nonempty variable readback and control ' + scope, (await invoke(['variable', 'list', ...selector])).items, [{ name: 'CONTROL', data: 'untouched' }, { name: 'VALUE', data: 'initial' }]);
+      const update = ['variable', 'set', 'value', ...selector, '--body=', '--allow-write', variableOps[1]!];
+      const variablePreview = await invoke([...update, '--preview']);
+      values.get(scope + '/actions/variables')!.set('CONTROL', 'changed');
+      expect('Changed control invalidates variable confirmation ' + scope, (await invoke([...update, '--confirm', variablePreview.confirmation], 1)).error.code, 'CONFIRMATION_MISMATCH');
+      values.get(scope + '/actions/variables')!.set('CONTROL', 'untouched');
+      await execute(['variable', 'set', 'value', ...selector, '--body='], variableOps[1]);
       expect('Empty variable readback and control ' + scope, (await invoke(['variable', 'list', ...selector])).items, [{ name: 'CONTROL', data: 'untouched' }, { name: 'VALUE', data: '' }]);
-      await execute(['variable', 'delete', 'VALUE', ...selector], variableOps[2]);
+      await execute(['variable', 'delete', 'value', ...selector], variableOps[2]);
       expect('Variable deletion preserves control ' + scope, [...values.get(scope + '/actions/variables')!], [['CONTROL', 'untouched']]);
     }
     const noDispatch = writes;
@@ -180,8 +192,13 @@ try {
     expect('Changed protected input invalidates confirmation', (await invoke([...argv, '--confirm', preview.confirmation], 1, secret + 'changed')).error.code, 'CONFIRMATION_MISMATCH');
     mode = 'permission'; journal++;
     expect('Secret permission refusal cannot report success', (await execute(['secret', 'set', 'REFUSED', ...selected, '--input', '-'], 'updateRepoSecret', secret, 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    mode = '';
+    expect('Raw lowercase secret shares the attempted effect identity', (await invoke(['api', 'PUT', base + '/actions/secrets/refused', '--input', '-', '--allow-write', 'updateRepoSecret', '--preview'], 1, JSON.stringify({ data: secret }))).error.code, 'WRITE_OUTCOME_UNKNOWN');
     mode = 'wrong-value'; journal++;
     expect('Variable wrong readback cannot report success', (await execute(['variable', 'set', 'BAD', ...selected, '--body', 'expected'], 'createRepoVariable', undefined, 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    mode = 'changed-control'; journal++;
+    const controlFailure = await execute(['variable', 'set', 'CONTROL_CHECK', ...selected, '--body', 'expected'], 'createRepoVariable', undefined, 1);
+    expect('Variable control change cannot report success', controlFailure.error.code, 'WRITE_OUTCOME_UNKNOWN');
     await assertNoSecret(join(scratch, 'state-0'));
   } else {
     const source = join(scratch, 'payload.bin'); await writeFile(source, bytes);

@@ -1,4 +1,4 @@
-import { collect, object } from './api.js';
+import { collect, object, read } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import type { Client } from './transport.js';
@@ -7,10 +7,17 @@ import type { WritePlan } from './writes.js';
 export async function actionValues(client: Client, path: string) {
   const page = await collect(client, path);
   if (page.truncated) throw new CliError('INCOMPLETE_READ', 'A complete collection is required for exact value identity');
+  if (path.startsWith('/api/v1/repos/') && path.endsWith('/variables')) {
+    for (const row of page.items) {
+      const detail = object(await read(client, path + '/' + encodeURIComponent(String(row.name))));
+      row.data = detail.data;
+    }
+  }
   return page.items.map(row => path.endsWith('/secrets') ? { name: row.name, ...(row.created_at ? { created_at: row.created_at } : {}) } : { name: row.name, data: row.data });
 }
 
 export async function valuePlan(client: Client, path: string, name: string, action: string, value?: string): Promise<WritePlan> {
+  name = name.toUpperCase();
   const before = await actionValues(client, path);
   const current = before.find(row => row.name === name);
   const secret = path.endsWith('/secrets');

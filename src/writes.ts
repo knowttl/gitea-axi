@@ -12,7 +12,7 @@ import type { Client } from './transport.js';
 import { verifyPull } from './pulls.js';
 import { verifyWorkflow } from './repo-workflows.js';
 import type { WorkflowVerification } from './repo-workflows.js';
-import { valuePlan, verifyValue } from './action-values.js';
+import { actionValues, valuePlan, verifyValue } from './action-values.js';
 import { verifyUploads } from './attachments.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
@@ -58,6 +58,10 @@ export async function reconcile(client: Client, id: string) {
 async function observe(client: Client, paths: string[]) {
   const observations = [];
   for (const path of paths) {
+    if (/\/actions\/(?:secrets|variables)$/.test(path)) {
+      observations.push({ path, data: await actionValues(client, path) });
+      continue;
+    }
     const data = await read(client, path);
     if (Array.isArray(data)) {
       const page = await collect(client, path);
@@ -294,8 +298,7 @@ export async function rawWritePlan(client: Client, method: string, path: string,
   const route = validatePayload(method, path, payload);
   if (/\/actions\/secrets\//.test(path)) {
     const base = path.slice(0, path.lastIndexOf('/'));
-    const plan = await valuePlan(client, base, decodeURIComponent(path.slice(path.lastIndexOf('/') + 1)), method === 'DELETE' ? 'delete' : 'set', method === 'PUT' ? String(object(payload).data) : undefined);
-    return { ...plan, steps: [{ method, path, ...(payload === undefined ? {} : { payload }) }] };
+    return valuePlan(client, base, decodeURIComponent(path.slice(path.lastIndexOf('/') + 1)), method === 'DELETE' ? 'delete' : 'set', method === 'PUT' ? String(object(payload).data) : undefined);
   }
   let verification = path.split('?')[0]!;
   if (method === 'DELETE' || route.operation === 'repoMergePullRequest') verification = verification.slice(0, verification.lastIndexOf('/'));
