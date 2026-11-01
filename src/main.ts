@@ -249,12 +249,18 @@ export async function main(args: string[]) {
       else if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
       else if (operation === 'dashboard') {
         const sections: Record<string, unknown> = {};
-        for (const [name, path, envelope] of [['repository', base], ['issues', base + '/issues?state=open&type=issues'], ['pulls', base + '/pulls?state=open'], ['labels', base + '/labels'], ['releases', base + '/releases'], ['runs', base + '/actions/tasks', 'workflow_runs']]) {
+        for (const [name, path, listCommand] of [['repository', base], ['issues', base + '/issues?state=open&type=issues', 'issue'], ['pulls', base + '/pulls?state=open', 'pr'], ['labels', base + '/labels', 'label'], ['releases', base + '/releases', 'release'], ['runs', base + '/actions/tasks', 'run']]) {
           try {
             if (name === 'repository') {
               const row = object(await read(client, path!));
               sections[name] = { status: 'ok', data: Object.fromEntries(['id', 'full_name', 'private', 'default_branch', 'open_issues_count', 'open_pr_counter', 'updated_at'].map(key => [key, row[key] ?? null])) };
-            } else sections[name!] = { status: 'ok', ...(name === 'runs' ? await tasks(client, base, { limit: '5' }) : boundedList(await collect(client, path!, envelope), 5, name === 'labels' ? ['id', 'name', 'color'] : name === 'releases' ? releaseListFields : ['id', 'number', 'title', 'state'])) };
+            } else {
+              const list = name === 'runs' ? await tasks(client, base, { limit: '5' }) : boundedList(await collect(client, path!), 5, name === 'labels' ? ['id', 'name', 'color'] : name === 'releases' ? releaseListFields : ['id', 'number', 'title', 'state']);
+              sections[name!] = { status: 'ok', ...list, ...(list.truncated ? { help: [
+                `Run gitea-axi ${listCommand} list --repo ${repo} --limit 1000 to see more items.`,
+                ...(list.help ?? []).filter(hint => !hint.startsWith('Raise --limit')),
+              ] } : {}) };
+            }
           } catch (error) {
             if (!(error instanceof CliError)) throw error;
             sections[name!] = { status: 'error', code: error.code, reason: error.message };

@@ -32,10 +32,10 @@ for (const definition of Object.values(vendor.definitions) as { properties?: Rec
   }
 }
 const requestDefinitions = structuredClone(vendor.definitions);
-// Optional response scalars can also be null (for example an unmerged PR's merge SHA).
-for (const definition of Object.values(vendor.definitions) as { required?: string[]; properties?: Record<string, object> }[]) {
-  for (const [key, property] of Object.entries(definition.properties ?? {})) {
-    if (!definition.required?.includes(key)) definition.properties![key] = { anyOf: [property, { type: 'null' }] };
+for (const [name, fields] of Object.entries({ PullRequest: ['merge_commit_sha'], ContentsResponse: ['submodule_git_url', 'target'] })) {
+  for (const field of fields) {
+    const properties = vendor.definitions[name].properties;
+    properties[field] = { anyOf: [properties[field], { type: 'null' }] };
   }
 }
 const ajv = new Ajv({ strict: false, validateFormats: false });

@@ -9,9 +9,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
 import { Client } from '../dist/transport.js';
+import { validate, validatePayload } from '../dist/api.js';
 
 type Row = Record<string, unknown>;
-interface Output { items: Row[]; data: Row; identity: Row; error: { code: string; reason: string; operation: string }; help: string[]; sections: Record<string, { data: Row; items: Row[]; help: string[]; code: string }>; unfiltered_total: number; total: number; passed: number; failed: number; pending: number; commands: string[] }
+interface Output { items: Row[]; data: Row; identity: Row; error: { code: string; reason: string; operation: string }; help: string[]; sections: Record<string, { data: Row; items: Row[]; help: string[]; code: string; next: string | null; truncated: boolean }>; unfiltered_total: number; total: number; passed: number; failed: number; pending: number; commands: string[] }
 const fixture = JSON.parse(await readFile(new URL('../test/fixtures/live-reads.json', import.meta.url), 'utf8')) as Record<string, Row>;
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-live-reads-'));
 const base = '/api/v1/repos/sample/demo';
@@ -25,6 +26,13 @@ const server = createServer((request, response) => {
     [base + '/issues']: [{ id: 5, number: 5, title: 'Open', state: 'open' }, { id: 6, number: 6, title: 'Closed', state: 'closed' }],
     [base + '/labels']: [], [base + '/actions/tasks']: fixture.tasks, '/api/v1/user': fixture.account,
   };
+  if (mode === 'dashboard-truncation') {
+    routes[base + '/issues'] = Array.from({ length: 6 }, (_, id) => ({ id, number: id + 1, title: 'Open', state: 'open' }));
+    routes[base + '/pulls'] = Array.from({ length: 6 }, (_, id) => ({ ...fixture.pull, id, number: id + 1 }));
+    routes[base + '/labels'] = Array.from({ length: 6 }, (_, id) => ({ id, name: 'label-' + id, color: 'ffffff' }));
+    routes[base + '/releases'] = Array.from({ length: 6 }, (_, id) => ({ ...fixture.release, id }));
+    routes[base + '/actions/tasks'] = { workflow_runs: Array.from({ length: 6 }, (_, id) => ({ id, name: 'build', status: 'success' })), total_count: 6 };
+  }
   if (mode === 'register-check' && path.endsWith('/status') && statusReads > 0) routes[path] = { sha: 'abc123', statuses: [{ id: 7, context: 'build', status: 'success' }], total_count: 1 };
   if (mode === 'register-check' && path.endsWith('/statuses') && statusReads++ > 0) routes[path] = [{ id: 7, context: 'build', status: 'success' }];
   if (mode === 'absent-route' && path.endsWith('/actions/tasks')) { response.writeHead(404, { 'content-type': 'application/json' }).end('{}'); return; }
@@ -54,6 +62,17 @@ try {
   assert.deepEqual(await invoke(['pr', 'view', '1', ...repo, '--fields', 'mergeCommit']), { mergeCommit: null });
   // D2: ordinary file metadata includes nullable scalar properties.
   assert.deepEqual((await invoke(['api', 'GET', 'repos/sample/demo/contents/README.md'])).data, fixture.contents);
+  for (const [path, row, field] of [
+    [base + '/pulls/1', fixture.pull!, 'merge_commit_sha'],
+    [base + '/contents/README.md', { ...fixture.contents, target: 'destination', submodule_git_url: 'https://example.test/module' }, 'submodule_git_url'],
+    [base + '/contents/README.md', { ...fixture.contents, target: 'destination', submodule_git_url: 'https://example.test/module' }, 'target'],
+  ] as const) {
+    assert.deepEqual(validate(path, { ...row, [field]: null }), { ...row, [field]: null });
+    assert.deepEqual(validate(path, { ...row, [field]: 'value' }), { ...row, [field]: 'value' });
+    assert.throws(() => validate(path, { ...row, [field]: 42 }), { code: 'INVALID_RESPONSE' });
+  }
+  assert.throws(() => validate(base, { ...fixture.repository, private: null }), { code: 'INVALID_RESPONSE' });
+  assert.throws(() => validatePayload('PATCH', base, { private: null }), { code: 'USAGE' });
   // D3: standalone and dashboard releases use release fields.
   const release = { id: 2, tag_name: 'v1.0.0-rc1', name: 'Preview', draft: false, prerelease: true, published_at: null };
   assert.deepEqual((await invoke(['release', 'list', ...repo])).items, [release]);
@@ -77,6 +96,18 @@ try {
   mode = '';
   // D7: a display limit gives an actionable continuation hint.
   assert.match((await invoke(['issue', 'list', ...repo, '--state', 'all', '--limit', '1'])).help.join(' '), /Raise --limit/);
+  mode = 'dashboard-truncation';
+  const truncatedDashboard = await invoke(['dashboard', ...repo]);
+  for (const [section, command] of [['issues', 'issue'], ['pulls', 'pr'], ['labels', 'label'], ['releases', 'release'], ['runs', 'run']]) {
+    const result = truncatedDashboard.sections[section!]!;
+    assert.equal(result.items.length, 5);
+    assert.equal(result.truncated, true);
+    assert.equal(result.next, null);
+    const hint = `Run gitea-axi ${command} list --repo sample/demo --limit 1000 to see more items.`;
+    assert(result.help.includes(hint));
+    assert.equal((await invoke(hint.slice('Run gitea-axi '.length, -' to see more items.'.length).split(' '))).items.length, 6);
+  }
+  mode = '';
   // D8: only allowlisted non-secret transport causes reach output.
   const originalFetch = globalThis.fetch;
   try {
@@ -91,6 +122,25 @@ try {
   const config = join(scratch, 'config.json');
   await writeFile(config, JSON.stringify({ version: 1, profiles: { test: { origin, tokenOrigin: origin, token: { env: 'TEST_TOKEN' } } } }), { mode: 0o600 });
   assert.equal((await invoke(['auth', 'status', '--config', config, '--profile', 'test'], 1)).error.reason, 'HTTP requires allowInsecureHttp: true on the selected profile');
+  const secureOrigin = 'https://example.test';
+  const secureProfile = { origin: secureOrigin, tokenOrigin: secureOrigin, token: { env: 'TEST_TOKEN' } };
+  for (const [profile, reason] of [
+    [{ ...secureProfile, token: { file: 'relative' } }, 'Invalid profile field: token.file; set an absolute local file path'],
+    [{ ...secureProfile, unexpected: true }, 'Invalid profile field: unexpected; remove this unknown field'],
+    [{ ...secureProfile, writes: { operations: [] } }, 'Invalid profile field: writes.allowWrites; set this required field'],
+    [{ ...secureProfile, token: { env: 'invalid-name' } }, 'Invalid profile field: token.env; set a valid environment variable name'],
+    [{ ...secureProfile, allowInsecureHttp: 'yes' }, 'Invalid profile field: allowInsecureHttp; set true or false'],
+  ] as const) {
+    await writeFile(config, JSON.stringify({ version: 1, profiles: { test: profile } }));
+    for (const selector of [['--profile', 'test'], ['--profile', 'test', '--hostname', 'example.test']]) {
+      assert.equal((await invoke(['auth', 'status', '--config', config, ...selector], 1)).error.reason, reason);
+    }
+  }
+  assert.equal((await invoke(['auth', 'status'], 1, {
+    GITEA_AXI_ORIGIN: secureOrigin, GITEA_AXI_TOKEN_ORIGIN: secureOrigin, GITEA_AXI_TOKEN: '{"file":"relative"}',
+  })).error.reason, 'Invalid profile field: token.file; set an absolute local file path');
+  await writeFile(config, JSON.stringify({ version: 1, profiles: { test: { origin, tokenOrigin: origin, token: { env: 'TEST_TOKEN' }, allowInsecureHttp: true } } }));
+  assert.equal((await invoke(['auth', 'status', '--config', config, '--profile', 'test'])).error, undefined);
   // D10: a secret query parameter is command misuse.
   assert.equal((await invoke(['api', 'GET', 'user?token=synthetic'], 2)).error.code, 'USAGE');
   // D12: the unfiltered count is labeled separately from matched rows.

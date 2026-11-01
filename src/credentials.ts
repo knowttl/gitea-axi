@@ -14,7 +14,27 @@ interface Profile {
   writes?: { allowWrites: boolean; operations: string[] };
 }
 const schema = JSON.parse(readFileSync(new URL('../axi-credential.schema.json', import.meta.url), 'utf8'));
-const validate = new Ajv({ strict: false }).compile<Profile>(schema);
+const validate = new Ajv({ strict: false, allErrors: true }).compile<Profile>(schema);
+function validateProfile(profile: unknown): asserts profile is Profile {
+  if (validate(profile)) return;
+  const token = profile && typeof profile === 'object' && 'token' in profile ? profile.token : undefined;
+  const branch = token && typeof token === 'object' ? 'env' in token ? '0' : 'file' in token ? '1' : undefined : undefined;
+  const errors = validate.errors ?? [];
+  const error = errors.find(error => {
+    const alternative = error.schemaPath.match(/^#\/properties\/token\/oneOf\/(\d+)\//)?.[1];
+    return (!alternative || alternative === branch) && error.keyword !== 'if' && error.keyword !== 'oneOf';
+  }) ?? errors.find(error => error.keyword === 'oneOf');
+  const property = error?.keyword === 'required' ? error.params.missingProperty : error?.keyword === 'additionalProperties' ? error.params.additionalProperty : undefined;
+  const field = [...(error?.instancePath.split('/').slice(1) ?? []), ...(property ? [String(property)] : [])].join('.');
+  if (field === 'allowInsecureHttp' && error?.schemaPath.startsWith('#/then/')) throw new CliError('CONFIG_INVALID', 'HTTP requires allowInsecureHttp: true on the selected profile');
+  const correction = error?.keyword === 'additionalProperties' ? 'remove this unknown field' :
+    field === 'token.file' ? 'set an absolute local file path' :
+    field === 'token.env' ? 'set a valid environment variable name' :
+    field === 'token' ? 'set exactly one of env (an environment variable name) or file (an absolute local path)' :
+    field === 'allowInsecureHttp' ? 'set true or false' :
+    error?.keyword === 'required' ? 'set this required field' : 'use a value matching the credential profile schema';
+  throw new CliError('CONFIG_INVALID', 'Invalid profile field: ' + (field || 'profile') + '; ' + correction);
+}
 const secrets: string[] = [];
 export function registerSecret(value: string) { if (value) secrets.push(value); }
 
@@ -105,7 +125,7 @@ export async function credentials(override: string | undefined, allowHttp: boole
     const names = Object.keys(config.profiles).filter(name => {
       if (!hostname) return true;
       const profile = config.profiles[name];
-      if (!validate(profile)) throw new CliError('CONFIG_INVALID', 'Invalid profile for hostname selection');
+      validateProfile(profile);
       return matchesHost(profile.origin);
     });
     if (hostname && !selected && !names.length) throw new CliError('PROFILE_NOT_FOUND', 'No configured profile matches --hostname/GH_HOST');
@@ -126,11 +146,7 @@ export async function credentials(override: string | undefined, allowHttp: boole
   } else {
     throw new CliError('AUTH_REQUIRED', 'Select a configured profile or an explicit anonymous --origin');
   }
-  if (!validate(profile)) {
-    const error = validate.errors?.[0];
-    const field = error?.keyword === 'required' ? String(error.params.missingProperty) : error?.instancePath.slice(1);
-    throw new CliError('CONFIG_INVALID', field === 'allowInsecureHttp' ? 'HTTP requires allowInsecureHttp: true on the selected profile' : 'Invalid profile field: ' + (field || 'profile') + '; check the credential profile schema');
-  }
+  validateProfile(profile);
   const origin = canonicalOrigin(profile.origin);
   if (hostname && !matchesHost(origin)) throw new CliError('AUTH_BINDING_MISMATCH', 'Selected profile does not match --hostname/GH_HOST');
   if (origin !== canonicalOrigin(profile.tokenOrigin) || (override && canonicalOrigin(override) !== origin)) {
