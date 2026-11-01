@@ -3,17 +3,18 @@ import { constants, existsSync } from 'node:fs';
 import { mkdir, open, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
-import { canonicalPath, collect, effectFor, object, read, validatePayload } from './api.js';
+import { canonicalPath, collect, effectFor, object, read, validate, validatePayload } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import { readPrivateFile, writePrivateFile } from './private-file.js';
 import type { Options } from './reads.js';
 import type { Client } from './transport.js';
+import { verifyPull } from './pulls.js';
 
-export interface WriteStep { method: string; path: string; payload?: unknown }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean }
+export interface WriteStep { method: string; path: string; payload?: unknown; createdPull?: true }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; named?: boolean; pull?: { expected: Row; action: string; repository: string } }
 interface Observation { path: string; data: unknown }
-interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string }
+interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; createdPull?: { id: number; number: number } }
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -164,8 +165,8 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   const binding = createHmac('sha256', secret).update(canonical({ identity, revision: process.env.GITEA_AXI_CREDENTIAL_REVISION, origin: client.origin, plan })).digest('hex');
   // Exclude credential revision and preconditions from the attempt key so rotating a credential
   // or changing the remote record cannot bypass an unresolved dispatched effect.
-  const effectSteps = plan.steps.map((step, index) => {
-    const route = routes[index]!;
+  const effectStep = (step: WriteStep) => {
+    const route = validatePayload(step.method, step.path, step.payload);
     const segments = canonicalPath(step.path).split('/');
     if (/\{(?:template_)?repo\}/.test(route.path)) {
       for (const [index, segment] of route.path.split('/').entries()) {
@@ -174,10 +175,11 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
         }
       }
     }
-    return { ...step, path: segments.join('/') };
-  });
+    return { method: step.method, path: segments.join('/'), ...(step.payload === undefined ? {} : { payload: step.payload }) };
+  };
+  const effectSteps = plan.steps.map(effectStep);
   const attempt = digest({ origin: client.origin, steps: effectSteps });
-  const guards = [...new Set(effectSteps.map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
+  const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, digest({ origin: client.origin, step }) + '.attempt')))];
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);
@@ -198,11 +200,14 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   if (receipt.states.some(state => state !== 'pending')) throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Confirmation was already dispatched; reconcile with ' + command(id, options));
   if (receipt.binding !== binding) throw new CliError('CONFIRMATION_MISMATCH', 'Credential revision, origin, target, operation, payload or preconditions changed; preview again');
   const reserved: string[] = [];
+  const reserve = async (guard: string) => {
+    const file = await open(guard, 'wx', 0o600);
+    reserved.push(guard);
+    try { await file.writeFile(id); await file.sync(); } finally { await file.close(); }
+  };
   for (const guard of guards) {
     try {
-      const file = await open(guard, 'wx', 0o600);
-      reserved.push(guard);
-      try { await file.writeFile(id); await file.sync(); } finally { await file.close(); }
+      await reserve(guard);
     } catch (error) {
       await Promise.all(reserved.map(path => rm(path)));
       if (error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST') {
@@ -212,30 +217,50 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     }
   }
   const results: unknown[] = [];
+  const outcome = () => 'steps=' + receipt.states.join(',') + (receipt.createdPull ? '; created PR id=' + receipt.createdPull.id + ' number=' + receipt.createdPull.number : '') + '; reconcile with ' + command(id, options);
   for (const [index, step] of plan.steps.entries()) {
-    receipt.states[index] = 'dispatched';
-    await writePrivateFile(path, JSON.stringify(receipt));
-    const journal = await open(logPath(), constants.O_APPEND | constants.O_CREAT | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600);
     try {
-      const stat = await journal.stat();
-      if (!stat.isFile() || stat.uid !== process.getuid!() || (stat.mode & 0o077) !== 0) throw new CliError('CONFIG_INSECURE', 'Write journal must be an owned private file');
-      await journal.writeFile(JSON.stringify({ confirmation: id, operation: operations[index], attempt, step: index, state: 'dispatched' }) + '\n');
-      await journal.sync();
-    } finally { await journal.close(); }
-    try {
-      results.push((await client.request(step.path, false, step)).data);
+      let dispatched = step;
+      if (step.createdPull) {
+        if (plan.pull?.action !== 'create' || index !== 1 || step.method !== 'POST' || step.path !== plan.target + '/0/requested_reviewers' || !receipt.createdPull) throw new CliError('INVALID_RESPONSE', 'Cannot resolve the created PR for reviewer changes');
+        dispatched = { method: step.method, path: plan.target + '/' + receipt.createdPull.number + '/requested_reviewers', payload: step.payload };
+        if (validatePayload(dispatched.method, dispatched.path, dispatched.payload).operation !== operations[index]) throw new CliError('READ_ONLY', 'Resolved operation differs from the approved plan');
+        const guard = join(root, digest({ origin: client.origin, step: effectStep(dispatched) }) + '.attempt');
+        if (!guards.includes(guard)) { await reserve(guard); guards.push(guard); }
+      }
+      receipt.states[index] = 'dispatched';
+      await writePrivateFile(path, JSON.stringify(receipt));
+      const journal = await open(logPath(), constants.O_APPEND | constants.O_CREAT | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600);
+      try {
+        const stat = await journal.stat();
+        if (!stat.isFile() || stat.uid !== process.getuid!() || (stat.mode & 0o077) !== 0) throw new CliError('CONFIG_INSECURE', 'Write journal must be an owned private file');
+        await journal.writeFile(JSON.stringify({ confirmation: id, operation: operations[index], attempt, step: index, state: 'dispatched' }) + '\n');
+        await journal.sync();
+      } finally { await journal.close(); }
+      const result = (await client.request(dispatched.path, false, dispatched)).data;
+      results.push(result);
+      if (index === 0 && plan.steps.some(step => step.createdPull)) {
+        const created = object(result);
+        if (!Number.isSafeInteger(created.id) || Number(created.id) <= 0 || !Number.isSafeInteger(created.number) || Number(created.number) <= 0) throw new CliError('INVALID_RESPONSE', 'Creation did not return a PR identity');
+        validate(plan.target + '/' + created.number, created);
+        if ((object(plan.preconditions)[plan.target + '?state=all'] as Row[]).some(row => row.id === created.id || row.number === created.number) ||
+            object(created.head).ref !== plan.pull!.expected.head || object(created.base).ref !== plan.pull!.expected.base) throw new CliError('INVALID_RESPONSE', 'Creation did not return the intended new PR');
+        receipt.createdPull = { id: Number(created.id), number: Number(created.number) };
+        receipt.reads = [...receipt.reads, plan.target + '/' + created.number];
+      }
       receipt.states[index] = 'completed';
       await writePrivateFile(path, JSON.stringify(receipt));
     } catch {
-      throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write may have applied; steps=' + receipt.states.join(',') + '; reconcile with ' + command(id, options));
+      throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write may have applied; ' + outcome());
     }
   }
   let observations;
   try {
     observations = await observe(client, plan.reads);
+    if (plan.pull) await verifyPull(client, plan, results, observations);
     if (plan.named) verifyNamed(plan, results, observations);
   }
-  catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; reconcile with ' + command(id, options)); }
+  catch { throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Write dispatched but verification failed; ' + outcome()); }
   await Promise.all(guards.map(path => rm(path)));
   return { confirmation: id, states: receipt.states, results, observations, reconcile: command(id, options) };
 }

@@ -1,7 +1,7 @@
 # gitea-axi
 
 An agent CLI for Gitea repository workflows with private credential profiles.
-It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, issue and label mutations, and classified raw API requests.
+It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, issue, label and pull request mutations, and classified raw API requests.
 Verification uses offline fakes only; live Gitea access remains unverified.
 
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
@@ -99,6 +99,28 @@ Attachments remain pending; attachment flags are refused before creating an issu
 Label colours normalize to six lowercase hexadecimal digits, and renaming preserves the label ID.
 Issue and label deletion require a complete collection and at least one remaining control record before dispatch.
 
+Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
+Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
+Cross-repository heads, draft, project and attachment inputs remain unavailable.
+Create accepts repeatable `--reviewer` user names and `--team-reviewer` team names, plus issue-style assignees, labels and milestone selectors.
+Edit accepts `--base`, text fields and assignee/label deltas, plus repeatable `--add-reviewer`, `--remove-reviewer`, `--add-team-reviewer` and `--remove-team-reviewer` deltas.
+Existing reviewers and teams remain present unless explicitly removed.
+Reviewer edits run before field edits, so an upstream reviewer rejection leaves requested field edits unapplied.
+Create requires the `repoCreatePullRequest` grant.
+When reviewers are requested, create resolves reviewer user identities first, then requests reviewers after creation as a separate guarded step requiring the additional `repoCreatePullReviewRequests` grant.
+If the reviewer step fails after creation, the error reports the created PR ID and number for reconciliation without retrying.
+Close with `--comment` records closure and comment as separate steps and reports partial outcomes without retrying.
+Successful writes verify the same PR identity, expected fields and memberships through fresh reads.
+Update-branch verifies that the resulting head contains both its previous head and base commits; conflicts never report completion.
+Merge requires exactly one of `--merge`, `--squash`, `--rebase` or `--method merge|squash|rebase`, and a full `--match-head-commit` SHA.
+It sends the vendor `head_commit_id` precondition and verifies the closed, merged PR, base branch tip and final commit topology.
+Merge commits retain the previous base and checked head as parents; squash uses one new commit on the previous base; rebase verifies the rewritten linear chain and original commit messages.
+These are offline protocol and topology checks, not live vendor atomicity or content-equivalence commissioning.
+`--auto`, `--admin` and `--delete-branch` each report a capability gap because their semantics remain unverified.
+`pr review` validates exactly one of `--approve`, `--request-changes` or `--comment`, then refuses before posting.
+C043 and CX-007 remain unresolved: the retained contract does not establish review wire events or atomic stale-head refusal.
+Supplying `--match-head-commit` does not enable reviews or weaken this refusal to a warning.
+
 Writes are disabled unless `--allow-write` names every exact vendor operation needed by the command.
 A profile's optional `writes` object can narrow this grant with `allowWrites` and an `operations` array.
 When set, `GITEA_AXI_READ_ONLY` refuses writes unless its value is exactly `false`.
@@ -125,7 +147,7 @@ Protected JSON `--input FILE` and `--input -` are alternatives to argv fields, w
 Secret-bearing routes and secret argv fields remain refused.
 Routes with credential-bearing request schemas are refused even with protected `--input`.
 Integer route parameters on writes require canonical decimal spelling, so an issue index such as `01` is refused.
-Multipart uploads, named pull request writes, merge workflows and secret updates are pending.
+Multipart uploads and secret updates are pending.
 
 The journal defaults to `$XDG_STATE_HOME/gitea-axi/writes.log`, otherwise `~/.local/state/gitea-axi/writes.log` on Linux.
 `GITEA_AXI_WRITE_LOG` selects another absolute path; private confirmation receipts live beside it in `write-receipts`.
@@ -169,9 +191,9 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1, S3.2, S5.1 and S5.2 under an inherited outbound network guard.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.4, S5.1 and S5.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
-Run the S3 journeys independently with `node scripts/verify.mjs --task S3.1` and `node scripts/verify.mjs --task S3.2`.
+Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3` or `S3.4`.
 Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.

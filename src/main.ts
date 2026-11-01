@@ -13,6 +13,7 @@ import { tasks, validateTasks } from './ci.js';
 import { search, validateSearch } from './search.js';
 import { issueLabelPlan, rawWritePlan, reconcile, write } from './writes.js';
 import { readPrivateFile } from './private-file.js';
+import { pullPlan, validatePull } from './pulls.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -59,6 +60,7 @@ export async function main(args: string[]) {
       return;
     }
     const options = values as Options;
+    if (operation.startsWith('pr ') && command.effect === 'write') validatePull(operation, options);
     if (operation.startsWith('workflow ') || operation.startsWith('run ') && operation !== 'run list') {
       throw new CliError('CAPABILITY_GAP', operation + ' is pending: the 1.23.4 contract has task summaries only; 1.24.0 candidates require commissioning. Mutating controls also await the shared write gate');
     }
@@ -72,7 +74,7 @@ export async function main(args: string[]) {
       options.body = await input(String(options['body-file']));
     }
     const takesNumber = ['issue view', 'pr view', 'pr checks', 'pr diff'].includes(operation) ||
-      (command.effect === 'write' && operation.startsWith('issue ') && operation !== 'issue create');
+      (command.effect === 'write' && (operation.startsWith('issue ') || operation.startsWith('pr ')) && !operation.endsWith(' create'));
     if (takesNumber && (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0]!))) throw new CliError('USAGE', 'Select exactly one positive item number', 2);
     const takesLabel = operation === 'label edit' || operation === 'label delete';
     if (takesLabel && positionals.length !== 1) throw new CliError('USAGE', 'Select one exact label name or ID', 2);
@@ -144,7 +146,7 @@ export async function main(args: string[]) {
       if (command.effect === 'write' && (!options['allow-write'] || process.env.GITEA_AXI_READ_ONLY && process.env.GITEA_AXI_READ_ONLY !== 'false')) throw new CliError('READ_ONLY', 'Writes require an exact operation grant and a writable policy');
       const repo = repository(typeof values.repo === 'string' ? values.repo : undefined, identity.origin);
       const base = '/api/v1/repos/' + repo.split('/').map(encodeURIComponent).join('/');
-      if (command.effect === 'write') output = await write(client, identity, await issueLabelPlan(client, operation, base, positionals[0], options), options);
+      if (command.effect === 'write') output = await write(client, identity, await (operation.startsWith('pr ') ? pullPlan : issueLabelPlan)(client, operation, base, positionals[0], options), options);
       else if (operation === 'repo view') output = await readRepository(identity.origin, repo, identity.token);
       else if (operation === 'dashboard') {
         const sections: Record<string, unknown> = {};

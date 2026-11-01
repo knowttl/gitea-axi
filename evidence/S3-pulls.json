@@ -1,0 +1,24 @@
+{
+  "tasks": ["S3.3", "S3.4"],
+  "channel": "offline-fake",
+  "fixtureProvenance": "Synthetic wire records in scripts/verify-pulls.ts follow the retained Gitea 1.23.4 Swagger schemas; they are not vendor observations.",
+  "operations": ["OP-016", "OP-030", "OP-034", "OP-038", "OP-039", "OP-049", "OP-051", "OP-059", "OP-063", "OP-064", "OP-065", "OP-066", "OP-067"],
+  "outcomes": ["AC-016", "AC-030", "AC-034", "AC-038", "AC-039", "AC-049", "AC-051", "AC-059", "AC-063", "AC-064", "AC-065", "AC-066", "AC-067"],
+  "crossCuttingCases": ["CX-003", "CX-007"],
+  "checks": ["node scripts/verify.mjs --task S3.3", "node scripts/verify.mjs --task S3.4"],
+  "coverageBoundary": "Operation IDs include supporting reads and deliberately unresolved capabilities; this is not a claim that all associated acceptance outcomes or vendor semantics are commissioned.",
+  "review": {
+    "capability": "C043",
+    "status": "unresolved",
+    "reason": "The retained ReviewStateType lacks exact event values and commit_id does not establish atomic stale-head refusal.",
+    "behavior": "Validate exactly one action, then refuse before any HTTP request or review post, including with --match-head-commit."
+  },
+  "merge": {
+    "protocol": "Require an explicit checked head SHA and transmit head_commit_id; the fake refuses a head changed after preflight.",
+    "verification": "Read PR identity, merged state, base tip and final merge/squash/rebase topology; rebase additionally compares original commit messages.",
+    "pending": "Live vendor atomicity, content equivalence and commissioning. Auto, admin and branch deletion semantics remain independently gated."
+  },
+  "artium": "Opt-in; exact frozen revision, manifest digest, candidate head and package digest are recorded in each external journey report. A standalone pass explicitly skips hosted proof.",
+  "nativeWindows": "pending",
+  "liveCommissioning": "pending"
+}
