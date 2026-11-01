@@ -69,7 +69,7 @@ const artifacts = {
   'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => Object.entries(methods).filter(([method]) => ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'].includes(method)).map(([method, definition]) => ({
     path: swagger.basePath + path, method: method.toUpperCase(), operation: definition.operationId,
     integerParameters: (definition.parameters ?? []).filter(parameter => parameter.in === 'path' && (parameter.type === 'integer' || parameter.name === 'index' || path === '/notifications/threads/{id}')).map(parameter => parameter.name),
-    effect: path.startsWith('/admin/') ? 'admin' :
+    effect: /^(?:\/orgs\/\{org\}|\/repos\/\{owner\}\/\{repo\})\/actions\/secrets(?:\/\{secretname\})?$/.test(path) ? method === 'get' ? 'read' : 'write' : path.startsWith('/admin/') ? 'admin' :
       /token|signing-key|secrets/.test(path) || definition.parameters?.some(parameter => carriesCredentials(parameter.schema)) || Object.entries(definition.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
         method !== 'get' ? 'write' :
           /\/(?:archives?|downloads?)(?:\/|$)/i.test(path) || !(definition.produces ?? swagger.produces ?? []).includes('application/json') ? 'download' : 'read',

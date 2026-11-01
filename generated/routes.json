@@ -600,7 +600,7 @@
     "method": "GET",
     "operation": "orgListActionsSecrets",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "read",
     "requestSchema": null,
     "schema": {
       "type": "array",
@@ -614,7 +614,7 @@
     "method": "PUT",
     "operation": "updateOrgSecret",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "write",
     "requestSchema": {
       "$ref": "#/definitions/CreateOrUpdateSecretOption"
     },
@@ -625,7 +625,7 @@
     "method": "DELETE",
     "operation": "deleteOrgSecret",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "write",
     "requestSchema": null,
     "schema": null
   },
@@ -1166,7 +1166,7 @@
     "method": "GET",
     "operation": "repoListActionsSecrets",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "read",
     "requestSchema": null,
     "schema": {
       "type": "array",
@@ -1180,7 +1180,7 @@
     "method": "PUT",
     "operation": "updateRepoSecret",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "write",
     "requestSchema": {
       "$ref": "#/definitions/CreateOrUpdateSecretOption"
     },
@@ -1191,7 +1191,7 @@
     "method": "DELETE",
     "operation": "deleteRepoSecret",
     "integerParameters": [],
-    "effect": "credential",
+    "effect": "write",
     "requestSchema": null,
     "schema": null
   },

@@ -1,0 +1,21 @@
+{
+  "tasks": ["S4.2", "S4.3"],
+  "channel": "offline-fake",
+  "fixtureProvenance": "Synthetic attachment bytes and secret/variable canaries authored against the retained Gitea 1.23.4 schemas and the separately approved source-derived binary route contract. No live service observations.",
+  "operations": ["OP-035", "OP-040", "OP-041", "OP-042", "OP-057", "OP-058", "OP-069", "OP-010", "OP-011", "OP-021", "OP-022", "OP-023", "OP-054", "OP-072", "OP-073"],
+  "checks": ["node scripts/verify.mjs --task S4.2", "node scripts/verify.mjs --task S4.3"],
+  "transfers": "Multipart uploads bind exact content and verify attachment metadata. Binary downloads use validated UUIDs on a source-derived same-origin route; all redirects refuse. Independent byte ceilings, safe files, exact digests, content types and partial outcomes are exercised. Metadata reads do not prove binary delivery.",
+  "values": "Repository and organization secret writes accept protected inputs only and verify names, never secret values. The fake upstream checks exact canary bytes and targets. Variables verify create, update, empty strings, delete and control preservation.",
+  "effects": "Every business mutation uses shared operation grants, preview binding, durable dispatch receipts, replay guards and a secret-free journal. Secret payloads are absent from preview, response output and persisted bodies; keyed effect hashes prevent plaintext-value dictionary checks against journal hashes.",
+  "artium": {
+    "fixtureRevision": "b88f825da1a9e39125f99fba1637ba3ba538afd7",
+    "manifestSha256": "b8ada72ae591f34e92a1eff1da39a9a7810a79603aba4c861b3a0a74b49dcc87",
+    "packageSha256": "31c783e3507bb24fbd50a143346734873e272d27ef8316f27d6adc22e6a32ae1",
+    "results": { "S4.2": "passed", "S4.3": "passed" },
+    "channels": "Real bundled local client, server, credential writer and runner with fake Gitea; managed uploads, protected stdin/request files, artifact confirmation, verified client save, receipt and cancellation cleanup.",
+    "artifactHostInspection": "Synthetic mount/cgroup evidence through the existing ArtifactStore inspection seam, matching host integration conventions; deployed tmpfs/cgroup enforcement remains pending.",
+    "reports": "Opt-in journeys record the tested source head and fixture revision/digest in external reports. A missing fixture explicitly skips hosted proof."
+  },
+  "nativeWindows": "pending",
+  "liveCommissioning": "pending; includes private-token and object-storage compatibility"
+}

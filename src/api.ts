@@ -16,6 +16,7 @@ const required: Record<string, string[]> = {
   Branch: ['name', 'commit'], PayloadCommit: ['id'],
   Release: ['id', 'tag_name', 'target_commitish', 'name', 'body', 'draft', 'prerelease'],
   Tag: ['name', 'commit'], CommitMeta: ['sha'],
+  Secret: ['name'], ActionVariable: ['name', 'data'], Attachment: ['id', 'uuid', 'name', 'size'],
   GitTreeResponse: ['tree', 'truncated'], GitEntry: ['path', 'mode', 'type', 'sha'],
   ActionTask: ['id', 'name', 'status'], ActionTaskResponse: ['workflow_runs', 'total_count'],
 };
@@ -54,6 +55,10 @@ export function canonicalPath(path: string): string {
 export function validatePayload(method: string, path: string, payload: unknown) {
   const route = effectFor(method, path);
   if (!route || route.effect !== 'write') throw new CliError('READ_ONLY', 'Only classified business writes may be enabled');
+  if (/\/actions\/secrets\//.test(path) && method === 'PUT' &&
+      (typeof object(payload).data !== 'string' || Object.keys(object(payload)).some(key => key !== 'data'))) {
+    throw new CliError('USAGE', 'Secret input requires only a string data field', 2);
+  }
   const segments = canonicalPath(path).split('/');
   for (const [index, segment] of route.path.split('/').entries()) {
     if (route.integerParameters.some(name => segment === '{' + name + '}') && !/^(?:0|-?[1-9]\d*)$/.test(segments[index]!)) {
@@ -84,6 +89,9 @@ export function validate(path: string, value: unknown): unknown {
       validators.set(route.path, validator);
     }
     if (!validator(value)) throw new CliError('INVALID_RESPONSE', route.operation + ' returned invalid fields');
+  }
+  if (/\/actions\/secrets(?:\?|$)/.test(path) && Array.isArray(value)) {
+    return value.map(row => ({ name: object(row).name, ...(object(row).created_at ? { created_at: object(row).created_at } : {}) }));
   }
   return value;
 }
@@ -151,7 +159,7 @@ export async function collect(client: Client, path: string, envelope?: string): 
     if (!Array.isArray(rows)) throw new CliError('INVALID_RESPONSE', 'Expected a Gitea list' + (envelope ? ' envelope ' + envelope : ''));
     for (const value of rows) {
       const row = object(value);
-      const id = path.split('?')[0]!.endsWith('/tags') ? row.name : row.id ?? row.number ?? row.sha ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
+      const id = /\/(?:tags|actions\/(?:secrets|variables))$/.test(path.split('?')[0]!) ? row.name : row.id ?? row.number ?? row.sha ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
       if (typeof id !== 'number' && typeof id !== 'string') throw new CliError('INVALID_RESPONSE', 'List record has no identity');
       items.set(String(id), row);
     }

@@ -127,7 +127,7 @@ export async function pullPlan(client: Client, operation: string, base: string, 
       }
       if (Object.keys(payload).length) add('PATCH', path, payload);
     }
-    if (!steps.length) usage('Choose a PR field or membership to edit');
+    if (!steps.length && !options.attach) usage('Choose a PR field or membership to edit');
   } else if (action === 'close' || action === 'reopen') {
     expected.state = action === 'close' ? 'closed' : 'open';
     add('PATCH', path, { state: expected.state });

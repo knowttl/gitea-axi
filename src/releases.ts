@@ -118,8 +118,8 @@ export async function releasePlan(client: Client, operation: string, base: strin
       if (!existingTag) payload.target_commitish = notes.to;
       before.notes = notes;
     }
-  } else if (!Object.keys(payload).length) usage('Select at least one release field to edit');
+  } else if (!Object.keys(payload).length && !options.attach) usage('Select at least one release field to edit');
   const expected = current ? { ...Object.fromEntries(['id', 'tag_name', 'name', 'body', 'draft', 'prerelease', 'target_commitish'].map(key => [key, object(current)[key]])), ...payload } : payload;
-  return { target: detail, steps: [{ method: operation === 'release create' ? 'POST' : 'PATCH', path: current ? path + '/' + object(current).id : path, payload }],
+  return { target: detail, steps: Object.keys(payload).length ? [{ method: operation === 'release create' ? 'POST' : 'PATCH', path: current ? path + '/' + object(current).id : path, payload }] : [],
     reads: [detail], preconditions: before, workflow: { path: detail, expected, created: current === null }, ...(notes ? { notes } : {}) };
 }

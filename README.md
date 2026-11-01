@@ -45,7 +45,7 @@ Dependency installation can access npm; Gitea requests use only local fakes.
 Only the local HTTP fake replaces the vendor boundary.
 The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
 Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1, S2, S3 and S4.1 drivers print their report paths.
+The S1, S2, S3 and S4 drivers print their report paths.
 Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
@@ -95,13 +95,15 @@ Create, edit and comment accept `--body` or `--body-file`; body files must be ow
 Use `--body-file -` for bounded stdin.
 Close accepts an optional `--comment`, recorded as a separate write step.
 GitHub-only type, project, close-reason and duplicate flags are refused before mutation.
-Attachments remain pending; attachment flags are refused before creating an issue.
+Create, edit and comment accept repeatable `--attach FILE` with an additional attachment operation grant.
+Comment attachments bind the newly created comment ID; creation attachments bind the newly created parent identity.
+An attachment failure reports the existing parent ID and number for reconciliation without repeating creation.
 Label colours normalize to six lowercase hexadecimal digits, and renaming preserves the label ID.
 Issue and label deletion require a complete collection and at least one remaining control record before dispatch.
 
 Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
 Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
-Cross-repository heads, draft, project and attachment inputs remain unavailable.
+Cross-repository heads, draft and project inputs remain unavailable.
 Create accepts repeatable `--reviewer` user names and `--team-reviewer` team names, plus issue-style assignees, labels and milestone selectors.
 Edit accepts `--base`, text fields and assignee/label deltas, plus repeatable `--add-reviewer`, `--remove-reviewer`, `--add-team-reviewer` and `--remove-team-reviewer` deltas.
 Existing reviewers and teams remain present unless explicitly removed.
@@ -147,6 +149,32 @@ Deletion verifies release absence, preservation of other releases and the indepe
 `--latest`, discussion settings and asset positionals refuse before creation.
 An existing or uncertain release cannot trigger an automatic duplicate create.
 
+`issue upload NUMBER`, `pr upload NUMBER` and `release upload TAG` accept repeatable `--file FILE` and optional `--content-type` (default `application/octet-stream`).
+Create and edit also accept repeatable `--attach FILE`; all uploads share the write policy below.
+The attachment grants are `issueCreateIssueAttachment`, `issueCreateIssueCommentAttachment` and `repoCreateReleaseAttachment`.
+Uploads bind exact bytes, MIME type and basename to confirmation, then verify new attachment identities, names and sizes through metadata reads.
+Each file is limited to 10000000 bytes; symlinks, unsafe portable basenames and duplicate names are refused.
+
+`issue download NUMBER`, `pr download NUMBER` and `release download TAG` select attachments with repeatable `--pattern` globs (`*` and `?`, default `*`) or exact `--asset-id`.
+Use an existing `--dir`, or `--output FILE` for exactly one attachment.
+`--sha256 DIGEST` verifies an independently known digest for one selected file; `--content-type TYPE` requires that MIME type.
+Downloads verify metadata identity again before requesting `/attachments/UUID` on the selected origin, independently bound to 10000000 bytes per response.
+This binary route is [source-derived](evidence/binary-transfer-contract.md); private-token compatibility, direct object storage and live commissioning remain pending.
+Metadata URLs are never used as transport authority, and every redirect is refused.
+Files are written privately and published only after complete size and optional digest verification.
+Existing files require explicit `--clobber`; traversal, symlinks and duplicate basenames refuse.
+No matches is an explicit error; partial transfers identify completed attachment IDs and retain only completed files.
+
+`secret list|set|delete` and `variable list|set|delete` select a repository with `--repo OWNER/NAME` or an organization with `--org NAME`.
+Set and delete take one name, normalized to uppercase for repository and organization operations, including raw secret writes; environment scopes are unsupported.
+`secret set NAME --input -` reads the exact value from protected stdin; `--input FILE` uses an owned mode 0600 file, bounded to 1000000 bytes.
+Secret values are write-only: previews omit them, mutation response bodies are discarded, and verification reads name metadata only.
+Secret listing returns names without invented timestamps; a successful set confirms name existence, not independently commissioned value consumption.
+Variable listing returns names and stored values, including empty strings.
+`variable set NAME --body VALUE` or `--input FILE|-` creates absent variables and updates existing ones, preserving empty strings and verifying the exact value and unrelated variables.
+Use `updateRepoSecret`, `deleteRepoSecret`, `updateOrgSecret` or `deleteOrgSecret` for secret grants.
+Variable grants are `createRepoVariable`, `updateRepoVariable`, `deleteRepoVariable` and their organization counterparts `createOrgVariable`, `updateOrgVariable`, `deleteOrgVariable`.
+
 `release create --generate-notes` computes notes locally from exact commit ancestry and declares a `local-composite` result with `from`, `to` and commit identities.
 `--notes-start-tag` excludes that tag and all its ancestors, requires it to be an ancestor of the target, and otherwise defaults to the most recent nondraft release's tag.
 With no previous release, notes include the complete target ancestry.
@@ -178,10 +206,10 @@ A mismatched or failed verification reports an unknown outcome.
 Raw POST, PUT, PATCH and DELETE requests use this same policy and journal.
 Use a positional method or `-X METHOD`, repeatable `--field key=value` for typed numbers, booleans and null, or `--raw-field key=value` for strings.
 Protected JSON `--input FILE` and `--input -` are alternatives to argv fields, with the same 1000000-byte bound.
-Secret-bearing routes and secret argv fields remain refused.
-Routes with credential-bearing request schemas are refused even with protected `--input`.
+Raw secret PUT requests require protected JSON `--input` containing only a string `data` field.
+Secret `--field data=...` and `--raw-field data=...` refuse before dispatch without echoing the value.
+Other credential-bearing routes remain refused.
 Integer route parameters on writes require canonical decimal spelling, so an issue index such as `01` is refused.
-Multipart uploads and secret updates are pending.
 
 The journal defaults to `$XDG_STATE_HOME/gitea-axi/writes.log`, otherwise `~/.local/state/gitea-axi/writes.log` on Linux.
 `GITEA_AXI_WRITE_LOG` selects another absolute path; private confirmation receipts live beside it in `write-receipts`.
@@ -190,7 +218,7 @@ Each attempt is persisted before dispatch.
 Timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
-Replay guards treat repository owner and repository name case variants as the same identity, while preserving case-sensitive non-integer path values.
+Replay guards also treat repository owner and repository name case variants as the same identity.
 Keep its private receipts until the outcome has been investigated.
 Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
@@ -225,10 +253,11 @@ Use env SecretRefs on Windows.
 Stock Artium support is not claimed.
 Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1, S5.1 and S5.2 under an inherited outbound network guard.
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1 and S5.2 under an inherited outbound network guard.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
 Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
 Run the release journey with `node scripts/verify.mjs --task S4.1`.
+Run attachments with `node scripts/verify.mjs --task S4.2` and protected values with `node scripts/verify.mjs --task S4.3`.
 Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
@@ -236,6 +265,8 @@ Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof 
 The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
 Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
 The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
-The S3 and S4.1 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
+The S3 and S4 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
 They report an explicit skip reason when the fixture is absent.
+The S4.2 and S4.3 journeys additionally require admission for managed uploads, protected inputs and dedicated authenticated artifact transfers.
+Ordinary hosted download calls and arbitrary host file paths remain refused.
 Route classification covers all captured methods; this does not claim completion of every business workflow.
