@@ -1,8 +1,52 @@
 # gitea-axi
 
-An agent CLI for Gitea repository workflows with private credential profiles.
-It includes a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, repository, release, issue, label and pull request mutations, and classified raw API requests.
+Agent-facing Gitea CLI with private credential profiles, read-only by default.
+
+[Why](#why-this-exists) · [Quickstart](#quickstart) · [Commands](#commands) · [Safety](#safety) · [Configuration](#configuration) · [Limitations](#limitations) · [Development](#development) · [License](#license)
+
+## Why this exists
+
+Agents need bounded, predictable output and explicit write controls instead of guessed API calls and unbounded responses.
+gitea-axi offers a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, repository, release, issue, label and pull request mutations, and classified raw API requests.
+Output is compact TOON with structured errors.
+Reads are bounded, and writes require an exact operation grant, a preview and a matching confirmation.
 Verification uses offline fakes only; live Gitea access remains unverified.
+
+## Quickstart
+
+Requires Node.js 24.11.0 or later (below 25).
+Install the public npm package:
+
+```sh
+npm install -g @knowttl/gitea-axi
+gitea-axi --version
+```
+
+Without a configured profile, the dashboard exits 1 with `AUTH_REQUIRED` and asks for a configured profile or an explicit anonymous `--origin`:
+
+```text
+error:
+  code: AUTH_REQUIRED
+  operation: dashboard
+```
+
+Configure a profile as described in [Configuration](#configuration), then check local credentials, read issues and verify the identity:
+
+```sh
+gitea-axi config path
+gitea-axi auth status
+gitea-axi issue list --repo OWNER/NAME --state open --limit 2
+gitea-axi doctor
+```
+
+Anonymous reads need an explicit `--origin`, for example `gitea-axi issue list --repo OWNER/NAME --origin https://gitea.example.test`.
+
+## Use with your agent
+
+The generated [skill](generated/SKILL.md) is the full command reference for agents.
+Session hook installation (`gitea-axi setup hooks`) is pending and currently exits with `CAPABILITY_GAP` before any effects.
+
+## Commands
 
 `gitea-axi capabilities` lists all 124 retained baseline leaves, including explicit gaps.
 Use `gitea-axi capabilities C038` to inspect a command's baseline outcome and captured flags.
@@ -11,6 +55,8 @@ Discussions, gists, projects, issue lock/transfer/subissue workflows, draft tran
 The generated [skill](generated/SKILL.md), help and host inventory share the executable registry.
 See the [catalogue contract](docs/catalogue-contract.md) for investigated versions and pending checks.
 
+### Actions runs
+
 `run list` reads Gitea 1.23.4 Actions task summaries with workflow, branch, status, event and commit filters across bounded pages.
 `--user` and unmapped fields fail explicitly.
 Task IDs and status strings do not establish run identity, job conclusions or terminal run results.
@@ -18,6 +64,8 @@ All seven run commands and five workflow commands remain discoverable with `--he
 Run detail, watch, logs, downloads and workflow controls report explicit capability gaps.
 Mutating run and workflow controls remain unsupported pending contract commissioning.
 The retained 1.24.0 workflow, artifact and job-log routes are investigation candidates, not supported target operations.
+
+### Search
 
 `search issues|prs|repos|commits "text"` searches at most 20 pages and 1000 candidates per collection, then filters, sorts and applies the total output limit (default 1000).
 Issue and PR searches support exact arbitrary author and assignee names and comma-separated label ANY matching; an unknown label alone matches nothing.
@@ -28,34 +76,7 @@ Results disclose truncation and scope; totals are unknown when candidate collect
 Queries accept plain text; unsupported qualifiers, review predicates and `authorAssociation` fail explicitly.
 `search code` remains unresolved because repository contents cannot substitute for indexed code search.
 
-Use Node 24.14.0 (minimum 24.11.0) and npm 11.9.0.
-Dependencies are exact in `package.json` and transitive versions are locked in `package-lock.json`.
-Install the public npm package:
-
-```sh
-npm install -g @knowttl/gitea-axi
-gitea-axi --version
-```
-
-The executable is `gitea-axi`.
-To build from source:
-
-```sh
-npm ci --ignore-scripts
-npm run build
-node dist/cli.js repo view --help
-node scripts/verify.mjs --task S1.1
-```
-
-The verification driver builds and packs the CLI, installs that tarball into an empty temporary prefix and invokes its installed bin from outside the source tree.
-Dependency installation can access npm; Gitea requests use only local fakes.
-Only the local HTTP fake replaces the vendor boundary.
-The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
-Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
-The S1, S2, S3, S4 and S6 drivers print their report paths.
-Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
-Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
-For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
+### Reads, output and exit codes
 
 Command syntax:
 
@@ -97,6 +118,8 @@ Raw reads accept `api [GET] <relative-path>` for JSON metadata and refuse absolu
 Encoded slash and backslash separators are refused in API paths; encoded query text remains supported.
 HTTP 401, 403 and ambiguous 404 responses remain distinct failures, and rate-limit retry hints never cause automatic retries.
 
+### Issues and labels
+
 Issue mutations include `create`, `edit`, `close`, `reopen`, `comment`, `delete`, `pin` and `unpin`.
 Label mutations include `create`, `edit` and `delete`; edit and delete accept an exact label name or ID.
 Create accepts repeatable `--assignee` and `--label` names and an exact `--milestone` title.
@@ -110,6 +133,8 @@ Comment attachments bind the newly created comment ID; creation attachments bind
 An attachment failure reports the existing parent ID and number for reconciliation without repeating creation.
 Label colours normalize to six lowercase hexadecimal digits, and renaming preserves the label ID.
 Issue and label deletion require a complete collection and at least one remaining control record before dispatch.
+
+### Pull requests
 
 Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
 Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
@@ -132,6 +157,8 @@ These are offline protocol and topology checks, not live vendor atomicity or con
 `pr review` reports a compatibility gap before workflow validation or posting; see the [catalogue contract](docs/catalogue-contract.md) for C043 and CX-007.
 Supplying `--match-head-commit` does not enable reviews or weaken this refusal to a warning.
 
+### Repositories
+
 Repository mutations include API-only `repo create NAME|OWNER/NAME`, `repo edit` and `repo fork`.
 Create requires exactly one of `--public` or `--private`, and accepts `--description` and `--template OWNER/NAME`.
 An unqualified name uses the authenticated user; another owner selects an organization.
@@ -146,6 +173,8 @@ Internal visibility refuses before mutation.
 Workspace flags (`--source`, `--push`, `--remote`, `--clone`) use the standalone Git workflows below and require explicit `--workspace` selection.
 Repository creation `--push` and `--remote` require `--source`.
 
+### Releases
+
 Release commands include `list`, `view TAG`, `create TAG`, `edit TAG` and `delete TAG` with `--repo OWNER/NAME`.
 Exact release and tag lookups require complete collections within the collection scan bounds above; incomplete lookups refuse.
 Slash-containing release tags and branch refs are supported without weakening API path separator protections.
@@ -158,6 +187,8 @@ The grants are `repoCreateRelease`, `repoEditRelease` and `repoDeleteRelease`.
 Deletion verifies release absence, preservation of other releases and the independently observed tag state; it does not delete a tag.
 `--latest`, discussion settings and asset positionals refuse before creation.
 An existing or uncertain release cannot trigger an automatic duplicate create.
+
+### Attachments
 
 `issue upload NUMBER`, `pr upload NUMBER` and `release upload TAG` accept repeatable `--file FILE` and optional `--content-type` (default `application/octet-stream`).
 Create and edit also accept repeatable `--attach FILE`; all uploads share the write policy below.
@@ -174,6 +205,8 @@ Metadata URLs are never used as transport authority, and every redirect is refus
 Files are written privately and published only after complete size and optional digest verification.
 Existing files require explicit `--clobber`; traversal, symlinks and duplicate basenames refuse.
 No matches is an explicit error; partial transfers identify completed attachment IDs and retain only completed files.
+
+### Secrets and variables
 
 `secret list|set|delete` and `variable list|set|delete` select a repository with `--repo OWNER/NAME` or an organization with `--org NAME`.
 Set and delete take one name, normalized to uppercase for repository and organization operations, including raw secret writes; environment scopes are unsupported.
@@ -192,6 +225,8 @@ The traversal includes merged branches, is bounded to 1000 commits per ancestry,
 For a new tag, the generated target is pinned to its resolved SHA in the write payload.
 `--fail-on-no-commits` refuses an empty generated range; supplied notes precede generated notes.
 These notes do not claim Gitea's native release-note generation or GitHub formatting parity.
+
+## Safety
 
 Writes are disabled unless `--allow-write` names every exact vendor operation needed by the command.
 A profile's optional `writes` object can narrow this grant with `allowWrites` and an `operations` array.
@@ -233,6 +268,8 @@ Replay guards also treat repository owner and repository name case variants as t
 Keep its private receipts until the outcome has been investigated.
 Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
+## Configuration
+
 See the [catalogue contract](docs/catalogue-contract.md#generation-and-verification) for discovery generation and freshness commands.
 `evidence/README.md` records retained source paths, provenance and hashes.
 Credentialed reads use the shipped `axi-credential.schema.json` contract.
@@ -263,28 +300,8 @@ Use env SecretRefs on Windows.
 `auth status` resolves the selected credentials locally; its `authenticated` field reports token availability without checking the server.
 `doctor` checks the current identity through Gitea's `/api/v1/user` endpoint.
 
-Stock Artium support is not claimed.
-Full profile management and native Windows permission verification remain pending.
 
-`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2, S6.1 and S6.2 under an inherited outbound network guard.
-Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
-Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
-Run the release journey with `node scripts/verify.mjs --task S4.1`.
-Run attachments with `node scripts/verify.mjs --task S4.2` and protected values with `node scripts/verify.mjs --task S4.3`.
-Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
-The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
-Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
-Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
-The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
-Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
-The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
-The S3 and S4 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
-They report an explicit skip reason when the fixture is absent.
-The S4.2 and S4.3 journeys additionally require admission for managed uploads, protected inputs and dedicated authenticated artifact transfers.
-Ordinary hosted download calls and arbitrary host file paths remain refused.
-Route classification covers all captured methods; this does not claim completion of every business workflow.
-
-## Standalone Git and owned stacks
+## Local Git workflows and owned stacks
 
 Local workflows require an explicit absolute `--workspace` and use native Git argument arrays.
 Select the native repository root, or an existing parent directory for cloning.
@@ -327,4 +344,58 @@ See the [metadata and recovery contract](docs/local-stack-contract.md) for stack
 Submit/link `--open` refuse before effects because browser launch is prohibited outside authentication.
 Artium admission refuses every stack command and all local checkout/composite options.
 Run `node scripts/verify.mjs --task S6.1` and `node scripts/verify.mjs --task S6.2` for the installed-package fake Git/Gitea journeys.
-Artium checks remain opt-in through the frozen fixture selectors above; native Windows and live commissioning remain pending.
+Artium checks remain opt-in through the frozen fixture selectors in [Development](#development); native Windows and live commissioning remain pending.
+
+## Limitations
+
+Live Gitea access is unverified; all verification uses local fakes.
+Route classification covers all captured methods; this does not claim completion of every business workflow.
+Stock Artium support is not claimed.
+Full profile management and native Windows permission verification remain pending.
+Windows writes are refused, and Windows file SecretRefs are refused until native ACL verification is available.
+`gitea-axi capabilities` reports every command's outcome, including explicit gaps; see the [catalogue contract](docs/catalogue-contract.md) for investigated versions and pending checks.
+
+## Development
+
+Use Node 24.14.0 (minimum 24.11.0) and npm 11.9.0.
+Dependencies are exact in `package.json` and transitive versions are locked in `package-lock.json`.
+To build from source:
+
+```sh
+npm ci --ignore-scripts
+npm run build
+node dist/cli.js repo view --help
+node scripts/verify.mjs --task S1.1
+```
+
+The verification driver builds and packs the CLI, installs that tarball into an empty temporary prefix and invokes its installed bin from outside the source tree.
+Dependency installation can access npm; Gitea requests use only local fakes.
+Only the local HTTP fake replaces the vendor boundary.
+The S1.1 driver checks AC-001, AC-002 and AC-004, package contents, registry freshness, type checking, linting and refusal cases.
+Its report contains exact process invocations, assertions, runtime pins and the package SHA-256.
+The S1, S2, S3, S4 and S6 drivers print their report paths.
+Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
+Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
+For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
+
+`npm test` runs the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2, S6.1 and S6.2 under an inherited outbound network guard.
+Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
+Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
+Run the release journey with `node scripts/verify.mjs --task S4.1`.
+Run attachments with `node scripts/verify.mjs --task S4.2` and protected values with `node scripts/verify.mjs --task S4.3`.
+Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
+The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
+Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.
+Set `GITEA_AXI_ARTIUM_MANIFEST` to that fixture's frozen manifest; the S2 proof records its revision and manifest digest alongside the tested source head and package digest.
+The S2 and S5 drivers report whether Artium was selected, with an explicit skip reason when absent; a standalone pass does not establish hosted admission.
+Hosted CLI behavior scenarios must execute and match the expected exit code and standalone result; expected admission refusals are checked separately for their exact error code and recorded in `hostedRefusals`.
+The fixture must admit item positionals, raw GET paths and the declared read flags while continuing to block credential and endpoint overrides.
+The S3 and S4 drivers use the same fixture selectors for opt-in hosted write journeys through the real local client, server, credential writer and runner.
+They report an explicit skip reason when the fixture is absent.
+The S4.2 and S4.3 journeys additionally require admission for managed uploads, protected inputs and dedicated authenticated artifact transfers.
+Ordinary hosted download calls and arbitrary host file paths remain refused.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules.
+
+## License
+
+No license file is published in this repository yet; licensing is pending.
