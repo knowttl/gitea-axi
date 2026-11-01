@@ -190,6 +190,30 @@ try {
     expect('Boolean-like positional after delimiter stays a tag', [releases.at(-1)!.tag_name, releases.at(-1)!.draft], ['--draft=false', true]);
     await execute(['release', 'edit', 'existing', ...selected, '--notes=--prerelease=false', '--prerelease'], 'repoEditRelease');
     expect('Inline flag-like notes stay data', [releases.find(row => row.tag_name === 'existing')!.body, releases.find(row => row.tag_name === 'existing')!.prerelease], ['--prerelease=false', true]);
+    const notesFile = join(scratch, 'cluster-notes.txt');
+    await writeFile(notesFile, 'Cluster file notes', { mode: 0o600 });
+    for (const [name, clustered, separate, expected] of [
+      ['draft-notes', ['-dn', 'Notes'], ['-d', '-n', 'Notes'], { body: 'Notes', draft: true, prerelease: false }],
+      ['prerelease-notes', ['-pn', 'Notes'], ['-p', '-n', 'Notes'], { body: 'Notes', draft: false, prerelease: true }],
+      ['both-notes', ['-dpn', '--draft=false'], ['-d', '-p', '-n', '--draft=false'], { body: '--draft=false', draft: true, prerelease: true }],
+      ['draft-title', ['-dt', 'Title'], ['-d', '-t', 'Title'], { name: 'Title', draft: true, prerelease: false }],
+      ['prerelease-title', ['-pt', 'Title'], ['-p', '-t', 'Title'], { name: 'Title', draft: false, prerelease: true }],
+      ['both-title', ['-pdt', 'Title'], ['-p', '-d', '-t', 'Title'], { name: 'Title', draft: true, prerelease: true }],
+      ['draft-file', ['-dF', notesFile], ['-d', '-F', notesFile], { body: 'Cluster file notes', draft: true, prerelease: false }],
+      ['prerelease-file', ['-pF', notesFile], ['-p', '-F', notesFile], { body: 'Cluster file notes', draft: false, prerelease: true }],
+      ['both-file', ['-pdF', notesFile], ['-p', '-d', '-F', notesFile], { body: 'Cluster file notes', draft: true, prerelease: true }],
+      ['attached-notes', ['-dpnNotes'], ['-d', '-p', '-nNotes'], { body: 'Notes', draft: true, prerelease: true }],
+      ['attached-title', ['-dptTitle'], ['-d', '-p', '-tTitle'], { name: 'Title', draft: true, prerelease: true }],
+      ['attached-file', ['-dpF' + notesFile], ['-d', '-p', '-F' + notesFile], { body: 'Cluster file notes', draft: true, prerelease: true }],
+    ] as [string, string[], string[], Row][]) {
+      const actual: Row[] = [];
+      for (const [form, flags] of [['clustered', clustered], ['separate', separate]] as const) {
+        await execute(['release', 'create', 'cluster-' + name + '-' + form, ...selected, ...flags], 'repoCreateRelease');
+        const release = (await invoke(['release', 'view', 'cluster-' + name + '-' + form, ...selected])).release;
+        actual.push(Object.fromEntries(Object.keys(expected).map(field => [field, release[field]])));
+      }
+      expect('Clustered and separate flags preserve ' + name, actual, [expected, expected]);
+    }
     for (const failure of ['wrong-field', 'retain-release', 'delete-tag']) {
       journal++; mode = failure;
       const args = failure === 'wrong-field' ? ['release', 'edit', 'existing', ...selected, '--notes', 'Requested notes'] : ['release', 'delete', 'existing', ...selected];

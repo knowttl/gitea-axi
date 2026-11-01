@@ -43,17 +43,14 @@ export async function main(args: string[]) {
       const options = Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,
         ...(flag.multiple ? { multiple: true } : {}), ...(flag.short ? { short: flag.short } : {}) }]));
       const tokens = parseArgs({ args: rest, allowPositionals: true, strict: false, tokens: true, options }).tokens;
-      const normalized = [...rest], consumed = new Set<number>();
-      for (const token of tokens) {
-        if (token.kind !== 'option') continue;
-        if (command.flags[token.name]?.type === 'boolean' && /^(true|false)$/.test(token.value ?? '')) normalized[token.index] = '--' + token.name;
-        if (command.flags[token.name]?.type === 'string' && token.inlineValue === false && token.value !== undefined) {
-          normalized[token.index] = '--' + token.name + '=' + token.value;
-          consumed.add(token.index + 1);
-        }
-      }
+      const normalized = tokens.map(token => {
+        if (token.kind === 'positional') return token.value;
+        if (token.kind === 'option-terminator') return '--';
+        const boolean = command.flags[token.name]?.type === 'boolean' && /^(true|false)$/.test(token.value ?? '');
+        return '--' + token.name + (token.value !== undefined && !boolean ? '=' + token.value : '');
+      });
       parsed = parseArgs({
-        args: normalized.filter((_, index) => !consumed.has(index)), allowPositionals: true, strict: true, tokens: true, options,
+        args: normalized, allowPositionals: true, strict: true, tokens: true, options,
       });
       for (const token of tokens) {
         if (token.kind === 'option' && command.flags[token.name]?.type === 'boolean' && /^(true|false)$/.test(token.value ?? '')) parsed.values[token.name] = token.value === 'true';
