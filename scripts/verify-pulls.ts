@@ -283,6 +283,6 @@ try {
   const reportPath = process.env.GITEA_AXI_REPORT ?? scratch + '-report.json';
   await writeFile(reportPath, JSON.stringify({ task, result, source, packageSha256, assertions, invocations, requests, artium,
     review: 'C043/CX-007 unresolved: no vendor event enum or atomic stale-head guarantee', live: 'pending commissioning', nativeWindows: 'pending' }, null, 2));
-  console.log(task + ' ' + result + '; Artium: ' + (host ? 'verified' : 'skipped: opt-in frozen fixture required') + '; report: ' + reportPath);
+  console.log(task + ' ' + result + '; Artium: ' + (host ? result : 'skipped: opt-in frozen fixture required') + '; report: ' + reportPath);
   await rm(scratch, { recursive: true, force: true });
 }
