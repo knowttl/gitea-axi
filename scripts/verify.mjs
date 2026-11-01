@@ -11,6 +11,10 @@ import { decode } from '@toon-format/toon';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
+if (args.length === 2 && args[0] === '--task' && ['S6.3', 'S6.4'].includes(args[1])) {
+  await import('./verify-discovery.ts');
+  process.exit(0);
+}
 if (args.length === 2 && args[0] === '--task' && ['S6.1', 'S6.2'].includes(args[1])) {
   await import('./verify-local.ts');
   process.exit(0);

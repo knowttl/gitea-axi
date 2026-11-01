@@ -1,0 +1,2672 @@
+{
+  "baseline": "gh-axi 0.1.46",
+  "target": "Gitea 1.23.4",
+  "commands": [
+    {
+      "id": "C001",
+      "path": "api GET",
+      "arguments": "<path>",
+      "classification": "native candidate",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C002",
+      "path": "api POST",
+      "arguments": "<path>",
+      "classification": "native candidate",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C003",
+      "path": "api PUT",
+      "arguments": "<path>",
+      "classification": "native candidate",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C004",
+      "path": "api PATCH",
+      "arguments": "<path>",
+      "classification": "native candidate",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C005",
+      "path": "api DELETE",
+      "arguments": "<path>",
+      "classification": "native candidate",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C006",
+      "path": "api HEAD",
+      "arguments": "<path>",
+      "classification": "unresolved",
+      "expectedOutcome": "Method, body types, raw strings and output controls are preserved. Unsupported method/path combinations surface the actual error without replaying writes.",
+      "flags": [
+        {
+          "name": "-X",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw-field",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--header",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--input",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--paginate",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--jq",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C007",
+      "path": "discussion list",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing documented discussion route. Never return an issue conversation as a discussion.",
+      "flags": [
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--category",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C008",
+      "path": "discussion view",
+      "arguments": "<number|url|comment-url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing documented discussion route. Never return an issue conversation as a discussion.",
+      "flags": [
+        {
+          "name": "--comments",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--order",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C009",
+      "path": "discussion comment",
+      "arguments": "<number|url|comment-url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing documented discussion route. Never return an issue conversation as a discussion.",
+      "flags": [
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C010",
+      "path": "gist list",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": [
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--public",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--secret",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C011",
+      "path": "gist view",
+      "arguments": "<id|url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": [
+        {
+          "name": "--files",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--filename",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--raw",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--web",
+          "baselineDisposition": "explicitly rejected by baseline"
+        }
+      ]
+    },
+    {
+      "id": "C012",
+      "path": "gist edit",
+      "arguments": "<id|url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": [
+        {
+          "name": "--filename",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--desc",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C013",
+      "path": "gist rename",
+      "arguments": "<id|url> <old> <new>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": []
+    },
+    {
+      "id": "C014",
+      "path": "gist create",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": [
+        {
+          "name": "--public",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--secret",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--filename",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--desc",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C015",
+      "path": "gist delete",
+      "arguments": "<id|url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": []
+    },
+    {
+      "id": "C016",
+      "path": "gist clone",
+      "arguments": "<id|url>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the missing documented gist resource without creating, cloning or exposing a substitute repository.",
+      "flags": []
+    },
+    {
+      "id": "C017",
+      "path": "issue list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "An open/closed mixed fixture returns only issues matching the requested labels, assignee and resolved milestone, with correct global sorting and a total cap. An unknown milestone returns an explicit error, never an unfiltered list. A numeric-looking milestone name resolves by exact name.",
+      "flags": [
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--milestone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C018",
+      "path": "issue view",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "The chosen issue number, full body and optional comments match the fixture without replacing comment counts with arrays.",
+      "flags": [
+        {
+          "name": "--comments",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C019",
+      "path": "issue create",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "Read-back identifies the new issue and exact labels, assignees and milestone. Attachment failure reports the already-created issue rather than silently replaying creation.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--milestone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--project",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--type",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C020",
+      "path": "issue edit",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "Read-back preserves unrelated assignees/labels and applies only the requested deltas. Invalid type flags cause no mutation.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add-label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove-label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add-assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove-assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--milestone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--type",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--no-type",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C021",
+      "path": "issue close",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The issue becomes closed and an optional comment is visible. Unsupported reason/duplicate requests fail before closing.",
+      "flags": [
+        {
+          "name": "--reason",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--duplicate-of",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--comment",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C022",
+      "path": "issue reopen",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "A closed fixture is open after read-back.",
+      "flags": []
+    },
+    {
+      "id": "C023",
+      "path": "issue comment",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "One new comment contains the exact text and each intended attachment. Attachment-only input either works with evidence or returns an explicit unsupported error before a write.",
+      "flags": [
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C024",
+      "path": "issue delete",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "An existing disposable issue is deleted once, and a second read using the same identity confirms absence.",
+      "flags": []
+    },
+    {
+      "id": "C025",
+      "path": "issue lock",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report a documented-route gap without pretending that closing the issue changes conversation access.",
+      "flags": []
+    },
+    {
+      "id": "C026",
+      "path": "issue unlock",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report a documented-route gap without pretending that closing the issue changes conversation access.",
+      "flags": []
+    },
+    {
+      "id": "C027",
+      "path": "issue pin",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The selected issue pin state changes and unrelated issue pins remain intact.",
+      "flags": []
+    },
+    {
+      "id": "C028",
+      "path": "issue unpin",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The selected issue pin state changes and unrelated issue pins remain intact.",
+      "flags": []
+    },
+    {
+      "id": "C029",
+      "path": "issue transfer",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return a clear unsupported result before creating, deleting or moving any resource.",
+      "flags": [
+        {
+          "name": "--to-repo",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C030",
+      "path": "issue subissue add",
+      "arguments": "<parent> <child> [<child> ...]",
+      "classification": "version/API gap",
+      "expectedOutcome": "Identify the hierarchy gap explicitly and never report a dependency edge as a child relationship.",
+      "flags": []
+    },
+    {
+      "id": "C031",
+      "path": "issue subissue remove",
+      "arguments": "<parent> <child>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Identify the hierarchy gap explicitly and never report a dependency edge as a child relationship.",
+      "flags": []
+    },
+    {
+      "id": "C032",
+      "path": "issue subissue list",
+      "arguments": "<parent>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Identify the hierarchy gap explicitly and never report a dependency edge as a child relationship.",
+      "flags": []
+    },
+    {
+      "id": "C033",
+      "path": "label list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "A multi-page fixture returns each intended label once, obeys the total cap and performs no mutation.",
+      "flags": [
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C034",
+      "path": "label create",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "One new label has the exact name, normalized colour and description, with unrelated labels unchanged.",
+      "flags": [
+        {
+          "name": "--name",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--color",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--description",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C035",
+      "path": "label edit",
+      "arguments": "<name>",
+      "classification": "native candidate",
+      "expectedOutcome": "The selected existing label retains its ID and has the requested name, normalized colour and description, with unrelated labels unchanged.",
+      "flags": [
+        {
+          "name": "--name",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--color",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--description",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C036",
+      "path": "label delete",
+      "arguments": "<name>",
+      "classification": "native candidate",
+      "expectedOutcome": "The selected existing label disappears from a complete read-back using the same identity, while another fixture label remains unchanged.",
+      "flags": []
+    },
+    {
+      "id": "C037",
+      "path": "pr list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "A multi-page fixture returns PRs matching every requested filter even when early pages contain no match.",
+      "flags": [
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--base",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--head",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--draft",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C038",
+      "path": "pr view",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "Supported fields have documented or explicitly derived values. An unavailable requested field produces an explicit capability error, and reviews retain commit IDs and inline comments.",
+      "flags": [
+        {
+          "name": "--comments",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--reviews",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--checks",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C039",
+      "path": "pr create",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "Read-back identifies a PR against the intended base/head with requested people, labels and milestone. Unsupported options do not create a partial PR.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--base",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--head",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--draft",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--reviewer",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--milestone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--project",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C040",
+      "path": "pr edit",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "The PR targets the new base and only requested membership deltas change. Partial reviewer/attachment failures identify completed steps.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add-label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove-label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add-assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove-assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--add-reviewer",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remove-reviewer",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--milestone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--base",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C041",
+      "path": "pr close",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The same PR number has state=closed after read-back. If --comment was requested, one new comment has the exact requested body. Report closure and comment outcomes separately after partial failure.",
+      "flags": [
+        {
+          "name": "--comment",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C042",
+      "path": "pr merge",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "A matching head merges using the requested style. A stale head causes no merge. Auto-merge scheduling and force behaviour are separately verified before claiming parity.",
+      "flags": [
+        {
+          "name": "--method",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--merge",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--squash",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--rebase",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--auto",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--admin",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--delete-branch",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--subject",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--match-head-commit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C043",
+      "path": "pr review",
+      "arguments": "<number>",
+      "classification": "unresolved",
+      "expectedOutcome": "The review has the intended state, body and commit. A stale head request must refuse without posting a review. Atomic refusal is an unresolved requirement; preflight comparison or commit binding alone is insufficient.",
+      "flags": [
+        {
+          "name": "--approve",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--request-changes",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--comment",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--match-head-commit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C044",
+      "path": "pr checks",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "A pending-to-failure fixture exits 1, a pending one-shot exits 8, and no checks exits 1. Missing check-run detail is explicit.",
+      "flags": [
+        {
+          "name": "--failed",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--watch",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--interval",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fail-fast",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C045",
+      "path": "pr diff",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The returned diff includes every requested changed file and full mode preserves the complete patch.",
+      "flags": [
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--patch",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C046",
+      "path": "pr checkout",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "A clean disposable workspace checks out the exact head SHA. A dirty workspace is preserved and receives an actionable conflict error.",
+      "flags": []
+    },
+    {
+      "id": "C047",
+      "path": "pr ready",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Report the draft mutation gap and do not silently edit the title instead.",
+      "flags": [
+        {
+          "name": "--undo",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C048",
+      "path": "pr reopen",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The same PR number has state=open after read-back.",
+      "flags": []
+    },
+    {
+      "id": "C049",
+      "path": "pr comment",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "One PR conversation comment has the intended text and attachments. It does not appear as a review submission.",
+      "flags": [
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--attach",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C050",
+      "path": "pr update-branch",
+      "arguments": "<number>",
+      "classification": "native candidate",
+      "expectedOutcome": "The PR head includes the base changes, or a conflict is reported without claiming an update.",
+      "flags": []
+    },
+    {
+      "id": "C051",
+      "path": "pr revert",
+      "arguments": "<number>",
+      "classification": "composite/local",
+      "expectedOutcome": "A disposable merged change produces a revert PR whose diff actually undoes that change, or reports a conflict without claiming completion.",
+      "flags": []
+    },
+    {
+      "id": "C052",
+      "path": "project list",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "List projects owned by the selected owner, including closed projects when requested. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--closed",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C053",
+      "path": "project view",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Read a project by owner and project number. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C054",
+      "path": "project item-list",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "List project items with query filtering and a total result cap. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--query",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C055",
+      "path": "project field-list",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "List the project field definitions. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C056",
+      "path": "project field-create",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Create a text, single-select, date or number field with the requested select options. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--name",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--data-type",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--single-select-options",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C057",
+      "path": "project field-delete",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Delete a project field by its field ID. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--id",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C058",
+      "path": "project item-add",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Add an existing issue or PR by URL to a project. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--url",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C059",
+      "path": "project item-create",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Create a project draft item with title and body. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C060",
+      "path": "project item-edit",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Edit item content or a typed field value, including clearing a value. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--project-id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field-id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--text",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--number",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--date",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--single-select-option-id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--iteration-id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--clear",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C061",
+      "path": "project item-archive",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Archive a project item, or restore it with --undo. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--id",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--undo",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C062",
+      "path": "project item-delete",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Remove the project item without deleting its linked issue or PR. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--id",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C063",
+      "path": "project create",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Create an owner-scoped project with its title. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C064",
+      "path": "project edit",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Edit project title, description, readme or visibility. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--description",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--readme",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--visibility",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C065",
+      "path": "project close",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Close a project, or reopen it with --undo. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--undo",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C066",
+      "path": "project copy",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Copy a project to the target owner, optionally including draft items. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--source-owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--target-owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--drafts",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C067",
+      "path": "project delete",
+      "arguments": "<number>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Delete the selected project. If no supported route is established, return an explicit gap before mutation or a misleading empty list.",
+      "flags": [
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C068",
+      "path": "release list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "Returned releases obey both exclusions and the total cap without misreporting permission-hidden drafts.",
+      "flags": [
+        {
+          "name": "--exclude-drafts",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--exclude-pre-releases",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C069",
+      "path": "release view",
+      "arguments": "<tag>",
+      "classification": "native candidate",
+      "expectedOutcome": "The returned tag and full-mode notes match the selected release.",
+      "flags": [
+        {
+          "name": "--full",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C070",
+      "path": "release create",
+      "arguments": "<tag>",
+      "classification": "composite/local",
+      "expectedOutcome": "The release has the intended tag, notes, flags and assets. Unsupported latest/discussion options fail before creation, and partial asset failures identify the existing release.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--draft",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--prerelease",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--target",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--generate-notes",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--discussion-category",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes-start-tag",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--verify-tag",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes-from-tag",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fail-on-no-commits",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--latest",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C071",
+      "path": "release edit",
+      "arguments": "<tag>",
+      "classification": "native candidate",
+      "expectedOutcome": "Read-back preserves explicit false values and exact notes. Latest-setting requests report a gap before mutation.",
+      "flags": [
+        {
+          "name": "--title",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--notes-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body-file",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--draft",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--prerelease",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--latest",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C072",
+      "path": "release delete",
+      "arguments": "<tag>",
+      "classification": "native candidate",
+      "expectedOutcome": "The disposable release is absent after deletion, and the result states the observed tag state separately.",
+      "flags": []
+    },
+    {
+      "id": "C073",
+      "path": "release download",
+      "arguments": "<tag>",
+      "classification": "composite/local",
+      "expectedOutcome": "Each matching asset is saved with the correct bytes and safe filename. No-match and partial-download results are explicit.",
+      "flags": [
+        {
+          "name": "--pattern",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--dir",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C074",
+      "path": "release upload",
+      "arguments": "<tag>",
+      "classification": "composite/local",
+      "expectedOutcome": "Each selected file becomes an asset on the intended release, with explicit collision and partial-failure results.",
+      "flags": []
+    },
+    {
+      "id": "C075",
+      "path": "repo view",
+      "arguments": "[owner/name]",
+      "classification": "native candidate",
+      "expectedOutcome": "The requested repository identity and metadata are returned, and conflicting selectors fail before a call.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C076",
+      "path": "repo create",
+      "arguments": "[name]",
+      "classification": "composite/local",
+      "expectedOutcome": "A repository appears under the intended owner with the correct visibility and exact source history when pushed. Unsupported internal visibility fails before creation.",
+      "flags": [
+        {
+          "name": "--public",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--private",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--internal",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--description",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--clone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--template",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--source",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--push",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C077",
+      "path": "repo edit",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "Read-back matches each requested setting, including disabling a unit. Internal visibility requests fail explicitly.",
+      "flags": [
+        {
+          "name": "--description",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--visibility",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--default-branch",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--enable-issues",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--enable-wiki",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C078",
+      "path": "repo clone",
+      "arguments": "<repo>",
+      "classification": "composite/local",
+      "expectedOutcome": "A disposable workspace contains the intended repository at its expected default commit without secrets in argv or remotes.",
+      "flags": []
+    },
+    {
+      "id": "C079",
+      "path": "repo fork",
+      "arguments": "[repo]",
+      "classification": "composite/local",
+      "expectedOutcome": "The returned fork points to the intended parent, and requested local clone/remote effects are separately confirmed.",
+      "flags": [
+        {
+          "name": "--clone",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C080",
+      "path": "repo list",
+      "arguments": "[owner]",
+      "classification": "native candidate",
+      "expectedOutcome": "A multi-page mixed fixture yields only repositories with the requested owner, language, visibility and archive state.",
+      "flags": [
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--visibility",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--language",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--archived",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C081",
+      "path": "run list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "Only fixture runs matching supported filters appear. Actor-filter requests fail explicitly and task/run identity remains marked pending until verified.",
+      "flags": [
+        {
+          "name": "--workflow",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--branch",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--status",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--event",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--user",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--commit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C082",
+      "path": "run view",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": [
+        {
+          "name": "--job",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--log",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--verbose",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--log-failed",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--conclusion",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C083",
+      "path": "run watch",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": []
+    },
+    {
+      "id": "C084",
+      "path": "run rerun",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": [
+        {
+          "name": "--failed",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--debug",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--job",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C085",
+      "path": "run cancel",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": []
+    },
+    {
+      "id": "C086",
+      "path": "run delete",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": []
+    },
+    {
+      "id": "C087",
+      "path": "run download",
+      "arguments": "<id>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Return an explicit route/semantics gap instead of reporting a summary as a log, mutation, downloaded artifact or completed watch.",
+      "flags": [
+        {
+          "name": "--name",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--dir",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C088",
+      "path": "search issues",
+      "arguments": "<query>",
+      "classification": "composite/local",
+      "expectedOutcome": "Results obey every supported filter across pages. Unsupported query qualifiers, authorAssociation or review predicates are refused rather than ignored.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C089",
+      "path": "search prs",
+      "arguments": "<query>",
+      "classification": "composite/local",
+      "expectedOutcome": "Results obey every supported filter across pages. Unsupported query qualifiers, authorAssociation or review predicates are refused rather than ignored.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--draft",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--review",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--fields",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C090",
+      "path": "search repos",
+      "arguments": "<query>",
+      "classification": "composite/local",
+      "expectedOutcome": "Repository matches satisfy supported owner, language and star constraints across pages. Inapplicable common flags produce a clear validation result.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--language",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--stars",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C091",
+      "path": "search commits",
+      "arguments": "<query>",
+      "classification": "composite/local",
+      "expectedOutcome": "A declared repository-bounded search finds known fixture commits and reports search scope and incomplete coverage explicitly.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C092",
+      "path": "search code",
+      "arguments": "<query>",
+      "classification": "unresolved",
+      "expectedOutcome": "A chosen search backend finds known fixture content and discloses repository, revision and search coverage. Until selected, return unresolved capability.",
+      "flags": [
+        {
+          "name": "--repo",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--owner",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--state",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--label",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--assignee",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--author",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--sort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--language",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C093",
+      "path": "secret list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "List reveals names and truthful available metadata only. Set/delete affect the intended name, and environment-scoped requests fail before mutation.",
+      "flags": [
+        {
+          "name": "--env",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C094",
+      "path": "secret set",
+      "arguments": "<name>",
+      "classification": "native candidate",
+      "expectedOutcome": "List reveals names and truthful available metadata only. Set/delete affect the intended name, and environment-scoped requests fail before mutation.",
+      "flags": [
+        {
+          "name": "--env",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--body",
+          "baselineDisposition": "explicitly rejected by baseline"
+        }
+      ]
+    },
+    {
+      "id": "C095",
+      "path": "secret delete",
+      "arguments": "<name>",
+      "classification": "native candidate",
+      "expectedOutcome": "List reveals names and truthful available metadata only. Set/delete affect the intended name, and environment-scoped requests fail before mutation.",
+      "flags": [
+        {
+          "name": "--env",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C096",
+      "path": "setup hooks",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "A disposable agent configuration receives one valid hook. Repeating setup makes no duplicates and preserves unrelated configuration.",
+      "flags": []
+    },
+    {
+      "id": "C097",
+      "path": "stack view",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "A three-branch fixture displays the exact branch/PR order and trunk.",
+      "flags": []
+    },
+    {
+      "id": "C098",
+      "path": "stack init",
+      "arguments": "<branches...>",
+      "classification": "composite/local",
+      "expectedOutcome": "A three-branch fixture records the requested order and --base without rewriting history.",
+      "flags": [
+        {
+          "name": "--base",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C099",
+      "path": "stack add",
+      "arguments": "[branch]",
+      "classification": "composite/local",
+      "expectedOutcome": "The branch joins the correct position and requested commit options stage exactly the intended files.",
+      "flags": [
+        {
+          "name": "--message",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--all",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--update",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C100",
+      "path": "stack checkout",
+      "arguments": "<stack|pr|url|branch>",
+      "classification": "composite/local",
+      "expectedOutcome": "Each supported selector resolves to the intended head SHA without losing local changes.",
+      "flags": []
+    },
+    {
+      "id": "C101",
+      "path": "stack push",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "Each intended branch reaches only the selected remote and partial pushes are reported.",
+      "flags": [
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C102",
+      "path": "stack submit",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "Three ordered branches yield three correctly based PRs and truthful auto-merge scheduling results.",
+      "flags": [
+        {
+          "name": "--open",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--auto",
+          "baselineDisposition": "always applied by baseline, not an independent optional switch"
+        }
+      ]
+    },
+    {
+      "id": "C103",
+      "path": "stack sync",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "Remote state is refreshed and pruning removes only branches allowed by the agreed completion rules.",
+      "flags": [
+        {
+          "name": "--prune",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C104",
+      "path": "stack rebase",
+      "arguments": "[branch]",
+      "classification": "composite/local",
+      "expectedOutcome": "Only the chosen stack scope is rebased. Conflicts can continue or abort without metadata divergence, and date flags have observable effects.",
+      "flags": [
+        {
+          "name": "--downstack",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--upstack",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--no-trunk",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--continue",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--abort",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--committer-date-is-author-date",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--preserve-dates",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C105",
+      "path": "stack link",
+      "arguments": "<refs...>",
+      "classification": "composite/local",
+      "expectedOutcome": "Existing PRs and refs form the intended graph without duplicate PRs or cycles.",
+      "flags": [
+        {
+          "name": "--base",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--open",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--remote",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C106",
+      "path": "stack unstack",
+      "arguments": "[stack]",
+      "classification": "composite/local",
+      "expectedOutcome": "Only the selected stack relationships are removed, and --local causes no remote mutation.",
+      "flags": [
+        {
+          "name": "--local",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C107",
+      "path": "stack merge",
+      "arguments": "<stack|pr>",
+      "classification": "composite/local",
+      "expectedOutcome": "The chosen stack merges in dependency order with the requested style, with an explicit stop on failure.",
+      "flags": [
+        {
+          "name": "--merge-method",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--merge",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--squash",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--rebase",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--yes",
+          "baselineDisposition": "always applied by baseline, not an independent optional switch"
+        }
+      ]
+    },
+    {
+      "id": "C108",
+      "path": "stack up",
+      "arguments": "[n]",
+      "classification": "composite/local",
+      "expectedOutcome": "The selected upward step ends on the expected branch and out-of-range movement reports an error.",
+      "flags": []
+    },
+    {
+      "id": "C109",
+      "path": "stack down",
+      "arguments": "[n]",
+      "classification": "composite/local",
+      "expectedOutcome": "The selected downward step ends on the expected branch and out-of-range movement reports an error.",
+      "flags": []
+    },
+    {
+      "id": "C110",
+      "path": "stack top",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "The top branch becomes current.",
+      "flags": []
+    },
+    {
+      "id": "C111",
+      "path": "stack bottom",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "The bottom branch becomes current.",
+      "flags": []
+    },
+    {
+      "id": "C112",
+      "path": "stack trunk",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "The recorded trunk becomes current.",
+      "flags": []
+    },
+    {
+      "id": "C113",
+      "path": "variable list",
+      "arguments": "",
+      "classification": "native candidate",
+      "expectedOutcome": "A multi-page fixture returns the intended variable names and normalized data values exactly once, preserves empty values and performs no mutation.",
+      "flags": []
+    },
+    {
+      "id": "C114",
+      "path": "variable set",
+      "arguments": "<name>",
+      "classification": "composite/local",
+      "expectedOutcome": "An absent fixture variable is created, then an existing variable is updated. Read-back shows the exact requested values, including empty values, and another variable remains unchanged.",
+      "flags": [
+        {
+          "name": "--body",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C115",
+      "path": "variable delete",
+      "arguments": "<name>",
+      "classification": "native candidate",
+      "expectedOutcome": "The selected existing fixture variable is removed, read-back with the same identity confirms absence, and another variable retains its original value.",
+      "flags": []
+    },
+    {
+      "id": "C116",
+      "path": "workflow list",
+      "arguments": "",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing workflow operation. A YAML-only alternative must be named and approved as narrower behaviour.",
+      "flags": [
+        {
+          "name": "--limit",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--all",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C117",
+      "path": "workflow view",
+      "arguments": "<id|name>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing workflow operation. A YAML-only alternative must be named and approved as narrower behaviour.",
+      "flags": [
+        {
+          "name": "--yaml",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C118",
+      "path": "workflow run",
+      "arguments": "<id|name>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing workflow operation. A YAML-only alternative must be named and approved as narrower behaviour.",
+      "flags": [
+        {
+          "name": "--ref",
+          "baselineDisposition": "accepted baseline option"
+        },
+        {
+          "name": "--field",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C119",
+      "path": "workflow enable",
+      "arguments": "<id|name>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing workflow operation. A YAML-only alternative must be named and approved as narrower behaviour.",
+      "flags": []
+    },
+    {
+      "id": "C120",
+      "path": "workflow disable",
+      "arguments": "<id|name>",
+      "classification": "version/API gap",
+      "expectedOutcome": "Explicitly report the missing workflow operation. A YAML-only alternative must be named and approved as narrower behaviour.",
+      "flags": []
+    },
+    {
+      "id": "C121",
+      "path": "dashboard",
+      "arguments": "",
+      "classification": "unresolved",
+      "expectedOutcome": "Once baseline sections are captured, each dashboard section matches its source and identifies partial or unavailable data.",
+      "flags": []
+    },
+    {
+      "id": "C122",
+      "path": "update",
+      "arguments": "",
+      "classification": "unresolved",
+      "expectedOutcome": "An agreed disposable install updates to the intended version with integrity verification and an explicit failure result. No update is performed during research.",
+      "flags": []
+    },
+    {
+      "id": "C123",
+      "path": "update --check",
+      "arguments": "",
+      "classification": "unresolved",
+      "expectedOutcome": "An agreed fixture reports current/available versions and leaves installed files unchanged.",
+      "flags": [
+        {
+          "name": "--check",
+          "baselineDisposition": "accepted baseline option"
+        }
+      ]
+    },
+    {
+      "id": "C124",
+      "path": "--version",
+      "arguments": "",
+      "classification": "composite/local",
+      "expectedOutcome": "The standalone executable and hosted invocation report their actual packaged version offline.",
+      "flags": []
+    }
+  ]
+}

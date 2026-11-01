@@ -1,3 +1,5 @@
+import { baseline, commandGap, flagGap } from './catalogue.js';
+
 export const command = {
   path: ['repo', 'view'],
   description: 'Read repository identity and default branch with server contract metadata.',
@@ -6,7 +8,7 @@ export const command = {
   outcomes: ['AC-001', 'AC-002', 'AC-004'],
   effect: 'read',
   flags: {
-    repo: { type: 'string', default: 'matching local origin remote', description: 'Repository as OWNER/NAME' },
+    repo: { type: 'string', short: 'R', default: 'matching local origin remote', description: 'Repository as OWNER/NAME' },
     origin: { type: 'string', default: 'selected profile', description: 'Gitea origin; HTTPS by default' },
     'allow-insecure-http': {
       type: 'boolean', default: false,
@@ -26,8 +28,9 @@ const globalFlags = {
   origin: command.flags.origin, 'allow-insecure-http': command.flags['allow-insecure-http'], help: command.flags.help,
   config: { type: 'string', description: 'Absolute configuration path' },
   profile: { type: 'string', description: 'Select one file profile' },
+  hostname: { type: 'string', description: 'Select exactly one matching configured host:port; otherwise GH_HOST' },
 } as const;
-const repo = { repo: { type: 'string', description: 'OWNER/NAME; otherwise a matching local origin remote' } } as const;
+const repo = { repo: { type: 'string', short: 'R', description: 'OWNER/NAME; otherwise a matching local origin remote' } } as const;
 const list = {
   limit: { type: 'string', description: 'Maximum returned records, default 30, maximum 1000' },
   state: { type: 'string', description: 'open, closed or all; default open' },
@@ -102,8 +105,9 @@ const definitions = [
 export interface Command {
   path: readonly string[];
   description: string;
-  flags: Record<string, { type: 'string' | 'boolean'; description?: string; multiple?: boolean; short?: string }>;
+  flags: Record<string, { type: 'string' | 'boolean'; description?: string; multiple?: boolean; short?: string; gap?: string }>;
   effect: string;
+  gap?: string;
 }
 export const commands: Command[] = [
   { ...command, flags: { ...command.flags, ...globalFlags } },
@@ -150,4 +154,43 @@ commands.push(...['repo clone', 'pr checkout', 'pr revert'].map(name => ({ path:
   flags: { ...globalFlags, ...repo, ...workspace, ...writeFlags }, effect: 'local-write' })));
 for (const command of commands) {
   if (['repo create', 'repo fork'].includes(command.path.join(' '))) Object.assign(command.flags, workspace);
+}
+
+commands.push({ path: ['capabilities'], description: 'Inspect all baseline command IDs, flags, globals and PR fields without claiming full parity', flags: { help: globalFlags.help }, effect: 'local-read' });
+const refusedFlags: [string, string[]][] = [
+  ['repo create', ['internal']],
+  ['release create', ['latest', 'discussion-category']],
+  ['release edit', ['latest']],
+  ['pr merge', ['auto', 'admin', 'delete-branch']],
+  ['run list', ['user']],
+  ['search issues', ['review', 'language', 'stars', 'revision', 'draft']],
+  ['search prs', ['review', 'language', 'stars', 'revision']],
+  ['search repos', ['state', 'label', 'assignee', 'author', 'review', 'revision', 'draft']],
+  ['search commits', ['owner', 'state', 'label', 'assignee', 'review', 'language', 'stars', 'draft']],
+  ['stack rebase', ['preserve-dates']],
+  ['stack link', ['open']],
+  ['stack submit', ['open']],
+];
+for (const [path, names] of refusedFlags) {
+  const command = commands.find(command => command.path.join(' ') === path)!;
+  for (const name of names) command.flags[name] = { ...command.flags[name]!, gap: flagGap(path, name) };
+}
+// Retain unsupported leaves and options in the same registry that owns help and admission metadata.
+const booleanFlags = new Set(['comments', 'full', 'public', 'secret', 'files', 'raw', 'web', 'no-type', 'draft', 'failed', 'fail-fast', 'patch', 'undo', 'all', 'prune', 'open', 'local', 'merge', 'squash', 'rebase', 'downstack', 'upstack', 'no-trunk', 'continue', 'abort', 'committer-date-is-author-date', 'preserve-dates', 'check', 'closed', 'clear', 'remove']);
+for (const row of baseline) {
+  if (row.path === '--version' || row.path.startsWith('api ') || row.path === 'update --check') continue;
+  if (!commands.some(command => command.path.join(' ') === row.path)) {
+    const gap = commandGap(row.path);
+    if (!gap) throw new Error('Missing capability decision for ' + row.id);
+    commands.push({ path: row.path.split(' '), description: row.path + ' (compatibility gap)', flags: { ...globalFlags, ...repo }, effect: 'gap', gap });
+  }
+}
+for (const row of baseline) {
+  const path = row.path.startsWith('api ') ? 'api' : row.path === 'update --check' ? 'update' : row.path;
+  const command = commands.find(command => command.path.join(' ') === path);
+  if (!command) continue;
+  for (const flag of row.flags) {
+    const name = flag.name === '-X' ? 'method' : flag.name.replace(/^--/, '');
+    if (!command.flags[name]) command.flags[name] = { type: booleanFlags.has(name) ? 'boolean' : 'string', description: 'Compatibility gap: ' + flagGap(path, name), gap: flagGap(path, name) };
+  }
 }

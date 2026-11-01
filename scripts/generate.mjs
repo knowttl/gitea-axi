@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { command, commands, limits } from '../src/registry.ts';
+import { command, commands, limits } from '../dist/registry.js';
 import { encode } from '@toon-format/toon';
+import { capabilityOutput } from '../dist/catalogue.js';
+import { prFields } from '../dist/reads.js';
 
 const check = process.argv.slice(2);
 assert(check.length === 0 || (check.length === 1 && check[0] === '--check'), 'Use --check or no arguments');
@@ -57,11 +59,25 @@ const help = encode({
   })),
   limits,
   examples: [...command.examples],
+  commands,
 }) + '\n';
 const artifacts = {
   'src/vendor.generated.ts': types,
   'schemas/responses.json': JSON.stringify(schemas, null, 2) + '\n',
   'generated/help.txt': help,
+  'generated/capabilities.json': JSON.stringify(capabilityOutput(commands, prFields), null, 2) + '\n',
+  'generated/SKILL.md': [
+    '---', 'name: gitea-axi',
+    'description: Read Gitea repository context and perform explicitly authorized repository workflows using gitea-axi.', '---', '',
+    '# Gitea workflows', '',
+    'Use `npx -y @knowttl/gitea-axi capabilities` to discover compatibility gaps and retained baseline IDs.',
+    'Use `npx -y @knowttl/gitea-axi <command> --help` for flags and owned semantics.',
+    'Select a configured credential profile; secrets are never accepted in arguments.',
+    'Writes require exact operation grants, preview and a bound confirmation.',
+    'Hook installation and updates remain compatibility gaps; hosted calls refuse configuration overrides.', '',
+    ...commands.map(command => '- `npx -y @knowttl/gitea-axi ' + command.path.join(' ') + ' --help`' + (command.gap ? ' (compatibility gap)' : '')),
+    '',
+  ].join('\n'),
   'generated/host-inventory.json': JSON.stringify({
     schemaVersion: 1, tool: 'gitea-axi', commands, limits,
   }, null, 2) + '\n',

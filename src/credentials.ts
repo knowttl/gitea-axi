@@ -73,9 +73,19 @@ export function canonicalOrigin(value: string): string {
   }
 }
 
-export async function credentials(override: string | undefined, allowHttp: boolean, options: { config?: string; profile?: string } = {}): Promise<{ origin: string; token?: string; profile?: string; source?: string; revision?: string; writes?: Profile['writes'] }> {
+export async function credentials(override: string | undefined, allowHttp: boolean, options: { config?: string; profile?: string; hostname?: string } = {}): Promise<{ origin: string; token?: string; profile?: string; source?: string; revision?: string; writes?: Profile['writes'] }> {
   const path = configPath(options.config);
   const selected = options.profile ?? process.env.GITEA_AXI_PROFILE;
+  const hostname = options.hostname ?? (selected === 'artium' ? undefined : process.env.GH_HOST);
+  if (hostname === '') throw new CliError('USAGE', '--hostname/GH_HOST requires a nonempty host', 2);
+  const matchesHost = (origin: string) => {
+    const url = new URL(canonicalOrigin(origin));
+    if (!hostname || /[\s\\/?#@]/.test(hostname)) throw new CliError('USAGE', '--hostname/GH_HOST requires a host with optional port', 2);
+    let host: URL;
+    try { host = new URL(url.protocol + '//' + hostname); }
+    catch { throw new CliError('USAGE', '--hostname/GH_HOST requires a host with optional port', 2); }
+    return url.host === host.host;
+  };
   const fields = ['ORIGIN', 'TOKEN_ORIGIN', 'TOKEN', 'ALLOW_INSECURE_HTTP'] as const;
   const hasEnv = fields.some(field => process.env['GITEA_AXI_' + field] !== undefined);
   let profile: unknown;
@@ -90,8 +100,14 @@ export async function credentials(override: string | undefined, allowHttp: boole
       allowInsecureHttp: http === 'true' };
   } else if (existsSync(path)) {
     const config = await readConfig(path);
-    const names = Object.keys(config.profiles);
-    const name = selected ?? config.defaultProfile ?? (names.length === 1 ? names[0] : undefined);
+    const names = Object.keys(config.profiles).filter(name => {
+      if (!hostname) return true;
+      const profile = config.profiles[name];
+      if (!validate(profile)) throw new CliError('CONFIG_INVALID', 'Invalid profile for hostname selection');
+      return matchesHost(profile.origin);
+    });
+    if (hostname && !selected && !names.length) throw new CliError('PROFILE_NOT_FOUND', 'No configured profile matches --hostname/GH_HOST');
+    const name = selected ?? (hostname ? names.length === 1 ? names[0] : undefined : config.defaultProfile ?? (names.length === 1 ? names[0] : undefined));
     if (!name) throw new CliError(names.length ? 'PROFILE_AMBIGUOUS' : 'PROFILE_REQUIRED', 'Select a profile');
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(name) || !Object.hasOwn(config.profiles, name)) throw new CliError('PROFILE_NOT_FOUND', 'Selected profile was not found');
     profile = config.profiles[name];
@@ -99,6 +115,8 @@ export async function credentials(override: string | undefined, allowHttp: boole
     revision = process.env.GITEA_AXI_CREDENTIAL_REVISION ?? String((await stat(path, { bigint: true })).mtimeNs);
   } else if (selected || options.config || process.env.GITEA_AXI_CONFIG) {
     throw new CliError('PROFILE_NOT_FOUND', 'Selected profile configuration was not found');
+  } else if (hostname) {
+    throw new CliError('PROFILE_NOT_FOUND', '--hostname/GH_HOST requires a matching configured profile');
   } else if (override) {
     const origin = canonicalOrigin(override);
     if (origin.startsWith('http:') && !allowHttp) throw new CliError('USAGE', 'HTTP requires --allow-insecure-http for the explicit --origin', 2);
@@ -108,6 +126,7 @@ export async function credentials(override: string | undefined, allowHttp: boole
   }
   if (!validate(profile)) throw new CliError('CONFIG_INVALID', 'Invalid profile field: ' + (validate.errors?.[0]?.instancePath || 'token/origin'));
   const origin = canonicalOrigin(profile.origin);
+  if (hostname && !matchesHost(origin)) throw new CliError('AUTH_BINDING_MISMATCH', 'Selected profile does not match --hostname/GH_HOST');
   if (origin !== canonicalOrigin(profile.tokenOrigin) || (override && canonicalOrigin(override) !== origin)) {
     throw new CliError('AUTH_BINDING_MISMATCH', 'origin must match tokenOrigin before resolving token');
   }

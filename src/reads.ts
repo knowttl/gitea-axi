@@ -22,7 +22,7 @@ export function selectedFields(options: Options, allowed: string[], unavailable 
   const fields = options.fields.split(',');
   if (fields.some(field => !allowed.includes(field)) || new Set(fields).size !== fields.length) throw new CliError('USAGE', 'Unknown or repeated field; choose ' + allowed.join(','), 2);
   const gap = fields.find(field => unavailable.includes(field));
-  if (gap) throw new CliError('CAPABILITY_GAP', gap + ' has no evidenced Gitea equivalent');
+  if (gap) throw new CliError('CAPABILITY_GAP', gap + ' has no evidenced Gitea 1.23.4 equivalent' + (gap === 'id' ? '; fullDatabaseId is the numeric vendor ID, not a GraphQL node ID' : ''));
   if (options.full || options.comments || options.reviews || options.checks) throw new CliError('USAGE', '--fields cannot combine with --full, --comments, --reviews or --checks', 2);
   return fields;
 }
@@ -188,7 +188,7 @@ export async function view(client: Client, base: string, kind: 'issue' | 'pr', n
         result.latestReviews = [...latest.values()];
       }
     }
-    if (options.checks || requested.has('statusCheckRollup')) result.statusCheckRollup = await checks(client, base, head.sha);
+    if (options.checks || requested.has('statusCheckRollup')) result.statusCheckRollup = { ...await checks(client, base, head.sha), source: 'commit-statuses', partial: true };
     if (requested.has('commits')) result.commits = (await complete(client, path + '/commits')).map(commit => ({ oid: commit.sha, message: object(commit.commit).message }));
     if (requested.has('files')) result.files = (await complete(client, path + '/files')).map(file => ({ path: file.filename, additions: file.additions, deletions: file.deletions, status: file.status }));
     if (requested.has('reactionGroups')) {

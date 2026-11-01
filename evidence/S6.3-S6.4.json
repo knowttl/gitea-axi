@@ -1,0 +1,36 @@
+{
+  "tasks": ["S6.3", "S6.4"],
+  "channel": "offline-fake",
+  "checks": ["node scripts/verify.mjs --task S6.3", "node scripts/verify.mjs --task S6.4", "npm test"],
+  "coverage": { "baseline": "gh-axi 0.1.46", "commands": 124, "commandSpecificFlags": 397, "globalSelectors": 4, "selectedPullFields": 46, "fullParityClaims": 0 },
+  "operations": ["OP-001", "OP-002", "OP-004", "OP-027", "OP-028", "OP-034", "OP-038", "OP-066"],
+  "outcomes": ["AC-001", "AC-002", "AC-004", "AC-027", "AC-028", "AC-034", "AC-038", "AC-066"],
+  "credentialCases": ["CS-005", "CS-007", "CS-009"],
+  "crossCuttingCases": ["CX-007"],
+  "fixtureProvenance": "Synthetic loopback Gitea responses and canaries reviewed against retained 1.23.4 Repository/ContentsResponse schemas. Existing S2.3 installed journeys cover all 46 selected PR fields. No new live observations.",
+  "baselineSourceSha256": "7ade3f01dffc20eab4175963f98e1bbc4436bdde43536f20606ebf755450a36c",
+  "servedSchemaSha256": "ef9cfca11ee68a562e07b3d20dc88df0ed43e812794e20b3dc1f4ee3d67ae88d",
+  "retained124TemplateSha256": "569c1c05537eeb1fbcd040146f5e99268692c8826b28b517dc2208b721e39707",
+  "contract": "docs/catalogue-contract.md",
+  "investigations": "Discussion/gist/Projects v2, issue transfer/subissues, draft transitions and HEAD remain explicit versioned contract gaps. The newer lock and Actions routes remain uncommissioned candidates. jq/template evaluators are deliberately unavailable. Review event values and atomic stale-head refusal remain unresolved; no review posting is performed.",
+  "output": "Numeric fullDatabaseId is distinct from an unavailable GraphQL node id. statusCheckRollup explicitly identifies partial commit statuses. Command and flag acceptance do not count as complete semantic parity.",
+  "selection": "-R aliases --repo. Hostname/GH_HOST selects only matching configured profiles and applies exact tokenOrigin and HTTP policy before secret resolution. Hosted invocations refuse credential/configuration overrides.",
+  "discovery": "Help, skill, capabilities summary and host inventory derive from the executable registry. A disposable source-registry drift fails the real freshness command; regeneration publishes the added command in help, skill and inventory.",
+  "effects": "Hook installation/repair, update and update --check refuse before configuration writes, credential resolution, network requests or package installation. Existing write workflows retain their shared effect policy, confirmation binding and secret-free journal.",
+  "artium": {
+    "fixtureRevision": "7a76e2c189c97c6fae4099830256d0d7fd1149b7",
+    "manifestSha256": "054f2e62f0f5281fbb5cf1efd74eefdb47ce2481b5e080cd54901929f76ea628",
+    "results": { "S6.3": "passed", "S6.4": "passed" },
+    "channels": "Exact bundle clone with dependency and tarball copies from the sealed snapshot; real local client, server, credential writer and runner, process-level outbound deny and fake Gitea only. No host source changes.",
+    "reports": "Opt-in reports retain exact source HEAD, fixture revision, manifest digest, package digest, invocations and results outside the public repository. Without fixture selectors the configured npm test command explicitly skips Artium with a reason."
+  },
+  "pending": {
+    "C096": "Hook installation, native paths, escaping and idempotent repair; no supported-agent configuration schema is established by the retained capture.",
+    "C121": "Exact baseline dashboard sections/defaults; the owned bounded dashboard remains available without claiming baseline parity.",
+    "C122-C123": "Distribution channel, check-only distribution journey, update installation, integrity and rollback checks; no update channel is invented.",
+    "CS005-CS007": "Native hook configuration ownership and interrupted hook writes remain pending with installation; no configuration write is performed by a gap refusal.",
+    "CX007-OP066": "Atomic stale-head rejection and review event semantics remain unresolved; gap refusal is disclosure, not successful review posting.",
+    "nativeWindows": "pending",
+    "liveCommissioning": "pending"
+  }
+}

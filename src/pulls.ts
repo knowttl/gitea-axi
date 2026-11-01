@@ -19,8 +19,6 @@ export function validatePull(operation: string, options: Options) {
     gap('C043 unresolved: review wire events and atomic stale-head refusal lack vendor evidence; no review will be posted, including with --match-head-commit');
   }
   if (operation === 'pr merge') {
-    if (options.auto && options.admin) usage('--auto and --admin are mutually exclusive');
-    for (const key of ['auto', 'admin', 'delete-branch']) if (options[key]) gap('--' + key + ' semantics are not verified');
     const styles = ['merge', 'squash', 'rebase'].filter(key => options[key]);
     if (styles.length + Number(options.method !== undefined) !== 1) usage('Choose exactly one of --method, --merge, --squash or --rebase');
     if (!['merge', 'squash', 'rebase'].includes(String(options.method ?? styles[0]))) usage('Supported merge methods: merge, squash, rebase');

@@ -1,0 +1,964 @@
+{
+  "baseline": "gh-axi 0.1.46",
+  "target": "Gitea 1.23.4",
+  "counts": {
+    "commands": 124,
+    "commandFlags": 397,
+    "globals": 4,
+    "prFields": 46,
+    "fullParity": 0
+  },
+  "commands": [
+    {
+      "id": "C001",
+      "command": "gitea-axi api GET",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C002",
+      "command": "gitea-axi api POST",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C003",
+      "command": "gitea-axi api PUT",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C004",
+      "command": "gitea-axi api PATCH",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C005",
+      "command": "gitea-axi api DELETE",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C006",
+      "command": "gitea-axi api HEAD",
+      "status": "gap",
+      "flags": 9
+    },
+    {
+      "id": "C007",
+      "command": "gitea-axi discussion list",
+      "status": "gap",
+      "flags": 5
+    },
+    {
+      "id": "C008",
+      "command": "gitea-axi discussion view",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C009",
+      "command": "gitea-axi discussion comment",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C010",
+      "command": "gitea-axi gist list",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C011",
+      "command": "gitea-axi gist view",
+      "status": "gap",
+      "flags": 5
+    },
+    {
+      "id": "C012",
+      "command": "gitea-axi gist edit",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C013",
+      "command": "gitea-axi gist rename",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C014",
+      "command": "gitea-axi gist create",
+      "status": "gap",
+      "flags": 5
+    },
+    {
+      "id": "C015",
+      "command": "gitea-axi gist delete",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C016",
+      "command": "gitea-axi gist clone",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C017",
+      "command": "gitea-axi issue list",
+      "status": "partial",
+      "flags": 8
+    },
+    {
+      "id": "C018",
+      "command": "gitea-axi issue view",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C019",
+      "command": "gitea-axi issue create",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C020",
+      "command": "gitea-axi issue edit",
+      "status": "partial",
+      "flags": 11
+    },
+    {
+      "id": "C021",
+      "command": "gitea-axi issue close",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C022",
+      "command": "gitea-axi issue reopen",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C023",
+      "command": "gitea-axi issue comment",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C024",
+      "command": "gitea-axi issue delete",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C025",
+      "command": "gitea-axi issue lock",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C026",
+      "command": "gitea-axi issue unlock",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C027",
+      "command": "gitea-axi issue pin",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C028",
+      "command": "gitea-axi issue unpin",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C029",
+      "command": "gitea-axi issue transfer",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C030",
+      "command": "gitea-axi issue subissue add",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C031",
+      "command": "gitea-axi issue subissue remove",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C032",
+      "command": "gitea-axi issue subissue list",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C033",
+      "command": "gitea-axi label list",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C034",
+      "command": "gitea-axi label create",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C035",
+      "command": "gitea-axi label edit",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C036",
+      "command": "gitea-axi label delete",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C037",
+      "command": "gitea-axi pr list",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C038",
+      "command": "gitea-axi pr view",
+      "status": "partial",
+      "flags": 5
+    },
+    {
+      "id": "C039",
+      "command": "gitea-axi pr create",
+      "status": "partial",
+      "flags": 12
+    },
+    {
+      "id": "C040",
+      "command": "gitea-axi pr edit",
+      "status": "partial",
+      "flags": 12
+    },
+    {
+      "id": "C041",
+      "command": "gitea-axi pr close",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C042",
+      "command": "gitea-axi pr merge",
+      "status": "partial",
+      "flags": 11
+    },
+    {
+      "id": "C043",
+      "command": "gitea-axi pr review",
+      "status": "gap",
+      "flags": 6
+    },
+    {
+      "id": "C044",
+      "command": "gitea-axi pr checks",
+      "status": "partial",
+      "flags": 4
+    },
+    {
+      "id": "C045",
+      "command": "gitea-axi pr diff",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C046",
+      "command": "gitea-axi pr checkout",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C047",
+      "command": "gitea-axi pr ready",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C048",
+      "command": "gitea-axi pr reopen",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C049",
+      "command": "gitea-axi pr comment",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C050",
+      "command": "gitea-axi pr update-branch",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C051",
+      "command": "gitea-axi pr revert",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C052",
+      "command": "gitea-axi project list",
+      "status": "gap",
+      "flags": 3
+    },
+    {
+      "id": "C053",
+      "command": "gitea-axi project view",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C054",
+      "command": "gitea-axi project item-list",
+      "status": "gap",
+      "flags": 3
+    },
+    {
+      "id": "C055",
+      "command": "gitea-axi project field-list",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C056",
+      "command": "gitea-axi project field-create",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C057",
+      "command": "gitea-axi project field-delete",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C058",
+      "command": "gitea-axi project item-add",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C059",
+      "command": "gitea-axi project item-create",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C060",
+      "command": "gitea-axi project item-edit",
+      "status": "gap",
+      "flags": 12
+    },
+    {
+      "id": "C061",
+      "command": "gitea-axi project item-archive",
+      "status": "gap",
+      "flags": 3
+    },
+    {
+      "id": "C062",
+      "command": "gitea-axi project item-delete",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C063",
+      "command": "gitea-axi project create",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C064",
+      "command": "gitea-axi project edit",
+      "status": "gap",
+      "flags": 5
+    },
+    {
+      "id": "C065",
+      "command": "gitea-axi project close",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C066",
+      "command": "gitea-axi project copy",
+      "status": "gap",
+      "flags": 4
+    },
+    {
+      "id": "C067",
+      "command": "gitea-axi project delete",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C068",
+      "command": "gitea-axi release list",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C069",
+      "command": "gitea-axi release view",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C070",
+      "command": "gitea-axi release create",
+      "status": "partial",
+      "flags": 15
+    },
+    {
+      "id": "C071",
+      "command": "gitea-axi release edit",
+      "status": "partial",
+      "flags": 8
+    },
+    {
+      "id": "C072",
+      "command": "gitea-axi release delete",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C073",
+      "command": "gitea-axi release download",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C074",
+      "command": "gitea-axi release upload",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C075",
+      "command": "gitea-axi repo view",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C076",
+      "command": "gitea-axi repo create",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C077",
+      "command": "gitea-axi repo edit",
+      "status": "partial",
+      "flags": 5
+    },
+    {
+      "id": "C078",
+      "command": "gitea-axi repo clone",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C079",
+      "command": "gitea-axi repo fork",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C080",
+      "command": "gitea-axi repo list",
+      "status": "partial",
+      "flags": 4
+    },
+    {
+      "id": "C081",
+      "command": "gitea-axi run list",
+      "status": "partial",
+      "flags": 8
+    },
+    {
+      "id": "C082",
+      "command": "gitea-axi run view",
+      "status": "gap",
+      "flags": 5
+    },
+    {
+      "id": "C083",
+      "command": "gitea-axi run watch",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C084",
+      "command": "gitea-axi run rerun",
+      "status": "gap",
+      "flags": 3
+    },
+    {
+      "id": "C085",
+      "command": "gitea-axi run cancel",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C086",
+      "command": "gitea-axi run delete",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C087",
+      "command": "gitea-axi run download",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C088",
+      "command": "gitea-axi search issues",
+      "status": "partial",
+      "flags": 9
+    },
+    {
+      "id": "C089",
+      "command": "gitea-axi search prs",
+      "status": "partial",
+      "flags": 11
+    },
+    {
+      "id": "C090",
+      "command": "gitea-axi search repos",
+      "status": "partial",
+      "flags": 10
+    },
+    {
+      "id": "C091",
+      "command": "gitea-axi search commits",
+      "status": "partial",
+      "flags": 8
+    },
+    {
+      "id": "C092",
+      "command": "gitea-axi search code",
+      "status": "gap",
+      "flags": 9
+    },
+    {
+      "id": "C093",
+      "command": "gitea-axi secret list",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C094",
+      "command": "gitea-axi secret set",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C095",
+      "command": "gitea-axi secret delete",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C096",
+      "command": "gitea-axi setup hooks",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C097",
+      "command": "gitea-axi stack view",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C098",
+      "command": "gitea-axi stack init",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C099",
+      "command": "gitea-axi stack add",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C100",
+      "command": "gitea-axi stack checkout",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C101",
+      "command": "gitea-axi stack push",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C102",
+      "command": "gitea-axi stack submit",
+      "status": "gap",
+      "flags": 3
+    },
+    {
+      "id": "C103",
+      "command": "gitea-axi stack sync",
+      "status": "partial",
+      "flags": 2
+    },
+    {
+      "id": "C104",
+      "command": "gitea-axi stack rebase",
+      "status": "partial",
+      "flags": 8
+    },
+    {
+      "id": "C105",
+      "command": "gitea-axi stack link",
+      "status": "partial",
+      "flags": 3
+    },
+    {
+      "id": "C106",
+      "command": "gitea-axi stack unstack",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C107",
+      "command": "gitea-axi stack merge",
+      "status": "partial",
+      "flags": 5
+    },
+    {
+      "id": "C108",
+      "command": "gitea-axi stack up",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C109",
+      "command": "gitea-axi stack down",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C110",
+      "command": "gitea-axi stack top",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C111",
+      "command": "gitea-axi stack bottom",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C112",
+      "command": "gitea-axi stack trunk",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C113",
+      "command": "gitea-axi variable list",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C114",
+      "command": "gitea-axi variable set",
+      "status": "partial",
+      "flags": 1
+    },
+    {
+      "id": "C115",
+      "command": "gitea-axi variable delete",
+      "status": "partial",
+      "flags": 0
+    },
+    {
+      "id": "C116",
+      "command": "gitea-axi workflow list",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C117",
+      "command": "gitea-axi workflow view",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C118",
+      "command": "gitea-axi workflow run",
+      "status": "gap",
+      "flags": 2
+    },
+    {
+      "id": "C119",
+      "command": "gitea-axi workflow enable",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C120",
+      "command": "gitea-axi workflow disable",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C121",
+      "command": "gitea-axi dashboard",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C122",
+      "command": "gitea-axi update",
+      "status": "gap",
+      "flags": 0
+    },
+    {
+      "id": "C123",
+      "command": "gitea-axi update --check",
+      "status": "gap",
+      "flags": 1
+    },
+    {
+      "id": "C124",
+      "command": "gitea-axi --version",
+      "status": "partial",
+      "flags": 0
+    }
+  ],
+  "globals": [
+    {
+      "selector": "-R/--repo",
+      "contract": "Explicit repository before matching local remote; stack rejects it and GH_REPO"
+    },
+    {
+      "selector": "--hostname/GH_HOST",
+      "contract": "Select exactly one matching configured profile by host and port; exact tokenOrigin binding applies before secret resolution"
+    },
+    {
+      "selector": "--help",
+      "contract": "Offline registry-derived help"
+    },
+    {
+      "selector": "-v/-V/--version",
+      "contract": "Offline packaged version"
+    }
+  ],
+  "prFields": [
+    {
+      "field": "additions",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "body",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "changedFiles",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "closedAt",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "createdAt",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "deletions",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "fullDatabaseId",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "isDraft",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "maintainerCanModify",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "mergedAt",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "number",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "title",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "updatedAt",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "url",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "autoMergeRequest",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "closingIssuesReferences",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "id",
+      "contract": "gap: GraphQL node ID unavailable; fullDatabaseId is the numeric vendor ID"
+    },
+    {
+      "field": "mergeStateStatus",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "potentialMergeCommit",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "projectCards",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "projectItems",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "reviewDecision",
+      "contract": "gap: no evidenced Gitea 1.23.4 field contract"
+    },
+    {
+      "field": "assignees",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "author",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "baseRefName",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "baseRefOid",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "closed",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "comments",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "commits",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "files",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "headRefName",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "headRefOid",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "headRepository",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "headRepositoryOwner",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "isCrossRepository",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "labels",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "latestReviews",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "mergeCommit",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "mergeable",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "mergedBy",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "milestone",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "reactionGroups",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "reviewRequests",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "reviews",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "state",
+      "contract": "owned normalized field; see pr view --fields"
+    },
+    {
+      "field": "statusCheckRollup",
+      "contract": "partial commit statuses only; excludes full check suites"
+    }
+  ],
+  "help": [
+    "gitea-axi capabilities C038"
+  ]
+}

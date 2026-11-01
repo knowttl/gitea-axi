@@ -172,6 +172,7 @@ try {
     assert.equal((await invoke(['issue', 'view', '1', ...command, '--comments'])).comments[0].body, 'Please verify');
     const review = { id: 12, author: { login: 'alice', name: 'Alice' }, state: 'APPROVED', dismissed: false, stale: false, body: 'Looks good', commit: { oid: 'abc123' }, submittedAt: '2026-02-04T00:00:00Z', comments: [{ id: 13, body: 'Nice', path: 'app.ts', position: 2, commit: { oid: 'abc123' } }] };
     const rollup = { head: 'abc123', items: [{ name: 'test', state: 'pending', description: null, url: null }, { name: 'lint', state: 'failure', description: null, url: null }, { name: 'build', state: 'success', description: 'Built', url: 'https://example.test/build' }], passed: 1, failed: 1, pending: 1, exitCode: 1 };
+    Object.assign(rollup, { source: 'commit-statuses', partial: true });
     const expected = { ...fixture.expectedFields, reviews: [review], latestReviews: [review], statusCheckRollup: rollup };
     assert.equal(Object.keys(expected).length + fixture.gaps.length, 46);
     for (const [field, value] of Object.entries(expected)) assert.deepEqual(await invoke(['pr', 'view', '7', ...command, '--fields', field]), { [field]: value }, field);

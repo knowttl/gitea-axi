@@ -14,7 +14,7 @@ export function validateRepositoryWorkflow(operation: string, options: Options) 
   if (['source', 'push', 'remote', 'clone'].some(key => options[key] !== undefined)) {
     throw new CliError('CAPABILITY_GAP', 'Workspace options require the deferred local workspace workflow; use API-only arguments');
   }
-  if (options.internal || options.visibility === 'internal') throw new CliError('CAPABILITY_GAP', 'Internal visibility is unsupported by the Gitea contract');
+  if (options.visibility === 'internal') throw new CliError('CAPABILITY_GAP', 'Internal visibility is unsupported by the Gitea contract');
   if (operation === 'repo create' && Boolean(options.public) === Boolean(options.private)) usage('Choose exactly --public or --private');
   if (options.visibility !== undefined && !['public', 'private'].includes(String(options.visibility))) usage('--visibility must be public or private');
 }

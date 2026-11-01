@@ -1,13 +1,11 @@
 import { collect } from './api.js';
 import type { Client } from './transport.js';
-import { CliError } from './error.js';
 import { positive, selectedFields } from './reads.js';
 import type { Options } from './reads.js';
 
 export const taskFields = ['id', 'name', 'display_title', 'workflow_id', 'head_branch', 'head_sha', 'event', 'status', 'run_number', 'url', 'created_at', 'updated_at', 'run_started_at'];
 export function validateTasks(options: Options) {
   positive(options.limit, 10, 1000);
-  if (options.user) throw new CliError('CAPABILITY_GAP', 'ActionTask has no actor field; --user cannot be applied');
   selectedFields(options, taskFields, []);
 }
 export async function tasks(client: Client, base: string, options: Options) {
