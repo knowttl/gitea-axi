@@ -76,7 +76,8 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
       else assert.equal(response.status, expectedStatus, JSON.stringify(value));
       return value;
     }
-    headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket;
+    async function reauthenticate() { headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket; }
+    await reauthenticate();
     const path = '/v1/admin/tools/gitea-axi';
     const tool = await api(path);
     await api(path + '/credential', 'PUT', { expectedRevision: 0, expectedToolRevision: tool.revision, value: { origin, tokenOrigin: origin, token, allowInsecureHttp: true } });
@@ -86,9 +87,9 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
     const user = (await api('/v1/admin/users')).users.find(user => user.username === 'fixture-admin');
     await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
     assert.equal(decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])).repository.full_name, 'sample/demo');
-    return { close, api, download: args => client(['download', ...args, '--password-stdin'], replacement),
+    return { close, api, reauthenticate, download: args => client(['download', ...args, '--password-stdin'], replacement),
       grantWrites: async operations => {
-        headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket;
+        await reauthenticate();
         const current = await api(path);
         await api(path + '/write-access', 'PATCH', { enabled: operations.length > 0, operations, expectedRevision: current.revision });
       },

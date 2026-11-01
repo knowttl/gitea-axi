@@ -293,6 +293,7 @@ try {
       expect('Managed client saved exact bytes', await readFile(destination), bytes);
       const targetDigest = digest(Buffer.from(destination));
       const request = { selection, targetDigest, transferId: transfer.transferId };
+      await host.reauthenticate();
       const cancelled = await host.api<{ transferId: string }>('/v1/transfers/gitea/prepare', 'POST', { selection, targetDigest });
       await host.api('/v1/transfers/gitea/cancel', 'POST', { ...request, transferId: cancelled.transferId });
       expect('Managed artifact custody cleaned after delivery and cancellation', await readdir(join(scratch, 'artifacts')), []);
