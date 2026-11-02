@@ -20,7 +20,7 @@ No command is counted as full baseline parity.
 | Numeric IDs | `fullDatabaseId` is the vendor numeric ID. The GraphQL node `id` selector remains a gap. |
 | Status rollups | Results explicitly report `source: commit-statuses` and `partial: true`. Passed/failed/pending counts do not claim full check suites. |
 
-See the [README](../README.md) for repository selectors, profile selection and hosted credential restrictions, including the current root-level `-R` and search `--hostname` limitations.
+See the [README](../README.md) for repository selectors, profile selection and hosted credential restrictions, including root-level `-R` and search `--hostname` support.
 
 ## Pending hooks and updater contracts
 
