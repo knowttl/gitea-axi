@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
@@ -332,6 +332,63 @@ try {
     const stale = await invoke(['stack', 'checkout', 'three', '--preview', '--allow-write', 'gitea.local.stack.checkout']);
     await git(['branch', 'unrelated']);
     check('Changed workspace invalidates confirmation', (await invoke(['stack', 'checkout', 'three', '--confirm', stale.confirmation, '--allow-write', 'gitea.local.stack.checkout'], 1)).error.code, 'CONFIRMATION_MISMATCH');
+    const firstPrune = await isolatedStack('first-prune');
+    await git(['branch', 'unowned'], firstPrune.workspace);
+    const preservedRefs = await git(['show-ref', '--heads', 'main', 'unowned'], firstPrune.workspace);
+    await execute(['stack', 'merge', 'one', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', firstPrune.workspace);
+    await run('git', ['cat-file', '-e', String(pulls.get(firstPrune.name)![0]!.merge_commit_sha) + '^{commit}'], firstPrune.workspace, 128);
+    await execute(['stack', 'sync', '--prune'], 'gitea.local.stack.sync', firstPrune.workspace);
+    check('First sync prunes merged branches after fetching missing merge objects', (await invoke(['stack', 'view'], 0, firstPrune.workspace)).stack.branches, []);
+    check('First sync deletes eligible native branches', await git(['for-each-ref', '--format=%(refname:short)', 'refs/heads'], firstPrune.workspace), 'main\nunowned');
+    check('First prune preserves trunk and unowned branch identities', await git(['show-ref', '--heads', 'main', 'unowned'], firstPrune.workspace), preservedRefs);
+    for (const { flags, owned, native } of [
+      { flags: [], owned: ['two', 'three'], native: 'main\nthree\ntwo\nunowned' },
+      { flags: ['--prune'], owned: [], native: 'main\nunowned' },
+    ]) {
+      const interruptedPrune = await isolatedStack('prune-checkpoint-' + flags.length);
+      await git(['branch', 'unowned'], interruptedPrune.workspace);
+      const preserved = await git(['show-ref', '--heads', 'main', 'unowned'], interruptedPrune.workspace);
+      await execute(['stack', 'merge', 'one', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', interruptedPrune.workspace);
+      await git(['fetch', bare(interruptedPrune.name), 'refs/heads/main:refs/remotes/origin/main'], interruptedPrune.workspace);
+      const faultBin = join(scratch, 'fault-git-' + flags.length);
+      await mkdir(faultBin);
+      const nativeGit = env.PATH!.split(delimiter).map(path => join(path, 'git')).find(path => existsSync(path))!;
+      await writeFile(join(faultBin, 'prune-checkpoint.json'), JSON.stringify({ git: nativeGit, workspace: interruptedPrune.workspace, branch: 'one' }));
+      const wrapper = join(faultBin, 'prune-checkpoint-git.ts');
+      await writeFile(wrapper, await readFile(join(root, 'scripts/prune-checkpoint-git.ts'))); await chmod(wrapper, 0o700);
+      await symlink(wrapper, join(faultBin, 'git'));
+      const argv = ['stack', 'sync', '--prune', '--allow-write', 'gitea.local.stack.sync'];
+      const preview = await invoke([...argv, '--preview'], 0, interruptedPrune.workspace);
+      const faulted = await invoke([...argv, '--confirm', preview.confirmation], 1, interruptedPrune.workspace, { PATH: faultBin + delimiter + env.PATH });
+      check('Lost native prune completion preserves native failure ' + flags.length, faulted.error.code, 'GIT_FAILED');
+      await run('git', ['show-ref', '--verify', '--quiet', 'refs/heads/one'], interruptedPrune.workspace, 1);
+      check('Deletion before checkpoint retains recoverable ownership ' + flags.length, (await invoke(['stack', 'view'], 0, interruptedPrune.workspace)).stack.branches, ['one', 'two', 'three']);
+      const recoveryArgs = ['stack', 'sync', ...flags, '--allow-write', 'gitea.local.stack.sync', '--preview'];
+      const metadataPath = join(interruptedPrune.workspace, '.git/gitea-axi/stacks.json');
+      const checkpoint = await readFile(metadataPath, 'utf8');
+      const legacy = JSON.parse(checkpoint) as { pending: { prune?: unknown } };
+      delete legacy.pending.prune;
+      await writeFile(metadataPath, JSON.stringify(legacy), { mode: 0o600 });
+      check('Legacy checkpoint without prune evidence keeps ownership ' + flags.length,
+        (await invoke(recoveryArgs, 1, interruptedPrune.workspace)).error.code, 'STACK_RECOVERY_REQUIRED');
+      await writeFile(metadataPath, checkpoint, { mode: 0o600 });
+      pulls.get(interruptedPrune.name)![0]!.merged = false;
+      check('Missing member without verified merged history refuses recovery ' + flags.length,
+        (await invoke(recoveryArgs, 1, interruptedPrune.workspace)).error.code, 'STACK_RECOVERY_REQUIRED');
+      pulls.get(interruptedPrune.name)![0]!.merged = true;
+      await git(['branch', '-D', 'two'], interruptedPrune.workspace);
+      check('Unverified missing member is not relinquished ' + flags.length,
+        (await invoke(recoveryArgs, 1, interruptedPrune.workspace)).error.code, 'STACK_RECOVERY_REQUIRED');
+      check('Refused prune recovery preserves checkpoint bytes ' + flags.length, await readFile(metadataPath, 'utf8'), checkpoint);
+      await git(['branch', 'two', 'origin/two'], interruptedPrune.workspace);
+      await execute(['stack', 'sync', ...flags], 'gitea.local.stack.sync', interruptedPrune.workspace);
+      const recovered = await invoke(['stack', 'view'], 0, interruptedPrune.workspace);
+      check('Prune checkpoint recovery reconciles ownership ' + flags.length, recovered.stack.branches, owned);
+      check('Prune checkpoint recovery preserves the intended native branches ' + flags.length,
+        await git(['for-each-ref', '--format=%(refname:short)', 'refs/heads'], interruptedPrune.workspace), native);
+      check('Prune checkpoint recovery clears pending state ' + flags.length, recovered.recovery, null);
+      check('Prune checkpoint recovery preserves unowned refs ' + flags.length, await git(['show-ref', '--heads', 'main', 'unowned'], interruptedPrune.workspace), preserved);
+    }
     const merged = await isolatedStack('merge-success');
     await execute(['stack', 'merge', 'one', '--merge'], 'gitea.local.stack.merge,repoEditPullRequest,repoMergePullRequest', merged.workspace);
     check('Merge processes all dependencies in order', pulls.get(merged.name)!.map(pull => pull.merged), [true, true, true]);
