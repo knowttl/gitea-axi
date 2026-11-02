@@ -404,7 +404,7 @@ Set `GITEA_AXI_REPORT` to retain their reports at a chosen path.
 Their default reports go to unique files in the OS temporary directory; temporary installation files are removed.
 For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json` or `S5.2.json`; otherwise only a console summary is emitted.
 
-`npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the offline live-read regressions in `scripts/verify-live-reads.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
+`npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the native Git workspace checks in `scripts/verify-git.ts`, then the offline live-read regressions in `scripts/verify-live-reads.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
 The package-contract check builds, packs and installs offline, validates the tarball file list and bin entry, smoke-tests the installed `--help` and `--version`, parses the consumed JSON artifacts and imports the modules Artium consumes from the installed package.
 Run it independently with `node --import ./scripts/deny-network.ts scripts/verify-package.ts`.
 Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
