@@ -16,6 +16,9 @@ Hosted admission refuses every stack command and local checkout option.
 4. Before a multi-step mutation, a pending record persists the original branch and tips and ordered step states.
    After interruption, `stack view` exposes the recorded checkpoint; inspect it alongside native Git and API state.
    `stack sync` can recover a pending sync or a push whose selected remote confirms every recorded branch tip; it never repeats the push.
+   If pruning deleted a branch before its ownership checkpoint was saved, sync can release that ownership with or without `--prune`.
+   Recovery requires a dispatched or completed prune checkpoint identifying the branch, PR number, head and merge commit, a matching original branch tip, unchanged closed-and-merged PR evidence, and locally available commits proving the head is included in the merge.
+   An absent owned branch without that evidence, including a legacy checkpoint without prune evidence, refuses with `STACK_RECOVERY_REQUIRED` and preserves the checkpoint for inspection.
    Other pending operations require inspection rather than automatic replay.
    Unrelated mutations refuse while recovery is pending.
 5. Rebase recovery retains the ordered original branch tips and current step.
@@ -24,7 +27,10 @@ Hosted admission refuses every stack command and local checkout option.
    They remain usable while native Git has HEAD detached, using the checkpoint's originally named branch.
    Abort restores the original stack tips and branch only when the recorded state still matches; otherwise it refuses and reports recovery instructions.
    If a native index lock stops abort, remove the lock only after its owning process has stopped, then preview and confirm abort again against the same checkpoint.
-6. Sync pruning deletes only owned stack branches whose recorded PR is verified merged and whose local tip is included in the verified merged history.
+6. Sync pruning deletes only owned stack branches whose recorded PR is closed and verified merged, whose local tip matches the PR head, and whose tip is included in the verified merged history.
+   Confirmed sync fetches existing remote trunk and stack branches before checking merge history, so merge objects need not already be local at preview time.
+   When pruning has candidates, fetched refs must match the confirmed remote tips; a mismatch stops with `CONFIRMATION_MISMATCH` before deletion.
+   Candidates whose merge commit remains unavailable or does not contain their tip are retained; eligible candidates use native `git branch -d` safeguards.
    Trunk, the current branch, branches checked out in another worktree and unowned branches are never pruned.
 7. Submit requests automatic merge scheduling semantics and reports a compatibility gap when the retained Gitea contract cannot establish actual scheduling.
    Submit and link refuse `--open` before any effect.

@@ -36,9 +36,9 @@ export class Git {
     if (!isAbsolute(this.cwd) || await realpath(this.cwd) !== this.cwd || await this.run(['rev-parse', '--show-toplevel']) !== this.cwd) {
       throw new CliError('USAGE', '--workspace must be the absolute native repository root', 2);
     }
-    const config = await this.run(['config', '--local', '--name-only', '--list']) + '\n' +
-      await this.run(['config', '--worktree', '--name-only', '--list']);
-    if (config.split('\n').some(key => /^(?:url\.|http\.|credential\.|include\.|includeif\.|filter\.|diff\.|core\.sshcommand$|remote\..*\.(?:proxy|uploadpack|receivepack|pushurl|vcs)$)/i.test(key))) {
+    const config = await this.run(['config', '--no-includes', '--show-scope', '--name-only', '--list']);
+    // Inspect repository settings without requiring config.worktree or rejecting our command-scope transport settings.
+    if (config.split('\n').some(key => /^(?:local|worktree)\t(?:url\.|http\.|credential\.|include\.|includeif\.|filter\.|diff\.|core\.sshcommand$|remote\..*\.(?:proxy|uploadpack|receivepack|pushurl|vcs)$)/i.test(key))) {
       throw new CliError('UNSAFE_GIT_CONFIG', 'Workspace transport overrides must be removed before using origin-bound Git');
     }
     return this;

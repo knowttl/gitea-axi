@@ -15,6 +15,7 @@ import { write } from './writes.js';
 import type { Client } from './transport.js';
 
 interface Pull { branch: string; number: number; base: string; head: string; state: 'open' | 'closed'; merged: boolean }
+interface Prune { branch: string; number: number; head: string; merge: string }
 interface Rebase {
   branches: string[]; oldBases: Record<string, string>; originalTips: Record<string, string>;
   expectedTips: Record<string, string>; originalBranch: string; cursor: number; dispatched: boolean; authorDate: boolean;
@@ -22,7 +23,7 @@ interface Rebase {
 interface Stack {
   version: 1; revision: number; id: string; trunk: string; branches: string[]; remote: string; origin: string; repository: string;
   pulls: Pull[]; pending?: { action: string; confirmations: string[]; originalBranch: string; originalTips: string;
-    steps: { effect: string; state: 'pending' | 'dispatched' | 'completed' }[]; rebase?: Rebase };
+    steps: { effect: string; state: 'pending' | 'dispatched' | 'completed' }[]; rebase?: Rebase; prune?: Prune[] };
 }
 const branch = { type: 'string', minLength: 1 };
 const tips = { type: 'object', additionalProperties: { type: 'string', pattern: '^[a-f0-9]{40}$' } };
@@ -39,6 +40,8 @@ const schema = new Ajv().compile<Stack>({
       originalBranch: { type: 'string' }, originalTips: { type: 'string' },
       steps: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['effect', 'state'],
         properties: { effect: branch, state: { enum: ['pending', 'dispatched', 'completed'] } } } },
+      prune: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['branch', 'number', 'head', 'merge'],
+        properties: { branch, number: { type: 'integer', minimum: 1 }, head: { type: 'string', pattern: '^[a-f0-9]{40}$' }, merge: { type: 'string', pattern: '^[a-f0-9]{40}$' } } } },
       rebase: { type: 'object', additionalProperties: false,
         required: ['branches', 'oldBases', 'originalTips', 'expectedTips', 'originalBranch', 'cursor', 'dispatched', 'authorDate'],
         properties: { branches: { type: 'array', items: branch, uniqueItems: true }, oldBases: tips, originalTips: tips, expectedTips: tips,
@@ -54,6 +57,12 @@ async function stackAt(path: string, git: Git): Promise<Stack | undefined> {
       value.pulls.some(pull => !value.branches.includes(pull.branch))) {
     throw new CliError('STACK_INVALID', 'Stack metadata is invalid, inconsistent or belongs to a different origin');
   }
+  const prune = value.pending?.prune;
+  if (prune && (value.pending!.action !== 'sync' || new Set(prune.map(item => item.branch)).size !== prune.length ||
+      prune.some(item => !value.branches.includes(item.branch) || !value.pulls.some(pull => pull.branch === item.branch && pull.number === item.number) ||
+        value.pending!.steps.filter(step => step.effect === 'prune ' + item.branch).length !== 1))) {
+    throw new CliError('STACK_INVALID', 'Prune checkpoints must describe only the owned stack branches and linked PRs');
+  }
   const rebase = value.pending?.rebase;
   if (rebase) {
     if (rebase.cursor > rebase.branches.length || rebase.branches.some(branch => !value.branches.includes(branch) || !rebase.oldBases[branch]) ||
@@ -68,7 +77,13 @@ async function stackAt(path: string, git: Git): Promise<Stack | undefined> {
 }
 
 async function ancestor(git: Git, parent: string, child: string) {
-  return (await git.run(['merge-base', parent, child])) === await git.tip(parent);
+  return (await git.run(['merge-base', parent, child], [0, 1])) === await git.tip(parent);
+}
+
+function releaseBranch(state: Stack, branch: string) {
+  state.branches = state.branches.filter(name => name !== branch);
+  state.pulls = state.pulls.filter(pull => pull.branch !== branch);
+  if (state.pending?.prune) state.pending.prune = state.pending.prune.filter(item => item.branch !== branch);
 }
 
 export async function stackWorkflow(client: Client, identity: LocalIdentity, action: string, args: string[], options: Options) {
@@ -111,6 +126,8 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
   state.remote = remote.name;
   const plans: WritePlan[] = [];
   const commands: string[][] = [];
+  const prune: Prune[] = [];
+  const fetchedRefs: { ref: string; head: string }[] = [];
   let destination: string | undefined;
   let remove = false;
   let rebase: Rebase | undefined;
@@ -213,17 +230,37 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
       linked.head = String(head.sha); linked.base = await git.branch(String(object(pull.base).ref));
       linked.state = pull.state as 'open' | 'closed'; linked.merged = pull.merged === true;
     }
+    for (const member of [...state.branches]) {
+      if (snapshot.refs.split('\n').some(line => line.startsWith('refs/heads/' + member + ' '))) continue;
+      const pending = before?.pending;
+      const recorded = pending?.prune?.find(item => item.branch === member);
+      const checkpoint = pending?.steps.find(step => step.effect === 'prune ' + member);
+      const linked = state.pulls.find(pull => pull.branch === member);
+      const pull = page.items.find(pull => pull.number === linked?.number);
+      if (!recoveringSync || !recorded || !checkpoint || checkpoint.state === 'pending' || !pull ||
+          pull.number !== recorded.number || pull.state !== 'closed' || pull.merged !== true ||
+          object(pull.head).sha !== recorded.head || pull.merge_commit_sha !== recorded.merge ||
+          !pending!.originalTips.split('\n').includes('refs/heads/' + member + ' ' + recorded.head) ||
+          !await git.run(['rev-parse', '--verify', '--quiet', recorded.head + '^{commit}'], [0, 1]) ||
+          !await git.run(['rev-parse', '--verify', '--quiet', recorded.merge + '^{commit}'], [0, 1]) ||
+          !await ancestor(git, recorded.head, recorded.merge)) {
+        throw new CliError('STACK_RECOVERY_REQUIRED', 'An absent owned branch requires its dispatched prune checkpoint and verified merged PR history');
+      }
+      releaseBranch(state, member);
+    }
     const existing = [state.trunk, ...state.branches].filter(name => remoteRefs.split('\n').some(line => line.endsWith('\trefs/heads/' + name)));
+    for (const name of existing) fetchedRefs.push({ ref: 'refs/remotes/' + remote.name + '/' + name,
+      head: remoteRefs.split('\n').find(line => line.endsWith('\trefs/heads/' + name))!.split('\t')[0]! });
     if (existing.length) commands.push(['fetch', '--no-tags', '--', remote.url, ...existing.map(name => 'refs/heads/' + name + ':refs/remotes/' + remote.name + '/' + name)]);
     if (options.prune) {
       for (const member of [...state.branches]) {
         const linked = state.pulls.find(pull => pull.branch === member);
         const pull = page.items.find(pull => pull.number === linked?.number);
-        if (!linked || !pull || pull.merged !== true || object(pull.head).sha !== await git.tip('refs/heads/' + member)) continue;
+        if (!linked || !pull || pull.state !== 'closed' || pull.merged !== true || object(pull.head).sha !== await git.tip('refs/heads/' + member)) continue;
         if (member === snapshot.branch || snapshot.worktrees.split('\n').includes('branch refs/heads/' + member)) continue;
         const merge = String(pull.merge_commit_sha);
-        if (!/^[a-f0-9]{40}$/.test(merge) || !await git.run(['rev-parse', '--verify', '--quiet', merge + '^{commit}'], [0, 1]) ||
-            !await ancestor(git, 'refs/heads/' + member, merge)) continue;
+        if (!/^[a-f0-9]{40}$/.test(merge)) continue;
+        prune.push({ branch: member, number: linked.number, head: linked.head, merge });
         commands.push(['branch', '-d', member]);
       }
     }
@@ -290,7 +327,7 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
   const local = 'gitea.local.stack.' + localAction;
   const begin: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'begin', action, args, options: { ...options, preview: undefined, confirm: undefined }, remote,
     ...(recovering ? { recoverLocal: before!.pending!.confirmations } : {}) } };
-  const finish: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'finish', state, commands, remove, destination } };
+  const finish: WriteStep = { method: 'LOCAL', path: git.cwd, local, payload: { phase: 'finish', state, commands, prune, remove, destination } };
   const steps: WriteStep[] = [begin];
   const apiResultIndices: number[] = [];
   for (const [index, plan] of plans.entries()) {
@@ -313,7 +350,9 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
         if (!same(before, await stackAt(path, git)) || !same(snapshot, await git.snapshot())) throw new CliError('CONFIRMATION_MISMATCH', 'Stack or workspace changed before dispatch');
         if (action !== 'rebase') state.pending = { action, confirmations: recovering ? [...before!.pending!.confirmations] : [],
           originalBranch: before?.pending?.originalBranch ?? snapshot.branch, originalTips: before?.pending?.originalTips ?? snapshot.refs,
-          steps: [...plans.map(plan => ({ effect: plan.target, state: 'pending' as const })), ...commands.map(command => ({ effect: command[0]!, state: 'pending' as const }))] };
+          ...(prune.length ? { prune: structuredClone(prune) } : {}),
+          steps: [...plans.map(plan => ({ effect: plan.target, state: 'pending' as const })),
+            ...commands.map(command => ({ effect: command[0] === 'branch' ? 'prune ' + command[2] : command[0]!, state: 'pending' as const }))] };
         state.pending!.confirmations.push(confirmation);
         await save(path, state);
         return { state: 'started' };
@@ -376,11 +415,21 @@ export async function stackWorkflow(client: Client, identity: LocalIdentity, act
         }
       } else {
         for (const [index, command] of commands.entries()) {
+          if (action === 'sync' && command[0] === 'branch') {
+            const selected = prune.find(item => item.branch === command[2])!;
+            if (await git.tip('refs/heads/' + selected.branch) !== selected.head) throw new CliError('CONFIRMATION_MISMATCH', 'A prune candidate changed before deletion');
+            if (!await git.run(['rev-parse', '--verify', '--quiet', selected.merge + '^{commit}'], [0, 1]) ||
+                !await ancestor(git, selected.head, selected.merge)) continue;
+          }
           state.pending!.steps[plans.length + index]!.state = 'dispatched'; await save(path, state);
           await git.run(command);
+          if (prune.length && command[0] === 'fetch') {
+            for (const expected of fetchedRefs) {
+              if (await git.tip(expected.ref) !== expected.head) throw new CliError('CONFIRMATION_MISMATCH', 'Fetched branch differs from the confirmed remote graph');
+            }
+          }
           if (action === 'sync' && command[0] === 'branch') {
-            state.branches = state.branches.filter(name => name !== command[2]);
-            state.pulls = state.pulls.filter(pull => pull.branch !== command[2]);
+            releaseBranch(state, command[2]!);
           }
           state.pending!.steps[plans.length + index]!.state = 'completed'; await save(path, state);
         }
