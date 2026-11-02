@@ -253,6 +253,7 @@ gitea-axi label create --repo OWNER/NAME --name bug --color ff0000 --allow-write
 The preview identifies the exact operations, payload and current preconditions without sending a mutation.
 Confirmation binds the credential revision, origin, target, operations, canonical payload and preconditions.
 Changing any binding requires a fresh preview.
+Organization casing must match the preview exactly.
 For issues that remain present, successful named writes verify identity and the expected final title, body, assignees, labels, milestone and state through fresh reads.
 Pin changes verify the complete expected pin membership; deletion verifies absence of the selected identity and preservation of all remaining records.
 A mismatched or failed verification reports an unknown outcome.
@@ -273,7 +274,8 @@ API timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UN
 Dispatched local Git failures retain their specific error code and include reconciliation information; stack recovery follows the [metadata and recovery contract](docs/local-stack-contract.md).
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
-Replay guards also treat repository owner and repository name case variants as the same identity.
+Replay guards also treat repository owner, repository name and organization name case variants as the same identity for named and raw writes.
+Unresolved organization attempts from older versions conservatively block all writes to the same organization at the same origin, including different names or payloads, and return the original attempt's reconciliation command.
 Keep its private receipts until the outcome has been investigated.
 Native Windows write protection and live write commissioning remain unverified; Windows writes are refused.
 
@@ -301,6 +303,7 @@ See [the credential schema](axi-credential.schema.json) for profile fields and e
 Inline tokens and secret arguments are refused.
 Resolved credentials are redacted from response and error string values before TOON serialization, including their JSON-escaped and URL-encoded forms.
 Redaction also masks recognized secret fields, secret query values, URL credentials, JWTs, private keys and account keys.
+Generated confirmation IDs and fixed confirmation/reconciliation instructions remain intact when they overlap a protected value; payloads and upstream response text remain subject to redaction.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
 Set `GITEA_AXI_ALLOW_INSECURE_HTTP=true` to permit HTTP for that environment profile; only the exact values `true` and `false` are accepted.
 HTTP requires `allowInsecureHttp: true` on that exact profile; a runtime origin override cannot reuse the token for another origin.
