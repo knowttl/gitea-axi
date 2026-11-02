@@ -107,10 +107,13 @@ An explicit repository wins over a matching local origin remote; a remote never 
 `-R` aliases `--repo` after an explicit command, with the same duplicate-selector checks.
 For the default dashboard, use `gitea-axi --repo OWNER/NAME`; root-level `-R` remains unsupported.
 Hosted repository reads require an explicit repository.
-Lists default to 30 returned records, except `run list` and `release list` default to 10; collection scans are bounded to 20 pages or 1000 unique records.
+Lists default to 30 returned records, except `run list` and `release list` default to 10; collection scans stop at 20 pages or at least 1000 unique records and retain at most 1000.
+Automatic page queries apply only to routes whose retained Gitea specification declares a `page` parameter.
+Unpaginated collections, including inline review comments and attachment metadata, are complete unless the server supplies a continuation link or the collection exceeds the record bound; a response of 50 records alone does not imply another page.
 Issue and PR lists filter before globally sorting the collected records and applying the return limit.
 Milestone selectors use exact names, including numeric-looking names.
-List output distinguishes unknown vendor totals from known totals and reports continuation and truncation.
+List output distinguishes unknown totals from known totals and reports continuation and truncation.
+For an unpaginated collection without a continuation link, a missing server total is inferred from the unique records received.
 Issue, PR and run lists expose `unfiltered_total` as the server count before client-side filtering; `total` is the filtered count when the bounded read is complete, otherwise null.
 Truncated output includes guidance to raise `--limit` (maximum 1000), or use raw API pagination when the bounded read is incomplete.
 The dashboard shows a compact repository projection (ID, full name, visibility, default branch, open issue and PR counts, and update time), plus up to five issues, PRs, labels, releases and task summaries per section.
