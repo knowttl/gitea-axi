@@ -97,6 +97,12 @@ gitea-axi config path
 gitea-axi doctor
 ```
 
+Raw `api GET` contents reads support root and nested directories, returning directory arrays (including empty arrays) or individual file, symlink and submodule objects under `data`.
+Nullable contents and link fields are accepted while non-null values retain their schema type checks.
+Use literal slashes for nested paths such as `repos/OWNER/NAME/contents/src/main.ts`, `repos/OWNER/NAME/editorconfig/src/main.ts` and Git ref filters such as `repos/OWNER/NAME/git/refs/heads/main`.
+This multi-segment support applies only to those GET routes; other route parameters and raw writes retain single-segment matching.
+Encoded route separators and traversal remain refused.
+
 Anonymous reads require an explicit origin; repository selection follows the rules below.
 Anonymous HTTP reads require `--allow-insecure-http` for that selected origin.
 The tool follows no redirects and never imports tea or Git credentials.
