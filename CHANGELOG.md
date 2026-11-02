@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.3](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.2...gitea-axi-v0.1.3) (2026-11-02)
+
+
+### Bug Fixes
+
+* align release list help and remove constant-only assertion ([#63](https://github.com/knowttl/gitea-axi/issues/63)) ([f37ec38](https://github.com/knowttl/gitea-axi/commit/f37ec38f3ef00cbf98c906db183c6ea58bdd623d)), closes [#20](https://github.com/knowttl/gitea-axi/issues/20) [#28](https://github.com/knowttl/gitea-axi/issues/28)
+* bound diff and write output and honor check-watch deadlines ([#60](https://github.com/knowttl/gitea-axi/issues/60)) ([b714ad7](https://github.com/knowttl/gitea-axi/commit/b714ad72dd149603f04ad5ef601c58b6415ed7ba))
+* cancel in-flight PR checks and include team review requests ([#62](https://github.com/knowttl/gitea-axi/issues/62)) ([8d90707](https://github.com/knowttl/gitea-axi/commit/8d907075364459f95788e35418129199aec497b3))
+* correct repository selection and search behavior ([#61](https://github.com/knowttl/gitea-axi/issues/61)) ([8eab096](https://github.com/knowttl/gitea-axi/commit/8eab096e7593055bd79807eeee1428c27f79894c))
+* recover interrupted stack pruning and accept linked worktrees ([#58](https://github.com/knowttl/gitea-axi/issues/58)) ([6a513eb](https://github.com/knowttl/gitea-axi/commit/6a513ebdaa9e51037327c54b05824c917ec57bd4))
+* resolve slash-containing PR branches and bound ancestry verification ([#56](https://github.com/knowttl/gitea-axi/issues/56)) ([77e0ee5](https://github.com/knowttl/gitea-axi/commit/77e0ee534c40faf3ec5b055b52b6dd9298c4f5d8))
+* verify and reconcile raw repository and wiki renames ([#59](https://github.com/knowttl/gitea-axi/issues/59)) ([4b28653](https://github.com/knowttl/gitea-axi/commit/4b28653fc29fcdcfe01e9125a18dba094360e1de))
+
 ## [0.1.2](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.1...gitea-axi-v0.1.2) (2026-11-02)
 
 
