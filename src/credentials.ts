@@ -40,12 +40,20 @@ function validateProfile(profile: unknown): asserts profile is Profile {
 }
 const secrets: string[] = [];
 export function registerSecret(value: string) { if (value) secrets.push(value); }
+const controls = new Set<string>();
+export function controlText(value: string) {
+  controls.add(value);
+  return value;
+}
 
 export function redact(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(redact);
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
     /^(?:token|access_token|refresh_token|password|secret|authorization|private_key)$/i.test(key) ? '[REDACTED]' : redact(item)]));
   if (typeof value !== 'string') return value;
+  // Callers register only generated control text, never payloads or upstream response text.
+  const preserved = [...controls].filter(text => value.includes(text)).sort((a, b) => b.length - a.length);
+  if (preserved.length) return value.split(new RegExp('(' + preserved.map(text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')')).map(part => controls.has(part) ? part : redact(part)).join('');
   let output = value;
   for (const secret of secrets) {
     for (const form of [secret, JSON.stringify(secret).slice(1, -1), encodeURIComponent(secret)]) {

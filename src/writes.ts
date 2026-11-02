@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { constants, existsSync } from 'node:fs';
-import { mkdir, open, rm } from 'node:fs/promises';
+import { mkdir, open, readdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { canonicalPath, collect, effectFor, object, read, validate, validatePayload } from './api.js';
@@ -14,11 +14,12 @@ import { verifyWorkflow } from './repo-workflows.js';
 import type { WorkflowVerification } from './repo-workflows.js';
 import { actionValues, valuePlan, verifyValue } from './action-values.js';
 import { verifyUploads } from './attachments.js';
+import { controlText } from './credentials.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown; local?: string; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
 export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
 interface Observation { path: string; data: unknown }
-interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
+interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; guardVersion?: 2; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -29,9 +30,9 @@ const digest = (value: unknown) => createHash('sha256').update(canonical(value))
 const usage = (message: string): never => { throw new CliError('USAGE', message, 2); };
 const logPath = () => process.env.GITEA_AXI_WRITE_LOG ?? join(process.platform === 'win32' ? process.env.LOCALAPPDATA ?? homedir() : process.env.XDG_STATE_HOME ?? join(homedir(), '.local/state'), 'gitea-axi', 'writes.log');
 const directory = () => join(dirname(logPath()), 'write-receipts');
-const command = (id: string, options: Options) => 'gitea-axi write reconcile ' + id +
-  (options.config ? ' --config ' + shell(String(options.config)) : '') + (options.profile ? ' --profile ' + shell(String(options.profile)) : '') +
-  (options.origin ? ' --origin ' + shell(String(options.origin)) : '') + (options['allow-insecure-http'] ? ' --allow-insecure-http' : '');
+const command = (id: string, options: Options) => controlText('gitea-axi write reconcile ' + id) +
+  (options.config ? controlText(' --config ') + shell(String(options.config)) : '') + (options.profile ? controlText(' --profile ') + shell(String(options.profile)) : '') +
+  (options.origin ? controlText(' --origin ') + shell(String(options.origin)) : '') + (options['allow-insecure-http'] ? controlText(' --allow-insecure-http') : '');
 function shell(value: string) { return "'" + value.replaceAll("'", "'\\''") + "'"; }
 
 async function key(root: string) {
@@ -51,6 +52,7 @@ export async function reconcile(client: Client, id: string) {
   const receipt: Receipt = JSON.parse(await readPrivateFile(join(directory(), id + '.json'), true));
   if (receipt.origin !== client.origin) throw new CliError('CONFIRMATION_MISMATCH', 'Reconciliation origin differs from the attempted write');
   const observations = await observe(client, receipt.reads);
+  controlText(id);
   return { confirmation: id, operations: receipt.operations, states: receipt.states, observations,
     help: 'Inspect the exact identity and requested fields in these reads before authorizing any new attempt' };
 }
@@ -199,11 +201,9 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     if (step.local) return { method: step.method, path: step.path, payload: step.payload, local: localOperation(step).operation };
     const route = validatePayload(step.method, step.path, step.payload);
     const segments = canonicalPath(step.path).split('/');
-    if (/\{(?:template_)?repo\}/.test(route.path)) {
-      for (const [index, segment] of route.path.split('/').entries()) {
-        if (/^\{(?:owner|repo|org|template_owner|template_repo)\}$/.test(segment)) {
-          segments[index] = encodeURIComponent(decodeURIComponent(segments[index]!).toLowerCase());
-        }
+    for (const [index, segment] of route.path.split('/').entries()) {
+      if (/^\{(?:owner|repo|org|template_owner|template_repo)\}$/.test(segment)) {
+        segments[index] = encodeURIComponent(decodeURIComponent(segments[index]!).toLowerCase());
       }
     }
     return { method: step.method, path: segments.join('/'), ...(step.payload === undefined ? {} : { payload: step.payload }), ...(step.upload ? { upload: step.upload } : {}) };
@@ -212,6 +212,23 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   const effectDigest = (value: unknown) => plan.sensitive ? createHmac('sha256', secret).update(canonical(value)).digest('hex') : digest(value);
   const attempt = effectDigest({ origin: client.origin, steps: effectSteps });
   const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, effectDigest({ origin: client.origin, step }) + '.attempt')))];
+  const organization = (path: string) => /^\/api\/v1\/orgs\/([^/?]+)/.exec(canonicalPath(path))?.[1];
+  const organizations = new Set(effectSteps.map(step => organization(step.path)).filter(value => value !== undefined));
+  if (organizations.size) {
+    for (const name of await readdir(root)) {
+      if (!/^[a-f0-9]{64}\.attempt$/.test(name)) continue;
+      const previous = await readPrivateFile(join(root, name), true);
+      if (!/^[a-f0-9-]{36}$/.test(previous)) usage('Invalid persisted confirmation ID');
+      const receipt: Receipt = JSON.parse(await readPrivateFile(join(root, previous + '.json'), true));
+      if (receipt.guardVersion !== 2 && receipt.origin === client.origin &&
+          receipt.reads.some(path => {
+            const org = organization(path);
+            return org !== undefined && organizations.has(encodeURIComponent(decodeURIComponent(org).toLowerCase()));
+          })) {
+        throw new CliError('WRITE_OUTCOME_UNKNOWN', 'An attempt already exists; reconcile with ' + command(previous, options));
+      }
+    }
+  }
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);
@@ -219,17 +236,18 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     }
   }
   if (options.preview) {
-    const id = randomUUID();
-    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt,
+    const id = controlText(randomUUID());
+    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt, guardVersion: 2,
       ...(plan.steps.every(step => step.local) ? { localTarget: plan.target, localGuards: guards.map(path => path.slice(root.length + 1, -8)) } : {}) };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
     return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
-      ...(plan.notes ? { notes: plan.notes } : {}), help: 'Repeat the same command with --confirm ' + id + ' instead of --preview' };
+      ...(plan.notes ? { notes: plan.notes } : {}), help: controlText('Repeat the same command with --confirm ' + id + ' instead of --preview') };
   }
   const id = String(options.confirm);
   if (!/^[a-f0-9-]{36}$/.test(id)) usage('Use the confirmation ID returned by --preview');
   const path = join(root, id + '.json');
   const receipt: Receipt = JSON.parse(await readPrivateFile(path, true));
+  controlText(id);
   if (receipt.states.some(state => state !== 'pending')) throw new CliError('WRITE_OUTCOME_UNKNOWN', 'Confirmation was already dispatched; reconcile with ' + command(id, options));
   if (receipt.binding !== binding) throw new CliError('CONFIRMATION_MISMATCH', 'Credential revision, origin, target, operation, payload or preconditions changed; preview again');
   const reserved: string[] = [];
@@ -249,6 +267,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
       throw error;
     }
   }
+  receipt.guardVersion = 2;
   const results: unknown[] = [];
   const outcome = () => 'steps=' + receipt.states.join(',') + (receipt.createdPull ? '; created PR id=' + receipt.createdPull.id + ' number=' + receipt.createdPull.number : '') + (receipt.createdParent ? '; existing parent id=' + receipt.createdParent.id + (receipt.createdParent.number ? ' number=' + receipt.createdParent.number : '') : '') + '; reconcile with ' + command(id, options);
   for (const [index, step] of plan.steps.entries()) {
