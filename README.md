@@ -424,4 +424,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules.
 
 ## License
 
-No license file is published in this repository yet; licensing is pending.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
