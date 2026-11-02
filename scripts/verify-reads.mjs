@@ -51,6 +51,8 @@ const server = createServer((request, response) => {
     [base + '/commits/abc123/statuses']: mode === 'pending' ? [fixture.statuses[2]] : mode === 'passed' ? [fixture.statuses[0]] : mode === 'absent' ? [] : fixture.statuses,
   };
   let body = paths[url.pathname];
+  if (['many-inline', 'inline-over-limit'].includes(mode) && url.pathname === base + '/pulls/7/reviews/12/comments') body = Array.from({ length: mode === 'many-inline' ? 50 : 1001 }, (_, index) => ({ ...fixture.inline[0], id: 13 + index, body: 'Line ' + index }));
+  if (mode === 'inline-hostile' && url.pathname === base + '/pulls/7/reviews/12/comments') response.setHeader('link', `<http://127.0.0.1:${foreign.address().port}${url.pathname}?page=2>; rel="next"`);
   if (url.pathname === base + '/issues') {
     const page = url.searchParams.get('page');
     body = page === '1' ? [fixture.issues[1]] : page === '2' ? [fixture.issues[0]] : [fixture.issues[2], fixture.issues[0]];
@@ -179,6 +181,18 @@ try {
     for (const [field, value] of Object.entries(expected)) assert.deepEqual(await invoke(['pr', 'view', '7', ...command, '--fields', field]), { [field]: value }, field);
     for (const gap of fixture.gaps) assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', gap], 1)).error.code, 'CAPABILITY_GAP');
     const detail = await invoke(['pr', 'view', '7', ...command, '--reviews', '--checks']); assert.deepEqual(detail.reviews, [review]); assert.deepEqual(detail.statusCheckRollup, rollup);
+    // #6: the vendor returns all inline comments without pagination.
+    mode = 'many-inline';
+    const selectedReviews = await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews,latestReviews']);
+    assert.deepEqual(selectedReviews.reviews[0].comments.map(row => row.body), Array.from({ length: 50 }, (_, index) => 'Line ' + index));
+    assert.deepEqual(selectedReviews.latestReviews, selectedReviews.reviews);
+    assert.equal((await invoke(['pr', 'view', '7', ...command, '--reviews'])).reviews[0].comments.length, 50);
+    mode = 'inline-over-limit';
+    assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews'], 1)).error.code, 'RESPONSE_LIMIT');
+    mode = 'inline-hostile';
+    assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews'], 1)).error.code, 'UNSAFE_PAGINATION');
+    assert.equal(foreignRequests, 0);
+    mode = 'ok';
     for (const [state, code, counts] of [['ok', 1, [1, 1, 1]], ['passed', 0, [1, 0, 0]], ['pending', 8, [0, 0, 1]], ['absent', 1, [0, 0, 0]]]) {
       mode = state; const result = await invoke(['pr', 'checks', '7', ...command], code); assert.deepEqual([result.passed, result.failed, result.pending], counts);
     }
