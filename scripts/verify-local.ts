@@ -137,6 +137,12 @@ const server = createServer(async (request, response) => {
         const sha = await tip(name, decodeURIComponent(route.slice(13)));
         const parents = (await serviceGit(name, ['rev-list', '--parents', '-n', '1', sha])).split(' ').slice(1).map(sha => ({ sha }));
         data = { sha, parents, tree: { sha: await tip(name, sha + '^{tree}') }, commit: { message: 'synthetic' } };
+      } else if (route.startsWith('/git/refs/')) {
+        const prefix = 'refs/' + decodeURIComponent(route.slice(10));
+        const refs = await serviceGit(name, ['for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads/']);
+        data = refs.split('\n').filter(Boolean).map(line => {
+          const [ref, sha] = line.split(' '); return { ref, object: { sha, type: 'commit' } };
+        }).filter(row => row.ref!.startsWith(prefix));
       } else if (route.startsWith('/branches/')) {
         const branch = decodeURIComponent(route.slice(10)); data = { name: branch, commit: { id: await tip(name, branch) } };
       } else if (route === '/pulls') {
