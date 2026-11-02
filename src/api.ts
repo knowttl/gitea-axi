@@ -5,7 +5,7 @@ import type { Client } from './transport.js';
 
 export type Row = Record<string, unknown>;
 const vendor = JSON.parse(readFileSync(new URL('../schemas/vendor.json', import.meta.url), 'utf8'));
-const routes: { path: string; method: string; operation: string; effect: string; paginated: boolean; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
+const routes: { path: string; method: string; operation: string; effect: string; paginated: boolean; multiSegmentParameters?: string[]; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
 routes.sort((a, b) => b.path.replace(/\{[^}]+\}/g, '').length - a.path.replace(/\{[^}]+\}/g, '').length);
 const required: Record<string, string[]> = {
   Issue: ['id', 'number', 'title', 'state'], PullRequest: ['id', 'number', 'title', 'state', 'head', 'base'],
@@ -32,7 +32,11 @@ for (const definition of Object.values(vendor.definitions) as { properties?: Rec
   }
 }
 const requestDefinitions = structuredClone(vendor.definitions);
-for (const [name, fields] of Object.entries({ PullRequest: ['merge_commit_sha'], ContentsResponse: ['submodule_git_url', 'target'] })) {
+for (const [name, fields] of Object.entries({
+  PullRequest: ['merge_commit_sha'],
+  ContentsResponse: ['submodule_git_url', 'target', 'content', 'encoding', 'download_url', 'html_url', 'git_url'],
+  FileLinksResponse: ['git', 'html'],
+})) {
   for (const field of fields) {
     const properties = vendor.definitions[name].properties;
     properties[field] = { anyOf: [properties[field], { type: 'null' }] };
@@ -48,7 +52,10 @@ export function object(value: unknown): Row {
 
 export function effectFor(method: string, path: string) {
   path = canonicalPath(path);
-  return routes.find(route => route.method === method && new RegExp('^' + route.path.split(/(\{[^}]+\})/).map(part => /^\{[^}]+\}$/.test(part) ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('') + '$').test(path.split('?')[0]!));
+  return routes.find(route => route.method === method && new RegExp('^' + route.path.split(/(\{[^}]+\})/).map(part => {
+    if (/^\{[^}]+\}$/.test(part)) return route.multiSegmentParameters?.includes(part.slice(1, -1)) ? '[^/]+(?:/[^/]+)*' : '[^/]+';
+    return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }).join('') + '$').test(path.split('?')[0]!));
 }
 
 export function canonicalPath(path: string): string {
@@ -92,7 +99,8 @@ export function validate(path: string, value: unknown): unknown {
   if (route.schema) {
     let validator = validators.get(route.path);
     if (!validator) {
-      validator = ajv.compile({ ...route.schema, definitions: vendor.definitions });
+      const schema = route.operation === 'repoGetContents' ? { anyOf: [route.schema, { type: 'array', items: route.schema }] } : route.schema;
+      validator = ajv.compile({ ...schema, definitions: vendor.definitions });
       validators.set(route.path, validator);
     }
     if (!validator(value)) throw new CliError('INVALID_RESPONSE', route.operation + ' returned invalid fields');

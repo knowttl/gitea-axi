@@ -85,6 +85,9 @@ const artifacts = {
   'generated/routes.json': JSON.stringify(Object.entries(swagger.paths).flatMap(([path, methods]) => Object.entries(methods).filter(([method]) => ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'].includes(method)).map(([method, definition]) => ({
     path: swagger.basePath + path, method: method.toUpperCase(), operation: definition.operationId,
     paginated: definition.parameters?.some(parameter => parameter.in === 'query' && parameter.name === 'page') ?? false,
+    ...(method === 'get' && ['repoGetContents', 'repoGetEditorConfig', 'repoListGitRefs'].includes(definition.operationId) ? {
+      multiSegmentParameters: definition.parameters.filter(parameter => parameter.in === 'path' && ['filepath', 'ref'].includes(parameter.name)).map(parameter => parameter.name),
+    } : {}),
     integerParameters: (definition.parameters ?? []).filter(parameter => parameter.in === 'path' && (parameter.type === 'integer' || parameter.name === 'index' || path === '/notifications/threads/{id}')).map(parameter => parameter.name),
     effect: /^(?:\/orgs\/\{org\}|\/repos\/\{owner\}\/\{repo\})\/actions\/secrets(?:\/\{secretname\})?$/.test(path) ? method === 'get' ? 'read' : 'write' : path.startsWith('/admin/') ? 'admin' :
       /token|signing-key|secrets/.test(path) || definition.parameters?.some(parameter => carriesCredentials(parameter.schema)) || Object.entries(definition.responses ?? {}).some(([status, response]) => /^2\d\d$/.test(status) && carriesCredentials(response)) ? 'credential' :
