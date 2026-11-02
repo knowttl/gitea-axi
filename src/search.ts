@@ -11,7 +11,7 @@ export function validateSearch(kind: string, query: string, options: Options) {
   const allowed = kind === 'issues' || kind === 'prs' ? ['owner', 'state', 'label', 'assignee', 'author', 'sort', 'order', 'limit', 'fields', ...(kind === 'prs' ? ['draft'] : [])] :
     kind === 'repos' ? ['owner', 'sort', 'order', 'limit', 'language', 'stars', 'fields'] : ['author', 'sort', 'order', 'limit', 'revision', 'fields'];
   for (const key of Object.keys(options)) {
-    if (!['origin', 'allow-insecure-http', 'config', 'profile', 'repo'].includes(key) && !allowed.includes(key)) throw new CliError('CAPABILITY_GAP', '--' + key + ' is not evidenced for search ' + kind);
+    if (!['origin', 'allow-insecure-http', 'config', 'profile', 'hostname', 'repo'].includes(key) && !allowed.includes(key)) throw new CliError('CAPABILITY_GAP', '--' + key + ' is not evidenced for search ' + kind);
   }
   positive(options.limit, 1000, 1000);
   if (options.state && !['open', 'closed', 'all'].includes(String(options.state))) throw new CliError('USAGE', '--state must be open, closed or all', 2);
@@ -72,9 +72,11 @@ export async function search(client: Client, kind: string, query: string, option
     return true;
   });
   const key = options.sort === 'updated' ? 'updated_at' : options.sort === 'comments' ? 'comments' : options.sort === 'stars' ? 'stars_count' : options.sort === 'name' ? 'full_name' : kind === 'commits' ? 'created' : 'created_at';
+  const temporal = ['created', 'created_at', 'updated_at'].includes(key);
   rows.sort((a, b) => {
     const left = a[key] ?? '', right = b[key] ?? '';
-    const compared = typeof left === 'number' && typeof right === 'number' ? left - right : String(left).localeCompare(String(right));
+    const compared = temporal && left !== '' && right !== '' ? Date.parse(String(left)) - Date.parse(String(right)) :
+      typeof left === 'number' && typeof right === 'number' ? left - right : String(left).localeCompare(String(right));
     return (compared || String(a.id ?? a.sha).localeCompare(String(b.id ?? b.sha))) * (options.order === 'asc' ? 1 : -1);
   });
   const limit = positive(options.limit, 1000, 1000);

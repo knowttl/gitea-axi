@@ -56,6 +56,13 @@ const server = createServer((request, response) => {
   }
   else { response.writeHead(404, { 'content-type': 'application/json' }).end('{}'); return; }
   if (mode === 'multiple' && second && url.pathname.endsWith('/issues')) data = [issue, { ...issue, id: 13, number: 13, created_at: '2026-02-01T00:00:00Z' }];
+  if (mode === 'temporal') {
+    const timestamp = second ? '2026-01-01T11:00:00Z' : '2026-01-01T12:00:00+02:00';
+    if (url.pathname === base + '/commits') data = [{ sha: second ? 'newer' : 'older', commit: { message: 'login fix' }, author: user, created: timestamp }];
+    if (url.pathname === '/api/v1/repos/search') data = { ok: true, data: [{ ...repository, id: second ? 5 : 4, full_name: second ? 'sample/zeta' : 'sample/alpha', stars_count: second ? 100 : 9, created_at: timestamp, updated_at: timestamp }] };
+    if (url.pathname.endsWith('/issues') || url.pathname.endsWith('/pulls')) data = [{ ...issue, id: second ? 13 : 11, number: second ? 13 : 11, created_at: timestamp, updated_at: timestamp,
+      comments: second ? 100 : 9, ...(url.pathname.endsWith('/pulls') ? { head: { sha: 'abc', ref: 'main' }, base: { sha: 'def', ref: 'main' } } : {}) }];
+  }
   if (!second && ![base, base + '/git/commits/main', '/api/v1/version', '/swagger.v1.json'].includes(url.pathname)) {
     url.searchParams.set('page', '2');
     response.setHeader('link', `<${url}>; rel="next"`);
@@ -81,7 +88,11 @@ try {
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const address = server.address(); assert(address && typeof address !== 'string'); origin = 'http://127.0.0.1:' + address.port;
   const config = join(scratch, 'config.json');
-  await writeFile(config, JSON.stringify({ version: 1, defaultProfile: 'test', profiles: { test: { origin, tokenOrigin: origin, allowInsecureHttp: true, token: { env: 'S5_TOKEN' } } } }), { mode: 0o600 });
+  const configuration = { version: 1, defaultProfile: 'test', profiles: {
+    test: { origin, tokenOrigin: origin, allowInsecureHttp: true, token: { env: 'S5_TOKEN' } },
+    other: { origin: 'https://other.test', tokenOrigin: 'https://other.test', token: { env: 'MISSING_TOKEN' } },
+  } };
+  await writeFile(config, JSON.stringify(configuration), { mode: 0o600 });
   const env = { PATH: process.env.PATH, HOME: scratch, XDG_CONFIG_HOME: scratch, S5_TOKEN: canary, NODE_OPTIONS: '--import=' + fileURLToPath(new URL('deny-network.ts', import.meta.url)) };
   const invoke = async (args: string[], code = 0) => {
     const stdout = await run(process.execPath, [bin, ...args, '--config', config], scratch, env, code);
@@ -127,6 +138,21 @@ try {
       assert.equal(output.total, 1);
       if (kind === 'commits') assert.equal((output.scope as Record<string, unknown>).revision, 'abc');
     }
+    const hostnameArgs = ['search', 'issues', 'login', '--repo', 'sample/demo'];
+    const selected = await invoke(hostnameArgs);
+    configuration.defaultProfile = 'other';
+    await writeFile(config, JSON.stringify(configuration), { mode: 0o600 });
+    assert.deepEqual(await invoke([...hostnameArgs, '--hostname', new URL(origin).host]), selected, 'Search hostname selects the matching profile before an unrelated default');
+    const beforeHostnameMismatch = requests.length;
+    assert.equal(((await invoke([...hostnameArgs, '--profile', 'test', '--hostname', 'other.test'], 1)).error as { code: string }).code, 'AUTH_BINDING_MISMATCH');
+    assert.equal(requests.length, beforeHostnameMismatch, 'Mismatched search hostname dispatches nothing');
+    configuration.profiles.test.tokenOrigin = 'https://other.test';
+    await writeFile(config, JSON.stringify(configuration), { mode: 0o600 });
+    assert.equal(((await invoke([...hostnameArgs, '--hostname', new URL(origin).host], 1)).error as { code: string }).code, 'AUTH_BINDING_MISMATCH');
+    assert.equal(requests.length, beforeHostnameMismatch, 'Search hostname preserves tokenOrigin binding before dispatch');
+    configuration.defaultProfile = 'test';
+    configuration.profiles.test.tokenOrigin = origin;
+    await writeFile(config, JSON.stringify(configuration), { mode: 0o600 });
     for (const args of [['issues', 'author:alice'], ['issues', 'login', '--fields', 'authorAssociation'], ['prs', 'login', '--review', 'approved'], ['code', 'login']]) {
       const before = requests.length; await invoke(['search', ...args], args[1] === 'author:alice' || args.includes('--fields') ? 2 : 1); assert.equal(requests.length, before);
     }
@@ -147,6 +173,21 @@ try {
     const capped = await invoke(['search', 'issues', 'login', '--repo', 'sample/demo', '--sort', 'created', '--limit', '1']);
     assert.deepEqual(capped.items, [{ repository: 'sample/demo', number: 13, title: 'login bug', state: 'open' }]);
     assert.equal(capped.total, 2); assert.equal(capped.continuation, true);
+    mode = 'temporal';
+    for (const [kind, sort, field, older, newer] of [
+      ['commits', 'created', 'sha', 'older', 'newer'],
+      ['issues', 'created', 'number', 11, 13], ['issues', 'updated', 'number', 11, 13],
+      ['prs', 'created', 'number', 11, 13], ['prs', 'updated', 'number', 11, 13],
+      ['repos', 'created', 'full_name', 'sample/alpha', 'sample/zeta'], ['repos', 'updated', 'full_name', 'sample/alpha', 'sample/zeta'],
+      ['issues', 'comments', 'number', 11, 13], ['repos', 'stars', 'full_name', 'sample/alpha', 'sample/zeta'],
+      ['repos', 'name', 'full_name', 'sample/alpha', 'sample/zeta'],
+    ] as const) {
+      for (const [order, expected] of [['asc', older], ['desc', newer]] as const) {
+        const result = await invoke(['search', kind, 'login', ...(kind === 'repos' ? [] : ['--repo', 'sample/demo']), '--sort', sort, '--order', order, '--fields', field, '--limit', '1']);
+        assert.deepEqual(result.items, [{ ...(kind === 'issues' || kind === 'prs' ? { repository: 'sample/demo' } : {}), [field]: expected }], kind + ' ' + sort + ' ' + order);
+        assert.equal(result.total, 2); assert.equal(result.count, 1); assert.equal(result.continuation, true);
+      }
+    }
   }
   mode = 'denied';
   const denied = await invoke(task === 'S5.1' ? ['run', 'list', '--repo', 'sample/demo'] : ['search', 'issues', 'login', '--repo', 'sample/demo'], 1);

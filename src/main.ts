@@ -43,7 +43,7 @@ export async function main(args: string[]) {
     if (args.some(arg => /^--(?:token|api-key|password|authorization)(?:=|$)/i.test(arg))) {
       throw new CliError('CONFIG_INVALID', 'token and other secret arguments are not accepted');
     }
-    const command = args.length === 0 || args[0]?.startsWith('--') ? commands.find(command => command.path[0] === 'dashboard') :
+    const command = args.length === 0 || args[0]?.startsWith('-') ? commands.find(command => command.path[0] === 'dashboard') :
       [...commands].sort((a, b) => b.path.length - a.path.length).find(command => command.path.every((part, index) => args[index] === part));
     if (!command) {
       const children = commands.filter(command => command.path[0] === args[0]);
@@ -55,7 +55,7 @@ export async function main(args: string[]) {
     }
     const path = command.path;
     operation = command.path.join(' ');
-    const rest = args[0]?.startsWith('--') || !args.length ? args : args.slice(path.length);
+    const rest = args[0]?.startsWith('-') || !args.length ? args : args.slice(path.length);
     let parsed;
     try {
       const options = Object.fromEntries(Object.entries(command.flags).map(([name, flag]) => [name, { type: flag.type,

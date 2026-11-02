@@ -71,6 +71,7 @@ Full workflow run APIs require Gitea 1.24 or later; the retained workflow, artif
 ### Search
 
 `search issues|prs|repos|commits "text"` searches at most 20 pages and 1000 candidates per collection, then filters, sorts and applies the total output limit (default 1000).
+Search sorts creation and update times chronologically across time zone offsets before applying the output limit.
 Issue and PR searches support exact arbitrary author and assignee names and comma-separated label ANY matching; an unknown label alone matches nothing.
 Use `--repo OWNER/NAME` for repository scope or `--owner OWNER` for issue, PR and repository searches.
 Repository search supports `--language` and integer `--stars` comparisons.
