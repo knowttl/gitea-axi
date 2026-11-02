@@ -127,9 +127,9 @@ export function rawPath(input: string, method = 'GET'): string {
   return path + (query ? '?' + query : '');
 }
 
-export async function read(client: Client, path: string): Promise<unknown> {
+export async function read(client: Client, path: string, signal?: AbortSignal): Promise<unknown> {
   routeFor(path.split('?')[0]!);
-  const value = await client.get(path);
+  const value = await client.get(path, signal);
   return validate(path.split('?')[0]!, value);
 }
 
@@ -160,7 +160,7 @@ export async function rawRead(client: Client, path: string) {
   return { data, total: count && /^\d+$/.test(count) ? Number(count) : null, next: nextPage(response.headers, path, client.origin), truncated: false };
 }
 
-export async function collect(client: Client, path: string, envelope?: string): Promise<Page> {
+export async function collect(client: Client, path: string, envelope?: string, signal?: AbortSignal): Promise<Page> {
   const paginated = routeFor(path).paginated;
   let next: string | null = paginated ? path + (path.includes('?') ? '&' : '?') + 'limit=50&page=1' : path;
   const seenPages = new Set<string>();
@@ -169,7 +169,7 @@ export async function collect(client: Client, path: string, envelope?: string): 
   while (next && seenPages.size < 20 && items.size < 1000 && Date.now() < client.deadline) {
     if (seenPages.has(next)) throw new CliError('INVALID_RESPONSE', 'Gitea repeated a pagination URL');
     seenPages.add(next);
-    const response = await client.request(next);
+    const response = await client.request(next, false, undefined, signal);
     const data = validate(new URL(next, client.origin).pathname, response.data);
     const rows = envelope ? object(data)[envelope] : data;
     if (!Array.isArray(rows)) throw new CliError('INVALID_RESPONSE', 'Expected a Gitea list' + (envelope ? ' envelope ' + envelope : ''));

@@ -112,8 +112,8 @@ Business reads share a 30-second deadline, except check watches use their explic
 The check-watch timeout includes initial repository reads; polling cannot extend the client's deadline.
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
-`-R` aliases `--repo` after an explicit command, with the same duplicate-selector checks.
-For the default dashboard, use `gitea-axi --repo OWNER/NAME`; root-level `-R` remains unsupported.
+`-R` aliases `--repo`, with the same duplicate-selector checks.
+For the default dashboard, use `gitea-axi --repo OWNER/NAME` or `gitea-axi -R OWNER/NAME`.
 Hosted repository reads require an explicit repository.
 Lists default to 30 returned records, except `run list` and `release list` default to 10; collection scans stop at 20 pages or at least 1000 unique records and retain at most 1000.
 Automatic page queries apply only to routes whose retained Gitea specification declares a `page` parameter.
@@ -129,7 +129,9 @@ Dashboard sections report permission failures as partial results and point trunc
 Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.
 Diffs retain an unchanged source prefix sized to fit the serialized output, including escaping and metadata; `chars` reports the original length and `truncated` indicates omitted text.
-`pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
+`pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline.
+During check polling, SIGINT or SIGTERM aborts in-flight PR and status requests, including paginated responses, and returns `cancelled: true` with exit code 8.
+Cancellation preserves the last completed check result; before any completed result, it returns empty items and zero counts, with the head SHA if already read, otherwise null.
 Commits without statuses return an empty check result; watches continue waiting for checks to register until the deadline or cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
 PR statusCheckRollup explicitly identifies partial commit statuses, and `fullDatabaseId` is a numeric vendor ID rather than a GraphQL node ID.
@@ -157,6 +159,7 @@ Issue and label deletion require a complete collection and at least one remainin
 
 ### Pull requests
 
+`pr view` includes both user and team review requests in `reviewRequests`: users have `login` and `name`, while teams have `type: team`, `id` and `name`.
 Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
 Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
 PR creation, base edits, updates and merges support slash-containing branch names such as `work/topic` and `release/stable`, resolving exact Git refs rather than prefix matches.
@@ -319,7 +322,7 @@ Incomplete environment profiles report missing variables; profile schema errors 
 For file profiles, an explicit profile must match; otherwise exactly one matching profile is required, ignoring `defaultProfile`.
 Without a host selector, file selection uses the explicit profile, otherwise the file's `defaultProfile` or its sole profile; multiple profiles without a selection or default are refused.
 A host selector cannot construct an anonymous origin, bypass tokenOrigin binding or enable HTTP.
-Search commands currently reject `--hostname`; use `GH_HOST` with a matching profile instead.
+Search commands support `--hostname` and `GH_HOST` with the same profile selection and credential binding checks.
 Hosted invocations refuse credential/configuration overrides and ignore ambient `GH_HOST` for the injected Artium profile.
 On Linux, the config file must be owned by the invoking account and must not be group- or world-writable.
 Config files and file SecretRefs must be regular files; symlinks are refused.

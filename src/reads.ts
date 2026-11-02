@@ -102,8 +102,8 @@ export async function listIssues(client: Client, base: string, kind: 'issue' | '
   help: [`gitea-axi ${kind} view <number> --repo ${base.split('/').slice(-2).join('/')}`, ...continuationHelp(page, rows.length, limit)] };
 }
 
-async function complete(client: Client, path: string): Promise<Row[]> {
-  const page = await collect(client, path);
+async function complete(client: Client, path: string, signal?: AbortSignal): Promise<Row[]> {
+  const page = await collect(client, path, undefined, signal);
   if (page.truncated) throw new CliError('RESPONSE_LIMIT', 'Related collection exceeds the bounded read; use the raw API to page explicitly');
   return page.items;
 }
@@ -119,10 +119,10 @@ async function reviews(client: Client, path: string, full: boolean) {
   return result;
 }
 
-export async function checks(client: Client, base: string, sha: string) {
-  const combined = object(await read(client, base + '/commits/' + encodeURIComponent(sha) + '/status'));
+export async function checks(client: Client, base: string, sha: string, signal?: AbortSignal) {
+  const combined = object(await read(client, base + '/commits/' + encodeURIComponent(sha) + '/status', signal));
   if (combined.sha !== sha && !(combined.sha === '' && combined.total_count === 0 && (combined.statuses === null || Array.isArray(combined.statuses) && !combined.statuses.length))) throw new CliError('INVALID_RESPONSE', 'Check response does not match the pull request head SHA');
-  const statuses = await complete(client, base + '/commits/' + encodeURIComponent(sha) + '/statuses');
+  const statuses = await complete(client, base + '/commits/' + encodeURIComponent(sha) + '/statuses', signal);
   statuses.sort((a, b) => Number(b.id) - Number(a.id));
   const latest = new Map<unknown, Row>();
   for (const status of statuses) if (!latest.has(status.context)) latest.set(status.context, status);
@@ -138,21 +138,28 @@ export async function watchChecks(client: Client, base: string, number: string, 
   const interval = positive(options.interval, 5, 60) * 1000;
   const stop = Math.min(client.deadline, Date.now() + seconds * 1000);
   const controller = new AbortController();
+  let head: string | null = null;
+  let latest: Awaited<ReturnType<typeof checks>> | undefined;
   const cancel = () => controller.abort();
   process.once('SIGINT', cancel);
   process.once('SIGTERM', cancel);
   try {
     while (true) {
-      const pull = object(await read(client, base + '/pulls/' + number));
+      const pull = object(await read(client, base + '/pulls/' + number, controller.signal));
       const sha = object(pull.head).sha;
       if (typeof sha !== 'string' || !sha) throw new CliError('INVALID_RESPONSE', 'Pull request head SHA is missing');
-      const result = await checks(client, base, sha);
-      if (!options.watch || result.items.length > 0 && !result.pending || result.failed || Date.now() >= stop || controller.signal.aborted) return { ...result, cancelled: controller.signal.aborted };
+      head = sha;
+      const result = await checks(client, base, sha, controller.signal);
+      latest = result;
+      if (!options.watch || result.items.length > 0 && !result.pending || result.failed || Date.now() >= stop || controller.signal.aborted) return { ...result, exitCode: controller.signal.aborted ? 8 : result.exitCode, cancelled: controller.signal.aborted };
       await delay(Math.min(interval, Math.max(1, stop - Date.now())), undefined, { signal: controller.signal }).catch(error => {
         if (!controller.signal.aborted) throw error;
       });
-      if (Date.now() >= stop || controller.signal.aborted) return { ...result, cancelled: controller.signal.aborted };
+      if (Date.now() >= stop || controller.signal.aborted) return { ...result, exitCode: controller.signal.aborted ? 8 : result.exitCode, cancelled: controller.signal.aborted };
     }
+  } catch (error) {
+    if (!controller.signal.aborted) throw error;
+    return { ...(latest ?? { head, items: [], passed: 0, failed: 0, pending: 0 }), exitCode: 8, cancelled: true };
   } finally {
     process.removeListener('SIGINT', cancel);
     process.removeListener('SIGTERM', cancel);
@@ -177,7 +184,8 @@ export async function view(client: Client, base: string, kind: 'issue' | 'pr', n
         headRepository: head.repo == null ? null : { name: object(head.repo).name, nameWithOwner: object(head.repo).full_name },
         headRepositoryOwner: head.repo == null ? null : user(object(head.repo).owner), isCrossRepository: head.repo_id == null || tail.repo_id == null ? null : head.repo_id !== tail.repo_id,
         mergeCommit: row.merge_commit_sha ? { oid: row.merge_commit_sha } : null, mergedBy: user(row.merged_by),
-        mergeable: row.mergeable == null ? 'UNKNOWN' : row.mergeable ? 'MERGEABLE' : 'CONFLICTING', reviewRequests: users(row.requested_reviewers) });
+        mergeable: row.mergeable == null ? 'UNKNOWN' : row.mergeable ? 'MERGEABLE' : 'CONFLICTING', reviewRequests: [...users(row.requested_reviewers),
+          ...((row.requested_reviewers_teams ?? []) as Row[]).map(team => ({ type: 'team', id: team.id, name: team.name }))] });
     }
     if (options.reviews || requested.has('reviews') || requested.has('latestReviews')) {
       const all = await reviews(client, path, Boolean(options.full || fields));

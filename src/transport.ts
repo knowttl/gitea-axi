@@ -21,19 +21,20 @@ export class Client {
   constructor(readonly origin: string, readonly token?: string, timeoutMs: number = limits.timeoutMs) {
     this.deadline = Date.now() + timeoutMs;
   }
-  async request(path: string, text = false, mutation?: { method: string; payload?: unknown; sensitive?: boolean; upload?: { name: string; type: string; base64: string } }) {
+  async request(path: string, text = false, mutation?: { method: string; payload?: unknown; sensitive?: boolean; upload?: { name: string; type: string; base64: string } }, signal?: AbortSignal) {
     canonicalPath(path);
     const url = new URL(path, this.origin);
     if (url.origin !== this.origin || !path.startsWith('/') || path.startsWith('//')) throw new CliError('UNSAFE_PATH', 'Request must stay within the selected origin');
   try {
     const form = mutation?.upload ? new FormData() : undefined;
+    const timeout = AbortSignal.timeout(Math.max(1, Math.min(limits.timeoutMs, this.deadline - Date.now())));
     if (form && mutation?.upload) form.set('attachment', new Blob([Buffer.from(mutation.upload.base64, 'base64')], { type: mutation.upload.type }), mutation.upload.name);
     const response = await fetch(url, {
       method: mutation?.method ?? 'GET',
       ...(form ? { body: form } : mutation?.payload === undefined ? {} : { body: JSON.stringify(mutation.payload) }),
       headers: { accept: text ? 'text/plain' : 'application/json', ...(mutation && !form ? { 'content-type': 'application/json' } : {}), ...(this.token ? { authorization: 'token ' + this.token } : {}) },
       redirect: 'error',
-      signal: AbortSignal.timeout(Math.max(1, Math.min(limits.timeoutMs, this.deadline - Date.now()))),
+      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
     });
     if (mutation?.sensitive) {
       await response.body?.cancel();
@@ -71,7 +72,7 @@ export class Client {
     throw new CliError('TRANSPORT_ERROR', 'Gitea request failed (' + transportCause(error) + '); check the selected origin and connection');
   }
   }
-  async get(path: string): Promise<unknown> { return (await this.request(path)).data; }
+  async get(path: string, signal?: AbortSignal): Promise<unknown> { return (await this.request(path, false, undefined, signal)).data; }
   async attachment(uuid: string, expectedType?: string) {
     if (!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(uuid)) throw new CliError('UNSAFE_PATH', 'Invalid attachment UUID');
     try {

@@ -32,6 +32,12 @@ const gitReferences = [{ ref: 'refs/heads/main', object: { sha: 'a'.repeat(40), 
 let mode = 'ok';
 let diffText = 'diff --git a/app.ts b/app.ts\n+' + 'x'.repeat(11000);
 let renderedChars = 0;
+let holdPath = '';
+let holdPage = '1';
+let heldClosed = false;
+let holdBody = false;
+let holdAfterPolls = 1;
+let watchPullReads = 0;
 let bin;
 let origin;
 let foreignRequests = 0;
@@ -42,6 +48,14 @@ const server = createServer((request, response) => {
   requests.push({ method: request.method, path: request.url });
   assert.equal(request.headers.authorization, 'token ' + canary);
   const url = new URL(request.url, origin);
+  if (mode === 'held-watch' && url.pathname === base + '/pulls/7') watchPullReads++;
+  if (mode === 'held-watch' && watchPullReads >= holdAfterPolls && url.pathname === holdPath && (url.searchParams.get('page') ?? '1') === holdPage) {
+    heldClosed = false;
+    response.once('close', () => { heldClosed = true; });
+    if (holdBody) { response.writeHead(200, { 'content-type': 'application/json' }); response.write('{'); }
+    server.emit('watch-held');
+    return;
+  }
   if (mode === 'redirect') { response.writeHead(302, { location: 'http://127.0.0.1:' + foreign.address().port }).end(); return; }
   if (mode === 'html') { response.writeHead(200, { 'content-type': 'text/html' }).end('<h1>failure</h1>'); return; }
   if (/^(401|403|404|429)$/.test(mode)) {
@@ -66,6 +80,12 @@ const server = createServer((request, response) => {
     [base + '/commits/abc123/statuses']: mode === 'pending' ? [fixture.statuses[2]] : mode === 'passed' ? [fixture.statuses[0]] : mode === 'absent' ? [] : fixture.statuses,
   };
   let body = paths[url.pathname];
+  if (mode === 'team-reviewers' && url.pathname === base + '/pulls/7') body = { ...fixture.pull, requested_reviewers: null, requested_reviewers_teams: [{ id: 22, name: 'maintainers' }] };
+  if (mode === 'mixed-reviewers' && url.pathname === base + '/pulls/7') body = { ...fixture.pull, requested_reviewers_teams: [{ id: 22, name: 'maintainers' }] };
+  if (mode === 'held-watch' && url.pathname.endsWith('/statuses')) {
+    body = [fixture.statuses[2]];
+    if (holdPage === '2' && watchPullReads >= holdAfterPolls) response.setHeader('link', `<${origin}${url.pathname}?limit=50&page=2>; rel="next"`);
+  }
   if (mode === 'invalid-contents' && body && url.pathname.startsWith(base + '/contents')) body = Array.isArray(body) ? body.map(row => ({ ...row, content: 42 })) : { ...body, content: 42 };
   if (mode === 'empty-contents' && url.pathname === base + '/contents/src') body = [];
   if (mode === 'invalid-contents-link' && url.pathname === base + '/contents/module') body = { ...contentsSubmodule, _links: { ...contentsSubmodule._links, git: 42 } };
@@ -92,10 +112,10 @@ const server = createServer((request, response) => {
   if (url.pathname.endsWith('/statuses')) server.emit('check-read');
 });
 async function run(executable, argv, options = {}) {
-  const child = spawn(executable, argv, { cwd: options.cwd ?? scratch, env: options.env ?? process.env, stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 });
+  const child = spawn(executable, argv, { cwd: options.cwd ?? scratch, env: options.env ?? process.env, stdio: ['ignore', 'pipe', 'pipe'], timeout: options.timeout ?? 120_000, killSignal: 'SIGKILL' });
   let stdout = '', stderr = '';
   child.stdout.on('data', bytes => { stdout += bytes; }); child.stderr.on('data', bytes => { stderr += bytes; });
-  if (options.cancel) server.once('check-read', () => child.kill('SIGINT'));
+  if (options.cancel) server.once(options.cancelEvent ?? 'check-read', () => child.kill(options.signal ?? 'SIGINT'));
   const [code] = await once(child, 'close');
   assert.equal(code, options.code ?? 0, argv.join(' ') + '\n' + stdout + stderr);
   return stdout;
@@ -207,6 +227,11 @@ try {
     for (const [field, value] of Object.entries(expected)) assert.deepEqual(await invoke(['pr', 'view', '7', ...command, '--fields', field]), { [field]: value }, field);
     for (const gap of fixture.gaps) assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', gap], 1)).error.code, 'CAPABILITY_GAP');
     const detail = await invoke(['pr', 'view', '7', ...command, '--reviews', '--checks']); assert.deepEqual(detail.reviews, [review]); assert.deepEqual(detail.statusCheckRollup, rollup);
+    mode = 'team-reviewers';
+    assert.deepEqual((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviewRequests'], 0, {}, false)).reviewRequests, [{ type: 'team', id: 22, name: 'maintainers' }]);
+    mode = 'mixed-reviewers';
+    assert.deepEqual((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviewRequests'], 0, {}, false)).reviewRequests, [...fixture.expectedFields.reviewRequests, { type: 'team', id: 22, name: 'maintainers' }]);
+    mode = 'ok';
     // #6: the vendor returns all inline comments without pagination.
     mode = 'many-inline';
     const selectedReviews = await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews,latestReviews']);
@@ -223,7 +248,26 @@ try {
       mode = state; const result = await invoke(['pr', 'checks', '7', ...command], code); assert.deepEqual([result.passed, result.failed, result.pending], counts);
     }
     mode = 'pending'; const deadline = await invoke(['pr', 'checks', '7', ...command, '--watch', '--timeout', '1', '--interval', '1'], 8); assert.equal(deadline.pending, 1);
-    const cancelled = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })); assert.equal(cancelled.cancelled, true); assert.equal(cancelled.pending, 1);
+    const cancelled = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })); assert.equal(cancelled.cancelled, true);
+    mode = 'held-watch';
+    for (const [path, page, body] of [[base + '/pulls/7', '1', false], [base + '/commits/abc123/status', '1', false], [base + '/commits/abc123/statuses', '1', false], [base + '/commits/abc123/statuses', '2', false], [base + '/commits/abc123/status', '1', true], [base + '/commits/abc123/statuses', '2', true]]) {
+      holdPath = path; holdPage = page; holdBody = body;
+      for (const signal of ['SIGINT', 'SIGTERM']) {
+        watchPullReads = 0;
+        const result = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 }));
+        assert.equal(result.cancelled, true, signal + ' cancels stalled ' + path + ' page ' + page);
+        assert.equal(result.exitCode, 8); assert.deepEqual(result.items, []);
+        assert.equal(heldClosed, true, 'Cancellation closes the held HTTP request');
+      }
+    }
+    holdAfterPolls = 2; holdPath = base + '/commits/abc123/status'; holdPage = '1'; holdBody = false;
+    for (const signal of ['SIGINT', 'SIGTERM']) {
+      watchPullReads = 0;
+      const result = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30', '--interval', '1'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 }));
+      assert.deepEqual([result.cancelled, result.exitCode, result.pending, result.head], [true, 8, 1, 'abc123']);
+      assert.equal(heldClosed, true);
+    }
+    mode = 'pending';
     const diff = await invoke(['pr', 'diff', '7', ...command]); assert.equal(diff.truncated, true); assert.equal(diff.diff.length, 10000);
     assert.equal((await invoke(['pr', 'diff', '7', ...command, '--full'])).truncated, false);
     const originalDiff = diffText;
