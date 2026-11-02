@@ -179,6 +179,12 @@ try {
       const result = await invoke([family, 'list', ...command]); assert.deepEqual(result.items, []); assert.equal(result.total, family === 'release' ? null : 0); assert.equal(result.continuation, false);
     }
     const dashboard = await invoke(['--repo', 'sample/demo']); assert.equal(dashboard.partial, false); assert.deepEqual(dashboard.sections.runs.items, []);
+    assert.deepEqual(await invoke(['-R', 'sample/demo']), dashboard);
+    for (const selectors of [['-R', 'sample/demo', '--repo', 'sample/demo'], ['--repo', 'sample/demo', '-R', 'sample/demo'], ['-R', 'sample/demo', '-R', 'sample/demo']]) {
+      const before = requests.length;
+      assert.equal((await invoke(selectors, 2, {}, false)).error.code, 'USAGE');
+      assert.equal(requests.length, before, 'Duplicate root repository selectors dispatch no requests');
+    }
     mode = 'permission-section'; const partial = await invoke(['--repo', 'sample/demo']); assert.equal(partial.partial, true); assert.equal(partial.sections.labels.code, 'PERMISSION_DENIED'); assert.equal(partial.sections.labels.items, undefined);
     const count = requests.length; await invoke(['--help'], 0, { GITEA_AXI_TOKEN: 'invalid' }); assert.equal(requests.length, count);
     for (const flag of ['--version', '-v', '-V']) assert.equal(await run(process.execPath, [bin, flag], { env }), version + '\n');
