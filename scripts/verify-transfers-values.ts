@@ -13,7 +13,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; help: string; steps: { payload: unknown }[]; preconditions: Row[]; error: { code: string; reason: string }; items: Row[]; downloads: Row[]; results: Row[] }
+interface Output { confirmation: string; help: string; steps: { payload: unknown }[]; preconditions: Row[]; observations: { path: string; data: Row[] }[]; error: { code: string; reason: string }; items: Row[]; downloads: Row[]; results: Row[] }
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3]!;
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-transfers-values-'));
@@ -53,7 +53,7 @@ const server = createServer(async (request, response) => {
   const valueRoute = /^(.*\/actions\/(secrets|variables))(?:\/([^/]+))?$/.exec(path);
   const assetRoute = /^(.*\/assets)(?:\/(\d+))?$/.exec(path);
   if (method !== 'GET') writes++;
-  if (method !== 'GET' && (mode === 'permission' || mode === 'attachment-permission' && assetRoute)) status = 403;
+  if (method !== 'GET' && (mode === 'permission' || mode === 'attachment-permission' && assetRoute) || mode === 'asset-list-permission' && assetRoute) status = 403;
   else if (valueRoute) {
     const [, inputCollection, kind, inputName] = valueRoute;
     const collection = inputCollection!.replace(/^(\/api\/v1\/orgs\/)([^/]+)/, (_, prefix: string, org: string) => prefix + org.toLowerCase());
@@ -286,6 +286,34 @@ try {
   } else {
     const source = join(scratch, 'payload.bin'); await writeFile(source, bytes);
     const second = join(scratch, 'second.bin'); await writeFile(second, bytes);
+    // #32: attachment collections are complete on both sides of the 49/50 boundary.
+    for (const [kind, target, operation, path] of [
+      ['issue', '1', 'issueCreateIssueAttachment', base + '/issues/1/assets'],
+      ['release', 'v1', 'repoCreateReleaseAttachment', base + '/releases/10/assets'],
+    ]) {
+      journal++;
+      const rows = Array.from({ length: 49 }, (_, index) => {
+        const id = nextId++, uuid = '00000000-0000-4000-8000-' + String(id).padStart(12, '0');
+        contents.set(uuid, bytes);
+        return { id, uuid, name: 'existing-' + index + '.bin', size: bytes.length };
+      });
+      assets.set(path!, rows);
+      const directory = join(scratch, 'boundary-' + kind); await mkdir(directory);
+      const download = [kind!, 'download', target!, ...selected, '--dir', directory, '--sha256', digest(bytes)];
+      const at49 = await invoke([...download, '--asset-id', String(rows[0]!.id)]);
+      expect('Exact attachment download at 49 ' + kind, at49.downloads[0]!.sha256, digest(bytes));
+      const uploaded = await execute([kind!, 'upload', target!, ...selected, '--file', source], operation!);
+      expect('Upload of 50th attachment verifies ' + kind, rows.length, 50);
+      const at50 = await invoke([...download, '--asset-id', String(rows.at(-1)!.id)]);
+      expect('Exact attachment bytes at 50 ' + kind, await readFile(join(directory, 'payload.bin')), bytes);
+      expect('Exact attachment identity at 50 ' + kind, at50.downloads[0]!.id, rows.at(-1)!.id);
+      const reconciled = await invoke(['write', 'reconcile', uploaded.confirmation]);
+      expect('Complete attachment reconciliation at 50 ' + kind, reconciled.observations.find(row => row.path === path)!.data.map(row => row.id), rows.map(row => row.id));
+      mode = 'asset-list-permission';
+      expect('Denied attachment collection is not empty ' + kind, (await invoke([...download, '--asset-id', String(rows[0]!.id)], 1)).error.code, 'PERMISSION_DENIED');
+      mode = '';
+    }
+    assets.clear(); journal++;
     for (const [kind, target, operation, path] of [
       ['issue', '1', 'issueCreateIssueAttachment', base + '/issues/1/assets'],
       ['pr', '1', 'issueCreateIssueAttachment', base + '/issues/1/assets'],
@@ -301,8 +329,17 @@ try {
       expect('Implicit overwrite refused ' + kind, (await invoke(command, 1)).error.code, 'UNSAFE_PATH');
       await invoke([...command, '--clobber']);
     }
-    await execute(['issue', 'comment', '1', ...selected, '--body', 'Attachment comment', '--attach', source], 'issueCreateComment,issueCreateIssueCommentAttachment');
+    const commentUpload = await execute(['issue', 'comment', '1', ...selected, '--body', 'Attachment comment', '--attach', source], 'issueCreateComment,issueCreateIssueCommentAttachment');
     expect('Comment upload uses created comment identity', assets.get(base + '/issues/comments/' + comments[0]!.id + '/assets')!.map(row => row.name), ['payload.bin']);
+    const commentPath = base + '/issues/comments/' + comments[0]!.id + '/assets';
+    const commentRows = assets.get(commentPath)!;
+    commentRows.push(...Array.from({ length: 49 }, (_, index) => {
+      const id = nextId++, uuid = '00000000-0000-4000-8000-' + String(id).padStart(12, '0');
+      contents.set(uuid, bytes);
+      return { id, uuid, name: 'comment-' + index + '.bin', size: bytes.length };
+    }));
+    const reconciledComment = await invoke(['write', 'reconcile', commentUpload.confirmation]);
+    expect('Comment attachment reconciliation at 50', reconciledComment.observations.find(row => row.path === commentPath)!.data.map(row => row.id), commentRows.map(row => row.id));
     await execute(['issue', 'create', ...selected, '--title', 'With attachment', '--attach', source], 'issueCreateIssue,issueCreateIssueAttachment');
     expect('Issue upload uses created issue identity', assets.get(base + '/issues/' + issues.at(-1)!.number + '/assets')!.map(row => row.name), ['payload.bin']);
     const directory = join(scratch, 'failures'); await mkdir(directory);

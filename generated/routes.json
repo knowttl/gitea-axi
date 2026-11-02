@@ -3,6 +3,7 @@
     "path": "/api/v1/activitypub/user-id/{user-id}",
     "method": "GET",
     "operation": "activitypubPerson",
+    "paginated": false,
     "integerParameters": [
       "user-id"
     ],
@@ -16,6 +17,7 @@
     "path": "/api/v1/activitypub/user-id/{user-id}/inbox",
     "method": "POST",
     "operation": "activitypubPersonInbox",
+    "paginated": false,
     "integerParameters": [
       "user-id"
     ],
@@ -27,6 +29,7 @@
     "path": "/api/v1/admin/cron",
     "method": "GET",
     "operation": "adminCronList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -41,6 +44,7 @@
     "path": "/api/v1/admin/cron/{task}",
     "method": "POST",
     "operation": "adminCronRun",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -50,6 +54,7 @@
     "path": "/api/v1/admin/emails",
     "method": "GET",
     "operation": "adminGetAllEmails",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -64,6 +69,7 @@
     "path": "/api/v1/admin/emails/search",
     "method": "GET",
     "operation": "adminSearchEmails",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -78,6 +84,7 @@
     "path": "/api/v1/admin/hooks",
     "method": "GET",
     "operation": "adminListHooks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -92,6 +99,7 @@
     "path": "/api/v1/admin/hooks",
     "method": "POST",
     "operation": "adminCreateHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -103,6 +111,7 @@
     "path": "/api/v1/admin/hooks/{id}",
     "method": "GET",
     "operation": "adminGetHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -116,6 +125,7 @@
     "path": "/api/v1/admin/hooks/{id}",
     "method": "DELETE",
     "operation": "adminDeleteHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -127,6 +137,7 @@
     "path": "/api/v1/admin/hooks/{id}",
     "method": "PATCH",
     "operation": "adminEditHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -142,6 +153,7 @@
     "path": "/api/v1/admin/orgs",
     "method": "GET",
     "operation": "adminGetAllOrgs",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -156,6 +168,7 @@
     "path": "/api/v1/admin/runners/registration-token",
     "method": "GET",
     "operation": "adminGetRunnerRegistrationToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -165,6 +178,7 @@
     "path": "/api/v1/admin/unadopted",
     "method": "GET",
     "operation": "adminUnadoptedList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -179,6 +193,7 @@
     "path": "/api/v1/admin/unadopted/{owner}/{repo}",
     "method": "POST",
     "operation": "adminAdoptRepository",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -188,6 +203,7 @@
     "path": "/api/v1/admin/unadopted/{owner}/{repo}",
     "method": "DELETE",
     "operation": "adminDeleteUnadoptedRepository",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -197,6 +213,7 @@
     "path": "/api/v1/admin/users",
     "method": "GET",
     "operation": "adminSearchUsers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -211,6 +228,7 @@
     "path": "/api/v1/admin/users",
     "method": "POST",
     "operation": "adminCreateUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -222,6 +240,7 @@
     "path": "/api/v1/admin/users/{username}",
     "method": "DELETE",
     "operation": "adminDeleteUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -231,6 +250,7 @@
     "path": "/api/v1/admin/users/{username}",
     "method": "PATCH",
     "operation": "adminEditUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -244,6 +264,7 @@
     "path": "/api/v1/admin/users/{username}/badges",
     "method": "GET",
     "operation": "adminListUserBadges",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": null,
@@ -258,6 +279,7 @@
     "path": "/api/v1/admin/users/{username}/badges",
     "method": "POST",
     "operation": "adminAddUserBadges",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -269,6 +291,7 @@
     "path": "/api/v1/admin/users/{username}/badges",
     "method": "DELETE",
     "operation": "adminDeleteUserBadges",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -280,6 +303,7 @@
     "path": "/api/v1/admin/users/{username}/keys",
     "method": "POST",
     "operation": "adminCreatePublicKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -291,6 +315,7 @@
     "path": "/api/v1/admin/users/{username}/keys/{id}",
     "method": "DELETE",
     "operation": "adminDeleteUserPublicKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -302,6 +327,7 @@
     "path": "/api/v1/admin/users/{username}/orgs",
     "method": "POST",
     "operation": "adminCreateOrg",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -313,6 +339,7 @@
     "path": "/api/v1/admin/users/{username}/rename",
     "method": "POST",
     "operation": "adminRenameUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -324,6 +351,7 @@
     "path": "/api/v1/admin/users/{username}/repos",
     "method": "POST",
     "operation": "adminCreateRepo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "admin",
     "requestSchema": {
@@ -335,6 +363,7 @@
     "path": "/api/v1/gitignore/templates",
     "method": "GET",
     "operation": "listGitignoresTemplates",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -349,6 +378,7 @@
     "path": "/api/v1/gitignore/templates/{name}",
     "method": "GET",
     "operation": "getGitignoreTemplateInfo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -360,6 +390,7 @@
     "path": "/api/v1/label/templates",
     "method": "GET",
     "operation": "listLabelTemplates",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -374,6 +405,7 @@
     "path": "/api/v1/label/templates/{name}",
     "method": "GET",
     "operation": "getLabelTemplateInfo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -388,6 +420,7 @@
     "path": "/api/v1/licenses",
     "method": "GET",
     "operation": "listLicenseTemplates",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -402,6 +435,7 @@
     "path": "/api/v1/licenses/{name}",
     "method": "GET",
     "operation": "getLicenseTemplateInfo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -413,6 +447,7 @@
     "path": "/api/v1/markdown",
     "method": "POST",
     "operation": "renderMarkdown",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -426,6 +461,7 @@
     "path": "/api/v1/markdown/raw",
     "method": "POST",
     "operation": "renderMarkdownRaw",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -439,6 +475,7 @@
     "path": "/api/v1/markup",
     "method": "POST",
     "operation": "renderMarkup",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -452,6 +489,7 @@
     "path": "/api/v1/nodeinfo",
     "method": "GET",
     "operation": "getNodeInfo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -463,6 +501,7 @@
     "path": "/api/v1/notifications",
     "method": "GET",
     "operation": "notifyGetList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -477,6 +516,7 @@
     "path": "/api/v1/notifications",
     "method": "PUT",
     "operation": "notifyReadList",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -486,6 +526,7 @@
     "path": "/api/v1/notifications/new",
     "method": "GET",
     "operation": "notifyNewAvailable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -497,6 +538,7 @@
     "path": "/api/v1/notifications/threads/{id}",
     "method": "GET",
     "operation": "notifyGetThread",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -510,6 +552,7 @@
     "path": "/api/v1/notifications/threads/{id}",
     "method": "PATCH",
     "operation": "notifyReadThread",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -521,6 +564,7 @@
     "path": "/api/v1/org/{org}/repos",
     "method": "POST",
     "operation": "createOrgRepoDeprecated",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -532,6 +576,7 @@
     "path": "/api/v1/orgs",
     "method": "GET",
     "operation": "orgGetAll",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -546,6 +591,7 @@
     "path": "/api/v1/orgs",
     "method": "POST",
     "operation": "orgCreate",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -557,6 +603,7 @@
     "path": "/api/v1/orgs/{org}",
     "method": "GET",
     "operation": "orgGet",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -568,6 +615,7 @@
     "path": "/api/v1/orgs/{org}",
     "method": "DELETE",
     "operation": "orgDelete",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -577,6 +625,7 @@
     "path": "/api/v1/orgs/{org}",
     "method": "PATCH",
     "operation": "orgEdit",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -590,6 +639,7 @@
     "path": "/api/v1/orgs/{org}/actions/runners/registration-token",
     "method": "GET",
     "operation": "orgGetRunnerRegistrationToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -599,6 +649,7 @@
     "path": "/api/v1/orgs/{org}/actions/secrets",
     "method": "GET",
     "operation": "orgListActionsSecrets",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -613,6 +664,7 @@
     "path": "/api/v1/orgs/{org}/actions/secrets/{secretname}",
     "method": "PUT",
     "operation": "updateOrgSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -624,6 +676,7 @@
     "path": "/api/v1/orgs/{org}/actions/secrets/{secretname}",
     "method": "DELETE",
     "operation": "deleteOrgSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -633,6 +686,7 @@
     "path": "/api/v1/orgs/{org}/actions/variables",
     "method": "GET",
     "operation": "getOrgVariablesList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -647,6 +701,7 @@
     "path": "/api/v1/orgs/{org}/actions/variables/{variablename}",
     "method": "GET",
     "operation": "getOrgVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -658,6 +713,7 @@
     "path": "/api/v1/orgs/{org}/actions/variables/{variablename}",
     "method": "PUT",
     "operation": "updateOrgVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -669,6 +725,7 @@
     "path": "/api/v1/orgs/{org}/actions/variables/{variablename}",
     "method": "POST",
     "operation": "createOrgVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -680,6 +737,7 @@
     "path": "/api/v1/orgs/{org}/actions/variables/{variablename}",
     "method": "DELETE",
     "operation": "deleteOrgVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -691,6 +749,7 @@
     "path": "/api/v1/orgs/{org}/activities/feeds",
     "method": "GET",
     "operation": "orgListActivityFeeds",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -705,6 +764,7 @@
     "path": "/api/v1/orgs/{org}/avatar",
     "method": "POST",
     "operation": "orgUpdateAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -716,6 +776,7 @@
     "path": "/api/v1/orgs/{org}/avatar",
     "method": "DELETE",
     "operation": "orgDeleteAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -725,6 +786,7 @@
     "path": "/api/v1/orgs/{org}/blocks",
     "method": "GET",
     "operation": "organizationListBlocks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -739,6 +801,7 @@
     "path": "/api/v1/orgs/{org}/blocks/{username}",
     "method": "GET",
     "operation": "organizationCheckUserBlock",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -748,6 +811,7 @@
     "path": "/api/v1/orgs/{org}/blocks/{username}",
     "method": "PUT",
     "operation": "organizationBlockUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -757,6 +821,7 @@
     "path": "/api/v1/orgs/{org}/blocks/{username}",
     "method": "DELETE",
     "operation": "organizationUnblockUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -766,6 +831,7 @@
     "path": "/api/v1/orgs/{org}/hooks",
     "method": "GET",
     "operation": "orgListHooks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -780,6 +846,7 @@
     "path": "/api/v1/orgs/{org}/hooks",
     "method": "POST",
     "operation": "orgCreateHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -791,6 +858,7 @@
     "path": "/api/v1/orgs/{org}/hooks/{id}",
     "method": "GET",
     "operation": "orgGetHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -804,6 +872,7 @@
     "path": "/api/v1/orgs/{org}/hooks/{id}",
     "method": "DELETE",
     "operation": "orgDeleteHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -815,6 +884,7 @@
     "path": "/api/v1/orgs/{org}/hooks/{id}",
     "method": "PATCH",
     "operation": "orgEditHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -830,6 +900,7 @@
     "path": "/api/v1/orgs/{org}/labels",
     "method": "GET",
     "operation": "orgListLabels",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -844,6 +915,7 @@
     "path": "/api/v1/orgs/{org}/labels",
     "method": "POST",
     "operation": "orgCreateLabel",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -855,6 +927,7 @@
     "path": "/api/v1/orgs/{org}/labels/{id}",
     "method": "GET",
     "operation": "orgGetLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -868,6 +941,7 @@
     "path": "/api/v1/orgs/{org}/labels/{id}",
     "method": "DELETE",
     "operation": "orgDeleteLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -879,6 +953,7 @@
     "path": "/api/v1/orgs/{org}/labels/{id}",
     "method": "PATCH",
     "operation": "orgEditLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -894,6 +969,7 @@
     "path": "/api/v1/orgs/{org}/members",
     "method": "GET",
     "operation": "orgListMembers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -908,6 +984,7 @@
     "path": "/api/v1/orgs/{org}/members/{username}",
     "method": "GET",
     "operation": "orgIsMember",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -917,6 +994,7 @@
     "path": "/api/v1/orgs/{org}/members/{username}",
     "method": "DELETE",
     "operation": "orgDeleteMember",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -926,6 +1004,7 @@
     "path": "/api/v1/orgs/{org}/public_members",
     "method": "GET",
     "operation": "orgListPublicMembers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -940,6 +1019,7 @@
     "path": "/api/v1/orgs/{org}/public_members/{username}",
     "method": "GET",
     "operation": "orgIsPublicMember",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -949,6 +1029,7 @@
     "path": "/api/v1/orgs/{org}/public_members/{username}",
     "method": "PUT",
     "operation": "orgPublicizeMember",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -958,6 +1039,7 @@
     "path": "/api/v1/orgs/{org}/public_members/{username}",
     "method": "DELETE",
     "operation": "orgConcealMember",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -967,6 +1049,7 @@
     "path": "/api/v1/orgs/{org}/repos",
     "method": "GET",
     "operation": "orgListRepos",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -981,6 +1064,7 @@
     "path": "/api/v1/orgs/{org}/repos",
     "method": "POST",
     "operation": "createOrgRepo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -992,6 +1076,7 @@
     "path": "/api/v1/orgs/{org}/teams",
     "method": "GET",
     "operation": "orgListTeams",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1006,6 +1091,7 @@
     "path": "/api/v1/orgs/{org}/teams",
     "method": "POST",
     "operation": "orgCreateTeam",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1017,6 +1103,7 @@
     "path": "/api/v1/orgs/{org}/teams/search",
     "method": "GET",
     "operation": "teamSearch",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1039,6 +1126,7 @@
     "path": "/api/v1/packages/{owner}",
     "method": "GET",
     "operation": "listPackages",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1053,6 +1141,7 @@
     "path": "/api/v1/packages/{owner}/{type}/{name}/{version}",
     "method": "GET",
     "operation": "getPackage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1064,6 +1153,7 @@
     "path": "/api/v1/packages/{owner}/{type}/{name}/{version}",
     "method": "DELETE",
     "operation": "deletePackage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1073,6 +1163,7 @@
     "path": "/api/v1/packages/{owner}/{type}/{name}/{version}/files",
     "method": "GET",
     "operation": "listPackageFiles",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1087,6 +1178,7 @@
     "path": "/api/v1/repos/issues/search",
     "method": "GET",
     "operation": "issueSearchIssues",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1101,6 +1193,7 @@
     "path": "/api/v1/repos/migrate",
     "method": "POST",
     "operation": "repoMigrate",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -1112,6 +1205,7 @@
     "path": "/api/v1/repos/search",
     "method": "GET",
     "operation": "repoSearch",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1123,6 +1217,7 @@
     "path": "/api/v1/repos/{owner}/{repo}",
     "method": "GET",
     "operation": "repoGet",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1134,6 +1229,7 @@
     "path": "/api/v1/repos/{owner}/{repo}",
     "method": "DELETE",
     "operation": "repoDelete",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1143,6 +1239,7 @@
     "path": "/api/v1/repos/{owner}/{repo}",
     "method": "PATCH",
     "operation": "repoEdit",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1156,6 +1253,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/runners/registration-token",
     "method": "GET",
     "operation": "repoGetRunnerRegistrationToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -1165,6 +1263,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/secrets",
     "method": "GET",
     "operation": "repoListActionsSecrets",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1179,6 +1278,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/secrets/{secretname}",
     "method": "PUT",
     "operation": "updateRepoSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1190,6 +1290,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/secrets/{secretname}",
     "method": "DELETE",
     "operation": "deleteRepoSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1199,6 +1300,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/tasks",
     "method": "GET",
     "operation": "ListActionTasks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1210,6 +1312,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/variables",
     "method": "GET",
     "operation": "getRepoVariablesList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1224,6 +1327,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/variables/{variablename}",
     "method": "GET",
     "operation": "getRepoVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1235,6 +1339,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/variables/{variablename}",
     "method": "PUT",
     "operation": "updateRepoVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1246,6 +1351,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/variables/{variablename}",
     "method": "POST",
     "operation": "createRepoVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1257,6 +1363,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/actions/variables/{variablename}",
     "method": "DELETE",
     "operation": "deleteRepoVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1268,6 +1375,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/activities/feeds",
     "method": "GET",
     "operation": "repoListActivityFeeds",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1282,6 +1390,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/archive/{archive}",
     "method": "GET",
     "operation": "repoGetArchive",
+    "paginated": false,
     "integerParameters": [],
     "effect": "download",
     "requestSchema": null,
@@ -1291,6 +1400,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/assignees",
     "method": "GET",
     "operation": "repoGetAssignees",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1305,6 +1415,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/avatar",
     "method": "POST",
     "operation": "repoUpdateAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1316,6 +1427,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/avatar",
     "method": "DELETE",
     "operation": "repoDeleteAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1325,6 +1437,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections",
     "method": "GET",
     "operation": "repoListBranchProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1339,6 +1452,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections",
     "method": "POST",
     "operation": "repoCreateBranchProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1350,6 +1464,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections/priority",
     "method": "POST",
     "operation": "repoUpdateBranchProtectionPriories",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1361,6 +1476,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections/{name}",
     "method": "GET",
     "operation": "repoGetBranchProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1372,6 +1488,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections/{name}",
     "method": "DELETE",
     "operation": "repoDeleteBranchProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1381,6 +1498,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branch_protections/{name}",
     "method": "PATCH",
     "operation": "repoEditBranchProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1394,6 +1512,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branches",
     "method": "GET",
     "operation": "repoListBranches",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1408,6 +1527,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branches",
     "method": "POST",
     "operation": "repoCreateBranch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1419,6 +1539,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branches/{branch}",
     "method": "GET",
     "operation": "repoGetBranch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1430,6 +1551,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branches/{branch}",
     "method": "DELETE",
     "operation": "repoDeleteBranch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1439,6 +1561,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/branches/{branch}",
     "method": "PATCH",
     "operation": "repoUpdateBranch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1450,6 +1573,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/collaborators",
     "method": "GET",
     "operation": "repoListCollaborators",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1464,6 +1588,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}",
     "method": "GET",
     "operation": "repoCheckCollaborator",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1473,6 +1598,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}",
     "method": "PUT",
     "operation": "repoAddCollaborator",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1484,6 +1610,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}",
     "method": "DELETE",
     "operation": "repoDeleteCollaborator",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1493,6 +1620,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/collaborators/{collaborator}/permission",
     "method": "GET",
     "operation": "repoGetRepoPermissions",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1504,6 +1632,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/commits",
     "method": "GET",
     "operation": "repoGetAllCommits",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1518,6 +1647,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/commits/{ref}/status",
     "method": "GET",
     "operation": "repoGetCombinedStatusByRef",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1529,6 +1659,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/commits/{ref}/statuses",
     "method": "GET",
     "operation": "repoListStatusesByRef",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1543,6 +1674,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/commits/{sha}/pull",
     "method": "GET",
     "operation": "repoGetCommitPullRequest",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1554,6 +1686,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/compare/{basehead}",
     "method": "GET",
     "operation": "repoCompareDiff",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1565,6 +1698,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents",
     "method": "GET",
     "operation": "repoGetContentsList",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1579,6 +1713,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents",
     "method": "POST",
     "operation": "repoChangeFiles",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1590,6 +1725,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents/{filepath}",
     "method": "GET",
     "operation": "repoGetContents",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1601,6 +1737,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents/{filepath}",
     "method": "PUT",
     "operation": "repoUpdateFile",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1614,6 +1751,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents/{filepath}",
     "method": "POST",
     "operation": "repoCreateFile",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1625,6 +1763,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/contents/{filepath}",
     "method": "DELETE",
     "operation": "repoDeleteFile",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1638,6 +1777,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/diffpatch",
     "method": "POST",
     "operation": "repoApplyDiffPatch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1651,6 +1791,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/editorconfig/{filepath}",
     "method": "GET",
     "operation": "repoGetEditorConfig",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1660,6 +1801,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/forks",
     "method": "GET",
     "operation": "listForks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1674,6 +1816,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/forks",
     "method": "POST",
     "operation": "createFork",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1685,6 +1828,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/blobs/{sha}",
     "method": "GET",
     "operation": "GetBlob",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1696,6 +1840,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/commits/{sha}",
     "method": "GET",
     "operation": "repoGetSingleCommit",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1707,6 +1852,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/commits/{sha}.{diffType}",
     "method": "GET",
     "operation": "repoDownloadCommitDiffOrPatch",
+    "paginated": false,
     "integerParameters": [],
     "effect": "download",
     "requestSchema": null,
@@ -1718,6 +1864,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/notes/{sha}",
     "method": "GET",
     "operation": "repoGetNote",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1729,6 +1876,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/refs",
     "method": "GET",
     "operation": "repoListAllGitRefs",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1743,6 +1891,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/refs/{ref}",
     "method": "GET",
     "operation": "repoListGitRefs",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1757,6 +1906,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/tags/{sha}",
     "method": "GET",
     "operation": "GetAnnotatedTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1768,6 +1918,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/git/trees/{sha}",
     "method": "GET",
     "operation": "GetTree",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1779,6 +1930,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks",
     "method": "GET",
     "operation": "repoListHooks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -1793,6 +1945,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks",
     "method": "POST",
     "operation": "repoCreateHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -1804,6 +1957,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/git",
     "method": "GET",
     "operation": "repoListGitHooks",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1818,6 +1972,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/git/{id}",
     "method": "GET",
     "operation": "repoGetGitHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1829,6 +1984,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/git/{id}",
     "method": "DELETE",
     "operation": "repoDeleteGitHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -1838,6 +1994,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/git/{id}",
     "method": "PATCH",
     "operation": "repoEditGitHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1851,6 +2008,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}",
     "method": "GET",
     "operation": "repoGetHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -1864,6 +2022,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}",
     "method": "DELETE",
     "operation": "repoDeleteHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -1875,6 +2034,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}",
     "method": "PATCH",
     "operation": "repoEditHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -1890,6 +2050,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/hooks/{id}/tests",
     "method": "POST",
     "operation": "repoTestHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -1901,6 +2062,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issue_config",
     "method": "GET",
     "operation": "repoGetIssueConfig",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1912,6 +2074,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issue_config/validate",
     "method": "GET",
     "operation": "repoValidateIssueConfig",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1923,6 +2086,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issue_templates",
     "method": "GET",
     "operation": "repoGetIssueTemplates",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1937,6 +2101,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues",
     "method": "GET",
     "operation": "issueListIssues",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1951,6 +2116,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues",
     "method": "POST",
     "operation": "issueCreateIssue",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -1962,6 +2128,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments",
     "method": "GET",
     "operation": "issueGetRepoComments",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -1976,6 +2143,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}",
     "method": "GET",
     "operation": "issueGetComment",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -1989,6 +2157,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}",
     "method": "DELETE",
     "operation": "issueDeleteComment",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2000,6 +2169,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}",
     "method": "PATCH",
     "operation": "issueEditComment",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2015,6 +2185,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets",
     "method": "GET",
     "operation": "issueListIssueCommentAttachments",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2031,6 +2202,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets",
     "method": "POST",
     "operation": "issueCreateIssueCommentAttachment",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2042,6 +2214,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id}",
     "method": "GET",
     "operation": "issueGetIssueCommentAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -2056,6 +2229,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id}",
     "method": "DELETE",
     "operation": "issueDeleteIssueCommentAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -2068,6 +2242,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/assets/{attachment_id}",
     "method": "PATCH",
     "operation": "issueEditIssueCommentAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -2082,6 +2257,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/reactions",
     "method": "GET",
     "operation": "issueGetCommentReactions",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2098,6 +2274,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/reactions",
     "method": "POST",
     "operation": "issuePostCommentReaction",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2113,6 +2290,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/comments/{id}/reactions",
     "method": "DELETE",
     "operation": "issueDeleteCommentReaction",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2126,6 +2304,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/pinned",
     "method": "GET",
     "operation": "repoListPinnedIssues",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2140,6 +2319,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}",
     "method": "GET",
     "operation": "issueGetIssue",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2153,6 +2333,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}",
     "method": "DELETE",
     "operation": "issueDelete",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2164,6 +2345,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}",
     "method": "PATCH",
     "operation": "issueEditIssue",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2177,6 +2359,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets",
     "method": "GET",
     "operation": "issueListIssueAttachments",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2193,6 +2376,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets",
     "method": "POST",
     "operation": "issueCreateIssueAttachment",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2204,6 +2388,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets/{attachment_id}",
     "method": "GET",
     "operation": "issueGetIssueAttachment",
+    "paginated": false,
     "integerParameters": [
       "index",
       "attachment_id"
@@ -2218,6 +2403,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets/{attachment_id}",
     "method": "DELETE",
     "operation": "issueDeleteIssueAttachment",
+    "paginated": false,
     "integerParameters": [
       "index",
       "attachment_id"
@@ -2230,6 +2416,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/assets/{attachment_id}",
     "method": "PATCH",
     "operation": "issueEditIssueAttachment",
+    "paginated": false,
     "integerParameters": [
       "index",
       "attachment_id"
@@ -2244,6 +2431,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/blocks",
     "method": "GET",
     "operation": "issueListBlocks",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2260,6 +2448,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/blocks",
     "method": "POST",
     "operation": "issueCreateIssueBlocking",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2273,6 +2462,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/blocks",
     "method": "DELETE",
     "operation": "issueRemoveIssueBlocking",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2288,6 +2478,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/comments",
     "method": "GET",
     "operation": "issueGetComments",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2304,6 +2495,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/comments",
     "method": "POST",
     "operation": "issueCreateComment",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2317,6 +2509,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/comments/{id}",
     "method": "DELETE",
     "operation": "issueDeleteCommentDeprecated",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -2329,6 +2522,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/comments/{id}",
     "method": "PATCH",
     "operation": "issueEditCommentDeprecated",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -2345,6 +2539,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/deadline",
     "method": "POST",
     "operation": "issueEditIssueDeadline",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2358,6 +2553,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/dependencies",
     "method": "GET",
     "operation": "issueListIssueDependencies",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2374,6 +2570,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/dependencies",
     "method": "POST",
     "operation": "issueCreateIssueDependencies",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2387,6 +2584,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/dependencies",
     "method": "DELETE",
     "operation": "issueRemoveIssueDependencies",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2402,6 +2600,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels",
     "method": "GET",
     "operation": "issueGetLabels",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2418,6 +2617,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels",
     "method": "PUT",
     "operation": "issueReplaceLabels",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2436,6 +2636,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels",
     "method": "POST",
     "operation": "issueAddLabel",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2454,6 +2655,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels",
     "method": "DELETE",
     "operation": "issueClearLabels",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2465,6 +2667,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/labels/{id}",
     "method": "DELETE",
     "operation": "issueRemoveLabel",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -2477,6 +2680,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/pin",
     "method": "POST",
     "operation": "pinIssue",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2488,6 +2692,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/pin",
     "method": "DELETE",
     "operation": "unpinIssue",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2499,6 +2704,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/pin/{position}",
     "method": "PATCH",
     "operation": "moveIssuePin",
+    "paginated": false,
     "integerParameters": [
       "index",
       "position"
@@ -2511,6 +2717,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/reactions",
     "method": "GET",
     "operation": "issueGetIssueReactions",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2527,6 +2734,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/reactions",
     "method": "POST",
     "operation": "issuePostIssueReaction",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2542,6 +2750,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/reactions",
     "method": "DELETE",
     "operation": "issueDeleteIssueReaction",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2555,6 +2764,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/stopwatch/delete",
     "method": "DELETE",
     "operation": "issueDeleteStopWatch",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2566,6 +2776,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/stopwatch/start",
     "method": "POST",
     "operation": "issueStartStopWatch",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2577,6 +2788,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/stopwatch/stop",
     "method": "POST",
     "operation": "issueStopStopWatch",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2588,6 +2800,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions",
     "method": "GET",
     "operation": "issueSubscriptions",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2604,6 +2817,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions/check",
     "method": "GET",
     "operation": "issueCheckSubscription",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2617,6 +2831,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions/{user}",
     "method": "PUT",
     "operation": "issueAddSubscription",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2628,6 +2843,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/subscriptions/{user}",
     "method": "DELETE",
     "operation": "issueDeleteSubscription",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2639,6 +2855,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/timeline",
     "method": "GET",
     "operation": "issueGetCommentsAndTimeline",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2655,6 +2872,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/times",
     "method": "GET",
     "operation": "issueTrackedTimes",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -2671,6 +2889,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/times",
     "method": "POST",
     "operation": "issueAddTime",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2686,6 +2905,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/times",
     "method": "DELETE",
     "operation": "issueResetTime",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -2697,6 +2917,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/issues/{index}/times/{id}",
     "method": "DELETE",
     "operation": "issueDeleteTime",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -2709,6 +2930,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/keys",
     "method": "GET",
     "operation": "repoListKeys",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2723,6 +2945,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/keys",
     "method": "POST",
     "operation": "repoCreateKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -2734,6 +2957,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/keys/{id}",
     "method": "GET",
     "operation": "repoGetKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2747,6 +2971,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/keys/{id}",
     "method": "DELETE",
     "operation": "repoDeleteKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2758,6 +2983,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/labels",
     "method": "GET",
     "operation": "issueListLabels",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2772,6 +2998,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/labels",
     "method": "POST",
     "operation": "issueCreateLabel",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -2783,6 +3010,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/labels/{id}",
     "method": "GET",
     "operation": "issueGetLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2796,6 +3024,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/labels/{id}",
     "method": "DELETE",
     "operation": "issueDeleteLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2807,6 +3036,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/labels/{id}",
     "method": "PATCH",
     "operation": "issueEditLabel",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -2822,6 +3052,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/languages",
     "method": "GET",
     "operation": "repoGetLanguages",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2837,6 +3068,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/licenses",
     "method": "GET",
     "operation": "repoGetLicenses",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2851,6 +3083,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/media/{filepath}",
     "method": "GET",
     "operation": "repoGetRawFileOrLFS",
+    "paginated": false,
     "integerParameters": [],
     "effect": "download",
     "requestSchema": null,
@@ -2862,6 +3095,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/merge-upstream",
     "method": "POST",
     "operation": "repoMergeUpstream",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -2875,6 +3109,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/milestones",
     "method": "GET",
     "operation": "issueGetMilestonesList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2889,6 +3124,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/milestones",
     "method": "POST",
     "operation": "issueCreateMilestone",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -2900,6 +3136,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/milestones/{id}",
     "method": "GET",
     "operation": "issueGetMilestone",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2911,6 +3148,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/milestones/{id}",
     "method": "DELETE",
     "operation": "issueDeleteMilestone",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -2920,6 +3158,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/milestones/{id}",
     "method": "PATCH",
     "operation": "issueEditMilestone",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -2933,6 +3172,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/mirror-sync",
     "method": "POST",
     "operation": "repoMirrorSync",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -2942,6 +3182,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/new_pin_allowed",
     "method": "GET",
     "operation": "repoNewPinAllowed",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2953,6 +3194,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/notifications",
     "method": "GET",
     "operation": "notifyGetRepoList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2967,6 +3209,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/notifications",
     "method": "PUT",
     "operation": "notifyReadRepoList",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -2976,6 +3219,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls",
     "method": "GET",
     "operation": "repoListPullRequests",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -2990,6 +3234,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls",
     "method": "POST",
     "operation": "repoCreatePullRequest",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3001,6 +3246,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/pinned",
     "method": "GET",
     "operation": "repoListPinnedPullRequests",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3015,6 +3261,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{base}/{head}",
     "method": "GET",
     "operation": "repoGetPullRequestByBaseHead",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3026,6 +3273,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}",
     "method": "GET",
     "operation": "repoGetPullRequest",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3039,6 +3287,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}",
     "method": "PATCH",
     "operation": "repoEditPullRequest",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3052,6 +3301,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}.{diffType}",
     "method": "GET",
     "operation": "repoDownloadPullDiffOrPatch",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3065,6 +3315,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/commits",
     "method": "GET",
     "operation": "repoGetPullRequestCommits",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -3081,6 +3332,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/files",
     "method": "GET",
     "operation": "repoGetPullRequestFiles",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -3097,6 +3349,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/merge",
     "method": "GET",
     "operation": "repoPullRequestIsMerged",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3108,6 +3361,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/merge",
     "method": "POST",
     "operation": "repoMergePullRequest",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3121,6 +3375,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/merge",
     "method": "DELETE",
     "operation": "repoCancelScheduledAutoMerge",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3132,6 +3387,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/requested_reviewers",
     "method": "POST",
     "operation": "repoCreatePullReviewRequests",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3145,6 +3401,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/requested_reviewers",
     "method": "DELETE",
     "operation": "repoDeletePullReviewRequests",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3158,6 +3415,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews",
     "method": "GET",
     "operation": "repoListPullReviews",
+    "paginated": true,
     "integerParameters": [
       "index"
     ],
@@ -3174,6 +3432,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews",
     "method": "POST",
     "operation": "repoCreatePullReview",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3189,6 +3448,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}",
     "method": "GET",
     "operation": "repoGetPullReview",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3203,6 +3463,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}",
     "method": "POST",
     "operation": "repoSubmitPullReview",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3219,6 +3480,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}",
     "method": "DELETE",
     "operation": "repoDeletePullReview",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3231,6 +3493,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}/comments",
     "method": "GET",
     "operation": "repoGetPullReviewComments",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3248,6 +3511,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}/dismissals",
     "method": "POST",
     "operation": "repoDismissPullReview",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3264,6 +3528,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/reviews/{id}/undismissals",
     "method": "POST",
     "operation": "repoUnDismissPullReview",
+    "paginated": false,
     "integerParameters": [
       "index",
       "id"
@@ -3278,6 +3543,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/pulls/{index}/update",
     "method": "POST",
     "operation": "repoUpdatePullRequest",
+    "paginated": false,
     "integerParameters": [
       "index"
     ],
@@ -3289,6 +3555,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors",
     "method": "GET",
     "operation": "repoListPushMirrors",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3303,6 +3570,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors",
     "method": "POST",
     "operation": "repoAddPushMirror",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -3316,6 +3584,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors-sync",
     "method": "POST",
     "operation": "repoPushMirrorSync",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3325,6 +3594,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors/{name}",
     "method": "GET",
     "operation": "repoGetPushMirrorByRemoteName",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3336,6 +3606,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/push_mirrors/{name}",
     "method": "DELETE",
     "operation": "repoDeletePushMirror",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3345,6 +3616,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/raw/{filepath}",
     "method": "GET",
     "operation": "repoGetRawFile",
+    "paginated": false,
     "integerParameters": [],
     "effect": "download",
     "requestSchema": null,
@@ -3356,6 +3628,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases",
     "method": "GET",
     "operation": "repoListReleases",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3370,6 +3643,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases",
     "method": "POST",
     "operation": "repoCreateRelease",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3381,6 +3655,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/latest",
     "method": "GET",
     "operation": "repoGetLatestRelease",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3392,6 +3667,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/tags/{tag}",
     "method": "GET",
     "operation": "repoGetReleaseByTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3403,6 +3679,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/tags/{tag}",
     "method": "DELETE",
     "operation": "repoDeleteReleaseByTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3412,6 +3689,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}",
     "method": "GET",
     "operation": "repoGetRelease",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3425,6 +3703,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}",
     "method": "DELETE",
     "operation": "repoDeleteRelease",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3436,6 +3715,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}",
     "method": "PATCH",
     "operation": "repoEditRelease",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3451,6 +3731,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets",
     "method": "GET",
     "operation": "repoListReleaseAttachments",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3467,6 +3748,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets",
     "method": "POST",
     "operation": "repoCreateReleaseAttachment",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3478,6 +3760,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets/{attachment_id}",
     "method": "GET",
     "operation": "repoGetReleaseAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -3492,6 +3775,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets/{attachment_id}",
     "method": "DELETE",
     "operation": "repoDeleteReleaseAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -3504,6 +3788,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/releases/{id}/assets/{attachment_id}",
     "method": "PATCH",
     "operation": "repoEditReleaseAttachment",
+    "paginated": false,
     "integerParameters": [
       "id",
       "attachment_id"
@@ -3518,6 +3803,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/reviewers",
     "method": "GET",
     "operation": "repoGetReviewers",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3532,6 +3818,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/signing-key.gpg",
     "method": "GET",
     "operation": "repoSigningKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -3543,6 +3830,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/stargazers",
     "method": "GET",
     "operation": "repoListStargazers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3557,6 +3845,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/statuses/{sha}",
     "method": "GET",
     "operation": "repoListStatuses",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3571,6 +3860,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/statuses/{sha}",
     "method": "POST",
     "operation": "repoCreateStatus",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3582,6 +3872,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/subscribers",
     "method": "GET",
     "operation": "repoListSubscribers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3596,6 +3887,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/subscription",
     "method": "GET",
     "operation": "userCurrentCheckSubscription",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3607,6 +3899,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/subscription",
     "method": "PUT",
     "operation": "userCurrentPutSubscription",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3618,6 +3911,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/subscription",
     "method": "DELETE",
     "operation": "userCurrentDeleteSubscription",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3627,6 +3921,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tag_protections",
     "method": "GET",
     "operation": "repoListTagProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3641,6 +3936,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tag_protections",
     "method": "POST",
     "operation": "repoCreateTagProtection",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3652,6 +3948,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tag_protections/{id}",
     "method": "GET",
     "operation": "repoGetTagProtection",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3665,6 +3962,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tag_protections/{id}",
     "method": "DELETE",
     "operation": "repoDeleteTagProtection",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3676,6 +3974,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tag_protections/{id}",
     "method": "PATCH",
     "operation": "repoEditTagProtection",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3691,6 +3990,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tags",
     "method": "GET",
     "operation": "repoListTags",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3705,6 +4005,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tags",
     "method": "POST",
     "operation": "repoCreateTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3718,6 +4019,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tags/{tag}",
     "method": "GET",
     "operation": "repoGetTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3729,6 +4031,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/tags/{tag}",
     "method": "DELETE",
     "operation": "repoDeleteTag",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3738,6 +4041,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/teams",
     "method": "GET",
     "operation": "repoListTeams",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3752,6 +4056,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/teams/{team}",
     "method": "GET",
     "operation": "repoCheckTeam",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3763,6 +4068,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/teams/{team}",
     "method": "PUT",
     "operation": "repoAddTeam",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3772,6 +4078,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/teams/{team}",
     "method": "DELETE",
     "operation": "repoDeleteTeam",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3781,6 +4088,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/times",
     "method": "GET",
     "operation": "repoTrackedTimes",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3795,6 +4103,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/times/{user}",
     "method": "GET",
     "operation": "userTrackedTimes",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3809,6 +4118,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/topics",
     "method": "GET",
     "operation": "repoListTopics",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3820,6 +4130,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/topics",
     "method": "PUT",
     "operation": "repoUpdateTopics",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3831,6 +4142,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/topics/{topic}",
     "method": "PUT",
     "operation": "repoAddTopic",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3840,6 +4152,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/topics/{topic}",
     "method": "DELETE",
     "operation": "repoDeleteTopic",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3849,6 +4162,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/transfer",
     "method": "POST",
     "operation": "repoTransfer",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3860,6 +4174,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/transfer/accept",
     "method": "POST",
     "operation": "acceptRepoTransfer",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3869,6 +4184,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/transfer/reject",
     "method": "POST",
     "operation": "rejectRepoTransfer",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3880,6 +4196,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/new",
     "method": "POST",
     "operation": "repoCreateWikiPage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3891,6 +4208,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/page/{pageName}",
     "method": "GET",
     "operation": "repoGetWikiPage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3902,6 +4220,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/page/{pageName}",
     "method": "DELETE",
     "operation": "repoDeleteWikiPage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -3911,6 +4230,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/page/{pageName}",
     "method": "PATCH",
     "operation": "repoEditWikiPage",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3924,6 +4244,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/pages",
     "method": "GET",
     "operation": "repoGetWikiPages",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3938,6 +4259,7 @@
     "path": "/api/v1/repos/{owner}/{repo}/wiki/revisions/{pageName}",
     "method": "GET",
     "operation": "repoGetWikiPageRevisions",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3949,6 +4271,7 @@
     "path": "/api/v1/repos/{template_owner}/{template_repo}/generate",
     "method": "POST",
     "operation": "generateRepo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -3960,6 +4283,7 @@
     "path": "/api/v1/repositories/{id}",
     "method": "GET",
     "operation": "repoGetByID",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -3973,6 +4297,7 @@
     "path": "/api/v1/settings/api",
     "method": "GET",
     "operation": "getGeneralAPISettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3984,6 +4309,7 @@
     "path": "/api/v1/settings/attachment",
     "method": "GET",
     "operation": "getGeneralAttachmentSettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -3995,6 +4321,7 @@
     "path": "/api/v1/settings/repository",
     "method": "GET",
     "operation": "getGeneralRepositorySettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4006,6 +4333,7 @@
     "path": "/api/v1/settings/ui",
     "method": "GET",
     "operation": "getGeneralUISettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4017,6 +4345,7 @@
     "path": "/api/v1/signing-key.gpg",
     "method": "GET",
     "operation": "getSigningKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4028,6 +4357,7 @@
     "path": "/api/v1/teams/{id}",
     "method": "GET",
     "operation": "orgGetTeam",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4041,6 +4371,7 @@
     "path": "/api/v1/teams/{id}",
     "method": "DELETE",
     "operation": "orgDeleteTeam",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4052,6 +4383,7 @@
     "path": "/api/v1/teams/{id}",
     "method": "PATCH",
     "operation": "orgEditTeam",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4067,6 +4399,7 @@
     "path": "/api/v1/teams/{id}/activities/feeds",
     "method": "GET",
     "operation": "orgListTeamActivityFeeds",
+    "paginated": true,
     "integerParameters": [
       "id"
     ],
@@ -4083,6 +4416,7 @@
     "path": "/api/v1/teams/{id}/members",
     "method": "GET",
     "operation": "orgListTeamMembers",
+    "paginated": true,
     "integerParameters": [
       "id"
     ],
@@ -4099,6 +4433,7 @@
     "path": "/api/v1/teams/{id}/members/{username}",
     "method": "GET",
     "operation": "orgListTeamMember",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4112,6 +4447,7 @@
     "path": "/api/v1/teams/{id}/members/{username}",
     "method": "PUT",
     "operation": "orgAddTeamMember",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4123,6 +4459,7 @@
     "path": "/api/v1/teams/{id}/members/{username}",
     "method": "DELETE",
     "operation": "orgRemoveTeamMember",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4134,6 +4471,7 @@
     "path": "/api/v1/teams/{id}/repos",
     "method": "GET",
     "operation": "orgListTeamRepos",
+    "paginated": true,
     "integerParameters": [
       "id"
     ],
@@ -4150,6 +4488,7 @@
     "path": "/api/v1/teams/{id}/repos/{org}/{repo}",
     "method": "GET",
     "operation": "orgListTeamRepo",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4163,6 +4502,7 @@
     "path": "/api/v1/teams/{id}/repos/{org}/{repo}",
     "method": "PUT",
     "operation": "orgAddTeamRepository",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4174,6 +4514,7 @@
     "path": "/api/v1/teams/{id}/repos/{org}/{repo}",
     "method": "DELETE",
     "operation": "orgRemoveTeamRepository",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4185,6 +4526,7 @@
     "path": "/api/v1/topics/search",
     "method": "GET",
     "operation": "topicSearch",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4199,6 +4541,7 @@
     "path": "/api/v1/user",
     "method": "GET",
     "operation": "userGetCurrent",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4210,6 +4553,7 @@
     "path": "/api/v1/user/actions/runners/registration-token",
     "method": "GET",
     "operation": "userGetRunnerRegistrationToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4219,6 +4563,7 @@
     "path": "/api/v1/user/actions/secrets/{secretname}",
     "method": "PUT",
     "operation": "updateUserSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -4230,6 +4575,7 @@
     "path": "/api/v1/user/actions/secrets/{secretname}",
     "method": "DELETE",
     "operation": "deleteUserSecret",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4239,6 +4585,7 @@
     "path": "/api/v1/user/actions/variables",
     "method": "GET",
     "operation": "getUserVariablesList",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4253,6 +4600,7 @@
     "path": "/api/v1/user/actions/variables/{variablename}",
     "method": "GET",
     "operation": "getUserVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4264,6 +4612,7 @@
     "path": "/api/v1/user/actions/variables/{variablename}",
     "method": "PUT",
     "operation": "updateUserVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4275,6 +4624,7 @@
     "path": "/api/v1/user/actions/variables/{variablename}",
     "method": "POST",
     "operation": "createUserVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4286,6 +4636,7 @@
     "path": "/api/v1/user/actions/variables/{variablename}",
     "method": "DELETE",
     "operation": "deleteUserVariable",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4295,6 +4646,7 @@
     "path": "/api/v1/user/applications/oauth2",
     "method": "GET",
     "operation": "userGetOauth2Application",
+    "paginated": true,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4309,6 +4661,7 @@
     "path": "/api/v1/user/applications/oauth2",
     "method": "POST",
     "operation": "userCreateOAuth2Application",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -4320,6 +4673,7 @@
     "path": "/api/v1/user/applications/oauth2/{id}",
     "method": "GET",
     "operation": "userGetOAuth2Application",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4333,6 +4687,7 @@
     "path": "/api/v1/user/applications/oauth2/{id}",
     "method": "DELETE",
     "operation": "userDeleteOAuth2Application",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4344,6 +4699,7 @@
     "path": "/api/v1/user/applications/oauth2/{id}",
     "method": "PATCH",
     "operation": "userUpdateOAuth2Application",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4359,6 +4715,7 @@
     "path": "/api/v1/user/avatar",
     "method": "POST",
     "operation": "userUpdateAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4370,6 +4727,7 @@
     "path": "/api/v1/user/avatar",
     "method": "DELETE",
     "operation": "userDeleteAvatar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4379,6 +4737,7 @@
     "path": "/api/v1/user/blocks",
     "method": "GET",
     "operation": "userListBlocks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4393,6 +4752,7 @@
     "path": "/api/v1/user/blocks/{username}",
     "method": "GET",
     "operation": "userCheckUserBlock",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4402,6 +4762,7 @@
     "path": "/api/v1/user/blocks/{username}",
     "method": "PUT",
     "operation": "userBlockUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4411,6 +4772,7 @@
     "path": "/api/v1/user/blocks/{username}",
     "method": "DELETE",
     "operation": "userUnblockUser",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4420,6 +4782,7 @@
     "path": "/api/v1/user/emails",
     "method": "GET",
     "operation": "userListEmails",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4434,6 +4797,7 @@
     "path": "/api/v1/user/emails",
     "method": "POST",
     "operation": "userAddEmail",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4445,6 +4809,7 @@
     "path": "/api/v1/user/emails",
     "method": "DELETE",
     "operation": "userDeleteEmail",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4456,6 +4821,7 @@
     "path": "/api/v1/user/followers",
     "method": "GET",
     "operation": "userCurrentListFollowers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4470,6 +4836,7 @@
     "path": "/api/v1/user/following",
     "method": "GET",
     "operation": "userCurrentListFollowing",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4484,6 +4851,7 @@
     "path": "/api/v1/user/following/{username}",
     "method": "GET",
     "operation": "userCurrentCheckFollowing",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4493,6 +4861,7 @@
     "path": "/api/v1/user/following/{username}",
     "method": "PUT",
     "operation": "userCurrentPutFollow",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4502,6 +4871,7 @@
     "path": "/api/v1/user/following/{username}",
     "method": "DELETE",
     "operation": "userCurrentDeleteFollow",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4511,6 +4881,7 @@
     "path": "/api/v1/user/gpg_key_token",
     "method": "GET",
     "operation": "getVerificationToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4522,6 +4893,7 @@
     "path": "/api/v1/user/gpg_key_verify",
     "method": "POST",
     "operation": "userVerifyGPGKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4531,6 +4903,7 @@
     "path": "/api/v1/user/gpg_keys",
     "method": "GET",
     "operation": "userCurrentListGPGKeys",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4545,6 +4918,7 @@
     "path": "/api/v1/user/gpg_keys",
     "method": "POST",
     "operation": "userCurrentPostGPGKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4556,6 +4930,7 @@
     "path": "/api/v1/user/gpg_keys/{id}",
     "method": "GET",
     "operation": "userCurrentGetGPGKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4569,6 +4944,7 @@
     "path": "/api/v1/user/gpg_keys/{id}",
     "method": "DELETE",
     "operation": "userCurrentDeleteGPGKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4580,6 +4956,7 @@
     "path": "/api/v1/user/hooks",
     "method": "GET",
     "operation": "userListHooks",
+    "paginated": true,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -4594,6 +4971,7 @@
     "path": "/api/v1/user/hooks",
     "method": "POST",
     "operation": "userCreateHook",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -4605,6 +4983,7 @@
     "path": "/api/v1/user/hooks/{id}",
     "method": "GET",
     "operation": "userGetHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4618,6 +4997,7 @@
     "path": "/api/v1/user/hooks/{id}",
     "method": "DELETE",
     "operation": "userDeleteHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4629,6 +5009,7 @@
     "path": "/api/v1/user/hooks/{id}",
     "method": "PATCH",
     "operation": "userEditHook",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4644,6 +5025,7 @@
     "path": "/api/v1/user/keys",
     "method": "GET",
     "operation": "userCurrentListKeys",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4658,6 +5040,7 @@
     "path": "/api/v1/user/keys",
     "method": "POST",
     "operation": "userCurrentPostKey",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4669,6 +5052,7 @@
     "path": "/api/v1/user/keys/{id}",
     "method": "GET",
     "operation": "userCurrentGetKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4682,6 +5066,7 @@
     "path": "/api/v1/user/keys/{id}",
     "method": "DELETE",
     "operation": "userCurrentDeleteKey",
+    "paginated": false,
     "integerParameters": [
       "id"
     ],
@@ -4693,6 +5078,7 @@
     "path": "/api/v1/user/orgs",
     "method": "GET",
     "operation": "orgListCurrentUserOrgs",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4707,6 +5093,7 @@
     "path": "/api/v1/user/repos",
     "method": "GET",
     "operation": "userCurrentListRepos",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4721,6 +5108,7 @@
     "path": "/api/v1/user/repos",
     "method": "POST",
     "operation": "createCurrentUserRepo",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4732,6 +5120,7 @@
     "path": "/api/v1/user/settings",
     "method": "GET",
     "operation": "getUserSettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4746,6 +5135,7 @@
     "path": "/api/v1/user/settings",
     "method": "PATCH",
     "operation": "updateUserSettings",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": {
@@ -4762,6 +5152,7 @@
     "path": "/api/v1/user/starred",
     "method": "GET",
     "operation": "userCurrentListStarred",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4776,6 +5167,7 @@
     "path": "/api/v1/user/starred/{owner}/{repo}",
     "method": "GET",
     "operation": "userCurrentCheckStarring",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4785,6 +5177,7 @@
     "path": "/api/v1/user/starred/{owner}/{repo}",
     "method": "PUT",
     "operation": "userCurrentPutStar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4794,6 +5187,7 @@
     "path": "/api/v1/user/starred/{owner}/{repo}",
     "method": "DELETE",
     "operation": "userCurrentDeleteStar",
+    "paginated": false,
     "integerParameters": [],
     "effect": "write",
     "requestSchema": null,
@@ -4803,6 +5197,7 @@
     "path": "/api/v1/user/stopwatches",
     "method": "GET",
     "operation": "userGetStopWatches",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4817,6 +5212,7 @@
     "path": "/api/v1/user/subscriptions",
     "method": "GET",
     "operation": "userCurrentListSubscriptions",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4831,6 +5227,7 @@
     "path": "/api/v1/user/teams",
     "method": "GET",
     "operation": "userListTeams",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4845,6 +5242,7 @@
     "path": "/api/v1/user/times",
     "method": "GET",
     "operation": "userCurrentTrackedTimes",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4859,6 +5257,7 @@
     "path": "/api/v1/users/search",
     "method": "GET",
     "operation": "userSearch",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4881,6 +5280,7 @@
     "path": "/api/v1/users/{username}",
     "method": "GET",
     "operation": "userGet",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4892,6 +5292,7 @@
     "path": "/api/v1/users/{username}/activities/feeds",
     "method": "GET",
     "operation": "userListActivityFeeds",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4906,6 +5307,7 @@
     "path": "/api/v1/users/{username}/followers",
     "method": "GET",
     "operation": "userListFollowers",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4920,6 +5322,7 @@
     "path": "/api/v1/users/{username}/following",
     "method": "GET",
     "operation": "userListFollowing",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4934,6 +5337,7 @@
     "path": "/api/v1/users/{username}/following/{target}",
     "method": "GET",
     "operation": "userCheckFollowing",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4943,6 +5347,7 @@
     "path": "/api/v1/users/{username}/gpg_keys",
     "method": "GET",
     "operation": "userListGPGKeys",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4957,6 +5362,7 @@
     "path": "/api/v1/users/{username}/heatmap",
     "method": "GET",
     "operation": "userGetHeatmapData",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4971,6 +5377,7 @@
     "path": "/api/v1/users/{username}/keys",
     "method": "GET",
     "operation": "userListKeys",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4985,6 +5392,7 @@
     "path": "/api/v1/users/{username}/orgs",
     "method": "GET",
     "operation": "orgListUserOrgs",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -4999,6 +5407,7 @@
     "path": "/api/v1/users/{username}/orgs/{org}/permissions",
     "method": "GET",
     "operation": "orgGetUserPermissions",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -5010,6 +5419,7 @@
     "path": "/api/v1/users/{username}/repos",
     "method": "GET",
     "operation": "userListRepos",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -5024,6 +5434,7 @@
     "path": "/api/v1/users/{username}/starred",
     "method": "GET",
     "operation": "userListStarred",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -5038,6 +5449,7 @@
     "path": "/api/v1/users/{username}/subscriptions",
     "method": "GET",
     "operation": "userListSubscriptions",
+    "paginated": true,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,
@@ -5052,6 +5464,7 @@
     "path": "/api/v1/users/{username}/tokens",
     "method": "GET",
     "operation": "userGetTokens",
+    "paginated": true,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -5066,6 +5479,7 @@
     "path": "/api/v1/users/{username}/tokens",
     "method": "POST",
     "operation": "userCreateToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": {
@@ -5077,6 +5491,7 @@
     "path": "/api/v1/users/{username}/tokens/{token}",
     "method": "DELETE",
     "operation": "userDeleteAccessToken",
+    "paginated": false,
     "integerParameters": [],
     "effect": "credential",
     "requestSchema": null,
@@ -5086,6 +5501,7 @@
     "path": "/api/v1/version",
     "method": "GET",
     "operation": "getVersion",
+    "paginated": false,
     "integerParameters": [],
     "effect": "read",
     "requestSchema": null,

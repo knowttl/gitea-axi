@@ -5,7 +5,7 @@ import type { Client } from './transport.js';
 
 export type Row = Record<string, unknown>;
 const vendor = JSON.parse(readFileSync(new URL('../schemas/vendor.json', import.meta.url), 'utf8'));
-const routes: { path: string; method: string; operation: string; effect: string; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
+const routes: { path: string; method: string; operation: string; effect: string; paginated: boolean; integerParameters: string[]; schema: object | null; requestSchema: object | null }[] = JSON.parse(readFileSync(new URL('../generated/routes.json', import.meta.url), 'utf8'));
 routes.sort((a, b) => b.path.replace(/\{[^}]+\}/g, '').length - a.path.replace(/\{[^}]+\}/g, '').length);
 const required: Record<string, string[]> = {
   Issue: ['id', 'number', 'title', 'state'], PullRequest: ['id', 'number', 'title', 'state', 'head', 'base'],
@@ -153,7 +153,8 @@ export async function rawRead(client: Client, path: string) {
 }
 
 export async function collect(client: Client, path: string, envelope?: string): Promise<Page> {
-  let next: string | null = path + (path.includes('?') ? '&' : '?') + 'limit=50&page=1';
+  const paginated = routeFor(path).paginated;
+  let next: string | null = paginated ? path + (path.includes('?') ? '&' : '?') + 'limit=50&page=1' : path;
   const seenPages = new Set<string>();
   const items = new Map<string, Row>();
   let total: number | null = null;
@@ -175,11 +176,11 @@ export async function collect(client: Client, path: string, envelope?: string): 
     if (envelope && typeof object(data).total_count === 'number') total = object(data).total_count as number;
     const link = response.headers.get('link');
     next = nextPage(response.headers, path, client.origin);
-    if (!next && !link && rows.length >= 50) {
+    if (paginated && !next && !link && rows.length >= 50) {
       const url = new URL([...seenPages].at(-1)!, client.origin);
       url.searchParams.set('page', String(Number(url.searchParams.get('page')) + 1));
       next = url.pathname + url.search;
     }
   }
-  return { items: [...items.values()], total, next, truncated: next !== null };
+  return { items: [...items.values()].slice(0, 1000), total: total ?? (!paginated && !next ? items.size : null), next, truncated: next !== null || items.size > 1000 };
 }
