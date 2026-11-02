@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.1...gitea-axi-v0.1.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* license the package under MIT ([#55](https://github.com/knowttl/gitea-axi/issues/55)) ([89f975d](https://github.com/knowttl/gitea-axi/commit/89f975d4c2e3139890b9cfe115134934bb7e76ab))
+* preserve write confirmations and organization replay protection ([#51](https://github.com/knowttl/gitea-axi/issues/51)) ([607a4f4](https://github.com/knowttl/gitea-axi/commit/607a4f48d345393c3e23dd9f74db5ede245e1070))
+* respect Gitea collection pagination capabilities ([#53](https://github.com/knowttl/gitea-axi/issues/53)) ([8a8141e](https://github.com/knowttl/gitea-axi/commit/8a8141edaca0ba8ac196f26e58e26f119bcfa4b1))
+* support raw contents responses and nested read paths ([#54](https://github.com/knowttl/gitea-axi/issues/54)) ([c0efd84](https://github.com/knowttl/gitea-axi/commit/c0efd8451be008d409868d678a0ebfb84512e5c3))
+
 ## [0.1.1](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.0...gitea-axi-v0.1.1) (2026-11-01)
 
 

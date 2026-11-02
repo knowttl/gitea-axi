@@ -1,6 +1,6 @@
 {
   "name": "@knowttl/gitea-axi",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An agent CLI for Gitea repository workflows",
   "license": "MIT",
   "repository": {
