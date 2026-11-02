@@ -8,7 +8,7 @@ Agent-facing Gitea CLI with private credential profiles, read-only by default.
 
 Agents need bounded, predictable output and explicit write controls instead of guessed API calls and unbounded responses.
 gitea-axi offers a bounded repository dashboard, detailed reads, Actions task summaries, bounded search, repository, release, issue, label and pull request mutations, and classified raw API requests.
-Output is compact TOON with structured errors.
+Output defaults to compact TOON, with optional JSON and structured errors.
 Reads are bounded, and writes require an exact operation grant, a preview and a matching confirmation.
 See [Limitations](#limitations) for verification scope.
 
@@ -107,7 +107,9 @@ Encoded route separators and traversal remain refused.
 Anonymous reads require an explicit origin; repository selection follows the rules below.
 Anonymous HTTP reads require `--allow-insecure-http` for that selected origin.
 The tool follows no redirects and never imports tea or Git credentials.
-Output uses TOON; structured errors use stdout, with exit 1 for operational failures and exit 2 for usage errors.
+Output uses TOON by default; `--json` selects JSON for results, structured errors and help.
+Version aliases remain plain text when combined with `--json`.
+Structured errors use stdout, with exit 1 for operational failures and exit 2 for usage errors.
 Business reads share a 30-second deadline, except check watches use their explicit timeout; each request has a 2,000,000-byte response limit.
 The check-watch timeout includes initial repository reads; polling cannot extend the client's deadline.
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.

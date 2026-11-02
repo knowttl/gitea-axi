@@ -125,8 +125,8 @@ const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
   const output = await run(process.execPath, [bin, ...argv], { code, env: { ...env, ...extra } });
   renderedChars = output.length;
   for (const form of [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)]) assert(!output.includes(form), 'Canary escaped output');
-  const result = decode(output);
-  if (host && hosted && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
+  const result = argv.includes('--json') ? JSON.parse(output) : decode(output);
+  if (host && hosted && !argv.includes('--json') && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
     const hosted = await host.invoke(argv[0] === '--repo' ? ['dashboard', ...argv] : argv, code);
     report.hostedInvocations++;
     assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
@@ -160,6 +160,11 @@ try {
     const status = await invoke(['auth', 'status', '--config', config, '--profile', 'test'], 0, { GITEA_AXI_ORIGIN: 'https://wrong.test' });
     assert.deepEqual(status, { profile: 'test', origin, source: 'env:TEST_TOKEN', authenticated: true });
     assert.deepEqual((await invoke(['profile', 'list', '--config', config])).profiles, [{ name: 'test', default: true }]);
+    assert.deepEqual(await invoke(['auth', 'status', '--config', config, '--profile', 'test', '--json']), await invoke(['auth', 'status', '--config', config, '--profile', 'test']));
+    for (const args of [['--help'], ['repo', '--help'], ['repo', 'view', '--help'], ['capabilities', 'C075'], ['config', 'path', '--config', config], ['profile', 'list', '--config', config]]) {
+      assert.deepEqual(await invoke([...args, '--json']), await invoke(args), 'JSON preserves structured output: ' + args.join(' '));
+    }
+    assert.equal((await invoke(['unknown', '--json'], 2)).error.code, 'USAGE');
     assert.equal((await invoke(['config', 'path', '--config', config])).path, config);
     assert.equal((await invoke(['doctor'])).identity.login, 'alice');
     const before = requests.length;
@@ -173,6 +178,7 @@ try {
     await chmod(token, 0o600); await symlink(token, token + '-link');
     assert.equal((await invoke(['auth', 'status'], 1, { GITEA_AXI_TOKEN: JSON.stringify({ file: token + '-link' }) })).error.code, 'CONFIG_INSECURE');
     mode = '403'; const denied = await invoke(['doctor'], 1); assert.equal(denied.error.code, 'PERMISSION_DENIED'); assert.match(denied.error.reason, /repository scope denied \[REDACTED\]/);
+    assert.deepEqual(await invoke(['doctor', '--json'], 1), denied);
     for (const path of ['user', 'orgs/sample', 'repos/sample/demo', 'repos/sample/demo/issues']) {
       const failure = await invoke(['api', path], 1); assert.equal(failure.error.code, 'PERMISSION_DENIED'); assert.match(failure.error.reason, /repository scope denied \[REDACTED\]/);
     }
@@ -208,6 +214,10 @@ try {
     mode = 'permission-section'; const partial = await invoke(['--repo', 'sample/demo']); assert.equal(partial.partial, true); assert.equal(partial.sections.labels.code, 'PERMISSION_DENIED'); assert.equal(partial.sections.labels.items, undefined);
     const count = requests.length; await invoke(['--help'], 0, { GITEA_AXI_TOKEN: 'invalid' }); assert.equal(requests.length, count);
     for (const flag of ['--version', '-v', '-V']) assert.equal(await run(process.execPath, [bin, flag], { env }), version + '\n');
+    for (const flag of ['--version', '-v', '-V']) {
+      assert.equal(await run(process.execPath, [bin, flag, '--json'], { env }), version + '\n');
+      assert.equal(await run(process.execPath, [bin, '--json', flag], { env }), version + '\n');
+    }
   } else if (task === 'S2.3') {
     for (const [limit, ids] of [['1', [3]], ['2', [3, 1]]]) {
       const result = await invoke(['issue', 'list', ...command, '--state', 'open', '--limit', limit]);
@@ -248,6 +258,7 @@ try {
       mode = state; const result = await invoke(['pr', 'checks', '7', ...command], code); assert.deepEqual([result.passed, result.failed, result.pending], counts);
     }
     mode = 'pending'; const deadline = await invoke(['pr', 'checks', '7', ...command, '--watch', '--timeout', '1', '--interval', '1'], 8); assert.equal(deadline.pending, 1);
+    assert.equal((await invoke(['pr', 'checks', '7', ...command, '--json'], 8)).pending, 1);
     const cancelled = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })); assert.equal(cancelled.cancelled, true);
     mode = 'held-watch';
     for (const [path, page, body] of [[base + '/pulls/7', '1', false], [base + '/commits/abc123/status', '1', false], [base + '/commits/abc123/statuses', '1', false], [base + '/commits/abc123/statuses', '2', false], [base + '/commits/abc123/status', '1', true], [base + '/commits/abc123/statuses', '2', true]]) {
@@ -279,6 +290,8 @@ try {
       assert.equal(large.truncated, true);
       assert(large.diff.length > 1000, 'Oversized diff retains useful patch text');
       assert(diffText.startsWith(large.diff), 'Bounded diff is an unchanged source prefix');
+      const jsonDiff = await invoke(['pr', 'diff', '7', ...command, '--full', '--json']);
+      assert(renderedChars <= 100000); assert.equal(jsonDiff.chars, diffText.length); assert.equal(jsonDiff.truncated, true); assert(jsonDiff.diff.length > 1000); assert(diffText.startsWith(jsonDiff.diff));
     }
     diffText = originalDiff;
     for (const flags of [['--fields', 'unknown'], ['--fields', 'title', '--reviews']]) assert.equal((await invoke(['pr', 'view', '7', ...command, ...flags], 2)).error.code, 'USAGE');

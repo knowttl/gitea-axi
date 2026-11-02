@@ -1,10 +1,9 @@
 import { parseArgs } from 'node:util';
 import { isAbsolute } from 'node:path';
-import { encode } from '@toon-format/toon';
 import { commands } from './registry.js';
 import { CliError } from './error.js';
 import { readRepository } from './repository.js';
-import { configPath, credentials, profileList, redact, registerSecret } from './credentials.js';
+import { configPath, credentials, profileList, registerSecret } from './credentials.js';
 import { Client } from './transport.js';
 import { collect, object, rawPath, rawRead, read } from './api.js';
 import { boundedList, issueFields, listIssues, listOptions, positive, prFields, repository, selectedFields, view, watchChecks } from './reads.js';
@@ -20,7 +19,7 @@ import { actionValues, valuePlan } from './action-values.js';
 import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
 import { isLocal, localWorkflow, validateLocal } from './local-workflows.js';
 import { capabilityOutput, commandGap } from './catalogue.js';
-import { diffOutput, maxOutputChars } from './output.js';
+import { diffOutput, maxOutputChars, render } from './output.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -34,6 +33,8 @@ async function input(path: string) {
 }
 
 export async function main(args: string[]) {
+  let json = args.some(arg => arg === '--json' || arg === '--json=true');
+  const print = (value: unknown) => console.log(render(value, json));
   let operation = args[0] && !args[0].startsWith('-') ? args[0] : 'dashboard';
   try {
     for (const arg of args) {
@@ -47,8 +48,9 @@ export async function main(args: string[]) {
       [...commands].sort((a, b) => b.path.length - a.path.length).find(command => command.path.every((part, index) => args[index] === part));
     if (!command) {
       const children = commands.filter(command => command.path[0] === args[0]);
-      if (children.length && args.length === 2 && args[1] === '--help') {
-        console.log(encode({ command: 'gitea-axi ' + operation, commands: children.map(command => 'gitea-axi ' + command.path.join(' ')) }));
+      const helpArgs = args.filter(arg => arg !== '--json');
+      if (children.length && helpArgs.length === 2 && helpArgs[1] === '--help' && args.length <= 3) {
+        print({ command: 'gitea-axi ' + operation, commands: children.map(command => 'gitea-axi ' + command.path.join(' ')) });
         return;
       }
       throw new CliError('USAGE', children.length ? 'Choose a command: ' + children.map(command => 'gitea-axi ' + command.path.join(' ')).join(', ') : 'Unknown command; use gitea-axi --help', 2);
@@ -77,22 +79,23 @@ export async function main(args: string[]) {
       throw new CliError('USAGE', 'Invalid arguments; valid flags: ' + Object.keys(command.flags).map(f => '--' + f).join(', '), 2);
     }
     const { values, positionals } = parsed;
+    json = Boolean(values.json);
     const names = parsed.tokens.flatMap(token => token.kind === 'option' && !command.flags[token.name]?.multiple ? [token.name] : []);
     if (new Set(names).size !== names.length) {
       throw new CliError('USAGE', 'Choose each flag only once; --repo requires exactly one selector', 2);
     }
     if (values.help) {
-      console.log(encode({ bin: process.argv[1], description: command.description, command: 'gitea-axi ' + operation,
+      print({ bin: process.argv[1], description: command.description, command: 'gitea-axi ' + operation,
         flags: Object.entries(command.flags).map(([name, flag]) => ({ flag: '--' + name, ...flag })),
         ...(operation === 'dashboard' ? { commands: commands.map(command => command.path.join(' ')) } : {}),
         examples: operation === 'api' ? ['gitea-axi api GET repos/OWNER/NAME', 'gitea-axi api version'] :
-          [`gitea-axi ${operation} --help`, `gitea-axi ${operation} --profile <name>`] }));
+          [`gitea-axi ${operation} --help`, `gitea-axi ${operation} --profile <name>`] });
       return;
     }
     const options = values as Options;
     if (operation === 'capabilities') {
       if (positionals.length > 1) throw new CliError('USAGE', 'Use capabilities [C001-C124]', 2);
-      console.log(encode(capabilityOutput(commands, prFields, positionals[0])));
+      print(capabilityOutput(commands, prFields, positionals[0]));
       return;
     }
     if (command.gap) throw new CliError('CAPABILITY_GAP', command.gap);
@@ -111,7 +114,7 @@ export async function main(args: string[]) {
         ...(typeof options.hostname === 'string' ? { hostname: options.hostname } : {}),
       });
       const output = await localWorkflow(new Client(identity.origin, identity.token, 300_000), identity, operation, positionals, options);
-      const rendered = encode(redact(output));
+      const rendered = render(output, json);
       if (rendered.length > maxOutputChars) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters');
       console.log(rendered);
       return;
@@ -208,8 +211,8 @@ export async function main(args: string[]) {
       }
     }
     if (options.config && (typeof options.config !== 'string' || !isAbsolute(options.config))) throw new CliError('USAGE', '--config must be absolute', 2);
-    if (operation === 'config path') { console.log(encode({ path: configPath(options.config as string | undefined) })); return; }
-    if (operation === 'profile list') { console.log(encode(await profileList(options.config as string | undefined))); return; }
+    if (operation === 'config path') { print({ path: configPath(options.config as string | undefined) }); return; }
+    if (operation === 'profile list') { print(await profileList(options.config as string | undefined)); return; }
     const identity = await credentials(typeof values.origin === 'string' ? values.origin : undefined, Boolean(values['allow-insecure-http']), {
       ...(typeof options.config === 'string' ? { config: options.config } : {}), ...(typeof options.profile === 'string' ? { profile: options.profile } : {}),
       ...(typeof options.hostname === 'string' ? { hostname: options.hostname } : {}),
@@ -222,7 +225,7 @@ export async function main(args: string[]) {
       output = { origin: identity.origin, identity: { id: account.id, login: account.login } };
     }
     else if (searching) output = await search(client, path[1]!, positionals[0]!, options);
-    else if (operation === 'write reconcile') output = await reconcile(client, positionals[0]!);
+    else if (operation === 'write reconcile') output = await reconcile(client, positionals[0]!, json);
     else if (operation === 'api') output = method === 'GET' ? await rawRead(client, apiPath!) :
       await write(client, identity, await rawWritePlan(client, method, apiPath!, payload), options);
     else if (operation === 'org view') output = { organization: await read(client, '/api/v1/orgs/' + encodeURIComponent(positionals[0]!)) };
@@ -280,15 +283,15 @@ export async function main(args: string[]) {
       } else if (operation === 'pr diff') {
         const response = await client.request(base + '/pulls/' + positionals[0] + '.diff', true);
         const text = String(response.data);
-        output = diffOutput(text, Boolean(options.full));
+        output = diffOutput(text, Boolean(options.full), json);
       }
     }
-    const rendered = encode(redact(output));
+    const rendered = render(output, json);
     if (rendered.length > maxOutputChars) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters; select fewer fields or a lower --limit');
     console.log(rendered);
   } catch (error) {
     const failure = error instanceof CliError ? error : new CliError('INTERNAL_ERROR', 'Unable to read the repository');
-    console.log(encode(redact({ error: { code: failure.code, operation, reason: failure.message }, help: commands.some(command => command.path.join(' ') === operation || command.path[0] === operation) ? 'gitea-axi ' + operation + ' --help' : 'gitea-axi --help' })));
+    print({ error: { code: failure.code, operation, reason: failure.message }, help: commands.some(command => command.path.join(' ') === operation || command.path[0] === operation) ? 'gitea-axi ' + operation + ' --help' : 'gitea-axi --help' });
     process.exitCode = failure.exitCode;
   }
 }
