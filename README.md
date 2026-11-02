@@ -108,6 +108,7 @@ Anonymous HTTP reads require `--allow-insecure-http` for that selected origin.
 The tool follows no redirects and never imports tea or Git credentials.
 Output uses TOON; structured errors use stdout, with exit 1 for operational failures and exit 2 for usage errors.
 Business reads share a 30-second deadline, except check watches use their explicit timeout; each request has a 2,000,000-byte response limit.
+The check-watch timeout includes initial repository reads; polling cannot extend the client's deadline.
 `repo view` instead gives each of its server version, specification and repository requests a separate 30-second timeout.
 An explicit repository wins over a matching local origin remote; a remote never changes the selected profile.
 `-R` aliases `--repo` after an explicit command, with the same duplicate-selector checks.
@@ -126,6 +127,7 @@ The dashboard shows a compact repository projection (ID, full name, visibility, 
 Dashboard sections report permission failures as partial results and point truncated sections to the corresponding standalone list command with `--repo` and `--limit`.
 Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.
+Diffs retain an unchanged source prefix sized to fit the serialized output, including escaping and metadata; `chars` reports the original length and `truncated` indicates omitted text.
 `pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
 Commits without statuses return an empty check result; watches continue waiting for checks to register until the deadline or cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
@@ -262,8 +264,14 @@ gitea-axi issue close 42 --repo OWNER/NAME --comment 'Resolved' --allow-write is
 gitea-axi label create --repo OWNER/NAME --name bug --color ff0000 --allow-write issueCreateLabel --preview
 ```
 
-The preview identifies the exact operations, payload and current preconditions without sending a mutation.
+The preview identifies the exact operations and payload without sending a mutation.
+To fit the rendered output ceiling, previews, write results and reconciliation output may summarize `preconditions`, then `observations`, then `results`, stopping as soon as the output fits.
+Summarized output sets `truncated: true` and lists affected fields in `truncated_fields`.
+Summaries report `summary: true` with `total_items`, `total_fields` or `total_chars`; object summaries retain numeric `id` and `number` when present.
+Summarized observations retain paths, and observations and results retain at most ten entries with their original counts in `observations_total` and `results_total`.
+Preview steps and requested payloads remain complete subject to credential redaction; output that still exceeds the ceiling fails with `OUTPUT_LIMIT`.
 Confirmation binds the credential revision, origin, target, operations, canonical payload and preconditions.
+Display summaries do not weaken confirmation binding or readback verification, which use the complete data.
 Changing any binding requires a fresh preview.
 Organization casing must match the preview exactly.
 For issues that remain present, successful named writes verify identity and the expected final title, body, assignees, labels, milestone and state through fresh reads.
@@ -285,6 +293,7 @@ Each attempt is persisted before dispatch.
 API timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
 Dispatched local Git failures retain their specific error code and include reconciliation information; stack recovery follows the [metadata and recovery contract](docs/local-stack-contract.md).
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
+If its display is summarized as described above, use targeted reads to inspect the exact identity and requested fields before authorizing another attempt.
 Raw repository edits with a nonempty `name` verify and reconcile through the repository's immutable ID, so a rename does not depend on the old URL.
 Raw wiki edits use the returned escaped `sub_url` for verification and reconciliation; if the response is lost or its page identity is unusable, reconciliation reads the bounded wiki page list instead.
 These read targets preserve the original confirmation binding and attempted-effect identity.
