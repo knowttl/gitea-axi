@@ -20,6 +20,15 @@ const canary = 'CANARY-S2-"/%-token';
 const base = '/api/v1/repos/sample/demo';
 const command = ['--repo', 'sample/demo'];
 const requests = [];
+const contentsFile = { name: 'README.md', path: 'README.md', type: 'file', content: 'eA==', encoding: 'base64', target: null, submodule_git_url: null };
+const contentsLink = { name: 'link', path: 'link', type: 'symlink', content: null, encoding: null, target: 'README.md', submodule_git_url: null };
+const contentsRoot = [{ name: 'src', path: 'src', type: 'dir', content: null, encoding: null, target: null, submodule_git_url: null, download_url: null }];
+const contentsDirectory = [{ ...contentsFile, name: 'main.ts', path: 'src/main.ts', content: null, encoding: null }, { ...contentsRoot[0], name: 'nested', path: 'src/nested' }];
+const contentsSubmoduleURL = 'https://example.test/api/v1/repos/sample/demo/contents/module';
+const contentsSubmodule = { name: 'module', path: 'module', type: 'submodule', content: null, encoding: null, target: null, submodule_git_url: 'https://example.test/module', download_url: null, html_url: null, git_url: null, url: contentsSubmoduleURL, _links: { self: contentsSubmoduleURL, git: null, html: null } };
+const nestedContentsFile = { ...contentsFile, name: 'main.ts', path: 'src/main.ts' };
+const editorConfig = { indent_style: 'space', indent_size: '2' };
+const gitReferences = [{ ref: 'refs/heads/main', object: { sha: 'a'.repeat(40), type: 'commit', url: 'https://example.test/commit' } }];
 let mode = 'ok';
 let bin;
 let origin;
@@ -44,6 +53,10 @@ const server = createServer((request, response) => {
     [base]: fixture.repository, [base + '/issues/1']: fixture.issues[0], [base + '/pulls/7']: fixture.pull,
     [base + '/labels']: [fixture.label], [base + '/milestones']: [fixture.milestone],
     [base + '/releases']: [], [base + '/actions/tasks']: { workflow_runs: [], total_count: 0 },
+    [base + '/contents/README.md']: contentsFile, [base + '/contents/link']: contentsLink,
+    [base + '/contents']: contentsRoot, [base + '/contents/src']: contentsDirectory, [base + '/contents/module']: contentsSubmodule,
+    [base + '/contents/src/main.ts']: nestedContentsFile, [base + '/contents/src/nested']: [],
+    [base + '/editorconfig/src/main.ts']: editorConfig, [base + '/git/refs/heads/main']: gitReferences,
     [base + '/pulls']: [fixture.pull], [base + '/issues/7/comments']: fixture.comments, [base + '/issues/1/comments']: fixture.comments,
     [base + '/pulls/7/reviews']: fixture.reviews, [base + '/pulls/7/reviews/12/comments']: fixture.inline,
     [base + '/pulls/7/commits']: fixture.commits, [base + '/pulls/7/files']: fixture.files, [base + '/issues/7/reactions']: fixture.reactions,
@@ -51,6 +64,10 @@ const server = createServer((request, response) => {
     [base + '/commits/abc123/statuses']: mode === 'pending' ? [fixture.statuses[2]] : mode === 'passed' ? [fixture.statuses[0]] : mode === 'absent' ? [] : fixture.statuses,
   };
   let body = paths[url.pathname];
+  if (mode === 'invalid-contents' && body && url.pathname.startsWith(base + '/contents')) body = Array.isArray(body) ? body.map(row => ({ ...row, content: 42 })) : { ...body, content: 42 };
+  if (mode === 'empty-contents' && url.pathname === base + '/contents/src') body = [];
+  if (mode === 'invalid-contents-link' && url.pathname === base + '/contents/module') body = { ...contentsSubmodule, _links: { ...contentsSubmodule._links, git: 42 } };
+  if (mode === 'invalid-download-url' && url.pathname === base + '/contents/module') body = { ...contentsSubmodule, download_url: 42 };
   if (['many-inline', 'inline-over-limit'].includes(mode) && url.pathname === base + '/pulls/7/reviews/12/comments') body = Array.from({ length: mode === 'many-inline' ? 50 : 1001 }, (_, index) => ({ ...fixture.inline[0], id: 13 + index, body: 'Line ' + index }));
   if (mode === 'inline-hostile' && url.pathname === base + '/pulls/7/reviews/12/comments') response.setHeader('link', `<http://127.0.0.1:${foreign.address().port}${url.pathname}?page=2>; rel="next"`);
   if (url.pathname === base + '/issues') {
@@ -205,6 +222,37 @@ try {
     assert.equal((await invoke(['api', 'GET', 'version'])).data.version, '1.23.4');
     assert.equal((await invoke(['api', '/swagger.v1.json'])).data.info.version, '1.23.4');
     assert.equal((await invoke(['api', 'repos/sample/demo'])).data.id, 10);
+    // #11: documented nullable contents fields retain their non-null type checks.
+    assert.deepEqual((await invoke(['api', 'GET', base + '/contents/README.md'])).data, contentsFile);
+    assert.deepEqual((await invoke(['api', 'GET', base + '/contents/link'])).data, contentsLink);
+    assert.deepEqual((await invoke(['api', 'GET', base + '/contents/module'])).data, contentsSubmodule);
+    // #48/#11: root and entry-directory arrays preserve every documented entry.
+    for (const [path, entries] of [[base + '/contents', contentsRoot], [base + '/contents/src', contentsDirectory]]) {
+      assert.deepEqual((await invoke(['api', 'GET', path])).data, entries);
+    }
+    mode = 'empty-contents';
+    assert.deepEqual((await invoke(['api', 'GET', base + '/contents/src'])).data, []);
+    mode = 'invalid-contents';
+    for (const path of ['/contents/README.md', '/contents', '/contents/src']) assert.equal((await invoke(['api', 'GET', base + path], 1)).error.code, 'INVALID_RESPONSE');
+    for (const invalid of ['invalid-contents-link', 'invalid-download-url']) {
+      mode = invalid;
+      assert.equal((await invoke(['api', 'GET', base + '/contents/module'], 1)).error.code, 'INVALID_RESPONSE');
+    }
+    mode = 'ok';
+    // #12: only documented filepath and full Git-ref reads accept multiple segments.
+    for (const [path, expected] of [
+      ['/contents/src/main.ts', nestedContentsFile], ['/contents/src/nested', []],
+      ['/editorconfig/src/main.ts', editorConfig], ['/git/refs/heads/main', gitReferences],
+    ]) assert.deepEqual((await invoke(['api', 'GET', base + path])).data, expected);
+    const beforePathRefusals = requests.length;
+    for (const [path, exitCode, code] of [
+      [base + '/contents/src/../README.md', 2, 'USAGE'], [base + '/contents/src/%2e%2e/README.md', 2, 'USAGE'],
+      [base + '/contents/src/%252e%252e/README.md', 2, 'USAGE'], [base + '/contents/src%2Fmain.ts', 1, 'READ_ONLY'],
+      [base + '/branches/feature/topic', 1, 'READ_ONLY'], [base + '/commits/feature/topic/status', 1, 'READ_ONLY'],
+      ['/api/v1/repos/sample/extra/demo/contents/README.md', 1, 'READ_ONLY'],
+    ]) assert.equal((await invoke(['api', 'GET', path], exitCode, {}, false)).error.code, code);
+    assert.equal((await invoke(['api', 'POST', base + '/contents/src/main.ts', '--field', 'content=eA==', '--preview', '--allow-write', 'repoCreateFile'], 1, {}, false)).error.code, 'READ_ONLY');
+    assert.equal(requests.length, beforePathRefusals);
     const before = requests.length;
     for (const path of ['user/applications/oauth2/1', 'repos/o/r/hooks/1']) {
       const refusal = await invoke(['api', path], 1);

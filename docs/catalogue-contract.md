@@ -39,7 +39,8 @@ No agent paths, update channel, repository webhooks or telemetry are introduced.
 ## Generation and verification
 
 `npm run generate` compiles the current registry and regenerates help, the skill, the capabilities summary and host inventory.
-The executable registry in `src/registry.ts` owns their command metadata; the retained Swagger owns the generated response schemas, route types and classified raw-route registry produced by the same command.
+The executable registry in `src/registry.ts` owns their command metadata; the retained Swagger owns the generated response schemas and route types produced by the same command.
+The classified raw-route registry combines the retained Swagger with effect classifications and multi-segment parameter annotations owned by `scripts/generate.mjs`.
 `npm run generate:check` compiles the current source and refuses stale generated artifacts.
 The S6.4 check demonstrates refusal after adding a command to a disposable registry copy.
 The generated skill uses noninteractive npm package invocations and contains no live session state.
