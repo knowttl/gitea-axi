@@ -20,6 +20,7 @@ import { actionValues, valuePlan } from './action-values.js';
 import { assetPath, attachToPlan, download, uploadPlan } from './attachments.js';
 import { isLocal, localWorkflow, validateLocal } from './local-workflows.js';
 import { capabilityOutput, commandGap } from './catalogue.js';
+import { diffOutput, maxOutputChars } from './output.js';
 
 async function input(path: string) {
   if (path !== '-') return readPrivateFile(path, true, 1_000_000);
@@ -111,7 +112,7 @@ export async function main(args: string[]) {
       });
       const output = await localWorkflow(new Client(identity.origin, identity.token, 300_000), identity, operation, positionals, options);
       const rendered = encode(redact(output));
-      if (rendered.length > 100_000) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters');
+      if (rendered.length > maxOutputChars) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters');
       console.log(rendered);
       return;
     }
@@ -279,12 +280,11 @@ export async function main(args: string[]) {
       } else if (operation === 'pr diff') {
         const response = await client.request(base + '/pulls/' + positionals[0] + '.diff', true);
         const text = String(response.data);
-        const ceiling = options.full ? 100_000 : 10_000;
-        output = { diff: text.slice(0, ceiling), chars: text.length, truncated: text.length > ceiling, ...(text.length > ceiling ? { help: 'Use --full within the 100000 character diff ceiling' } : {}) };
+        output = diffOutput(text, Boolean(options.full));
       }
     }
     const rendered = encode(redact(output));
-    if (rendered.length > 100_000) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters; select fewer fields or a lower --limit');
+    if (rendered.length > maxOutputChars) throw new CliError('OUTPUT_LIMIT', 'Rendered output exceeds 100000 characters; select fewer fields or a lower --limit');
     console.log(rendered);
   } catch (error) {
     const failure = error instanceof CliError ? error : new CliError('INTERNAL_ERROR', 'Unable to read the repository');

@@ -15,7 +15,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; error: { code: string; reason: string }; states: string[]; observations: { path: string; data: unknown }[]; results: Row[] }
+interface Output { confirmation: string; error: { code: string; reason: string }; states: string[]; observations: { path: string; data: unknown }[]; results: Row[]; truncated?: boolean; truncated_fields?: string[]; steps?: { payload: Row }[] }
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3];
 assert(['S3.1', 'S3.2'].includes(task!), 'Select a non-empty write task');
@@ -50,6 +50,7 @@ let artium: unknown = 'skipped: frozen Artium fixture not supplied';
 const requests: { method: string; path: string }[] = [];
 const assertions: string[] = [];
 const invocations: { executable: string; argv: string[]; code: number | null }[] = [];
+let renderedChars = 0;
 const server = createServer(async (request, response) => {
   const path = decodeURIComponent(new URL(request.url!, origin).pathname)
     .replace(/\/repos\/sample\/(?:demo|other)(?=\/|$)/i, '/repos/sample/demo')
@@ -145,6 +146,7 @@ const env: NodeJS.ProcessEnv = { PATH: process.env.PATH, HOME: scratch, XDG_CONF
   GITEA_AXI_TOKEN: JSON.stringify({ env: 'SYNTHETIC_TOKEN' }), SYNTHETIC_TOKEN: token, GITEA_AXI_ALLOW_INSECURE_HTTP: 'true' };
 async function invoke(args: string[], code = 0, extra: NodeJS.ProcessEnv = {}) {
   const output = await run(process.execPath, [bin, ...args], { ...env, ...extra }, code, scratch);
+  renderedChars = output.length;
   assert(!output.includes(token), 'Credential must never escape output');
   return decode(output) as unknown as Output;
 }
@@ -392,6 +394,35 @@ try {
       expect('Unsafe renamed identity is not followed ' + index, requests.slice(beforeUnsafe).filter(row => [base + '/wiki', base + '/wiki/page/part/page'].includes(row.path)), []);
       expect('Unsafe reply preserves bounded reconciliation fallback ' + index, (await invoke(['write', 'reconcile', unsafePreview.confirmation])).observations[0]!.path, base + '/wiki/pages');
     }
+    const originalIssues = structuredClone(issues);
+    const unrelated = Array.from({ length: 20 }, (_, index) => ({ ...fixture.issues[0], id: 10000 + index, number: 10000 + index,
+      title: 'Unrelated large issue ' + index, body: 'x'.repeat(8000), labels: [], assignees: [] }));
+    issues.push(...unrelated);
+    const requestedBody = 'Requested mutation\n' + 'requested-data '.repeat(200);
+    const boundedArgs = ['issue', 'create', ...selected, '--title', 'Bounded requested mutation', '--body', requestedBody, '--allow-write', 'issueCreateIssue'];
+    const boundedPreview = await invoke([...boundedArgs, '--preview']);
+    expect('Large preconditions return a bounded confirmation', [renderedChars <= 100000, boundedPreview.truncated, boundedPreview.truncated_fields?.includes('preconditions')], [true, true, true]);
+    expect('Bounded preview preserves complete requested payload', boundedPreview.steps![0]!.payload.body, requestedBody);
+    const last = unrelated.at(-1)!;
+    last.body = last.body.slice(0, -1) + 'y';
+    const beforeChanged = applied;
+    expect('Omitted precondition content still invalidates confirmation', [(await invoke([...boundedArgs, '--confirm', boundedPreview.confirmation], 1)).error.code, applied], ['CONFIRMATION_MISMATCH', beforeChanged]);
+    last.body = 'x'.repeat(8000);
+    const bounded = await invoke([...boundedArgs, '--confirm', boundedPreview.confirmation]);
+    expect('Large readback returns verified requested result', [renderedChars <= 100000, bounded.truncated, bounded.results[0]!.title, bounded.results[0]!.body], [true, true, 'Bounded requested mutation', requestedBody]);
+    expect('Readback summary retains collection size and path', [bounded.observations[0]!.path, (bounded.observations[0]!.data as Row).total_items], [base + '/issues?state=all&type=issues', issues.length]);
+    const boundedReconcile = await invoke(['write', 'reconcile', bounded.confirmation]);
+    expect('Reconciliation output remains bounded and truthful', [renderedChars <= 100000, boundedReconcile.truncated, (boundedReconcile.observations[0]!.data as Row).total_items], [true, true, issues.length]);
+    const wrongArgs = ['issue', 'create', ...selected, '--title', 'Bounded mismatch', '--allow-write', 'issueCreateIssue'];
+    const wrongPreview = await invoke([...wrongArgs, '--preview']);
+    corruptWrite = () => { issues.at(-1)!.title = 'Unexpected large-context result'; };
+    expect('Large context does not weaken readback verification', (await invoke([...wrongArgs, '--confirm', wrongPreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    corruptWrite = undefined;
+    const beforeOversized = applied;
+    expect('Oversized requested effects are not hidden to return a confirmation',
+      (await invoke(['issue', 'create', ...selected, '--title', 'Oversized requested effect', '--body', 'y'.repeat(110000), '--allow-write', 'issueCreateIssue', '--preview'], 1)).error.code, 'OUTPUT_LIMIT');
+    expect('Refused oversized request applies no mutation', applied, beforeOversized);
+    issues.splice(0, issues.length, ...originalIssues);
   } else {
     const bodyFile = join(scratch, 'issue-body.txt');
     await writeFile(bodyFile, 'Exact body', { mode: 0o600 });

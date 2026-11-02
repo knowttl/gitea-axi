@@ -136,7 +136,7 @@ export async function checks(client: Client, base: string, sha: string) {
 export async function watchChecks(client: Client, base: string, number: string, options: Options) {
   const seconds = positive(options.timeout, 30, 3600);
   const interval = positive(options.interval, 5, 60) * 1000;
-  const stop = Date.now() + seconds * 1000;
+  const stop = Math.min(client.deadline, Date.now() + seconds * 1000);
   const controller = new AbortController();
   const cancel = () => controller.abort();
   process.once('SIGINT', cancel);
