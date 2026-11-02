@@ -129,7 +129,9 @@ Dashboard sections report permission failures as partial results and point trunc
 Issue and PR bodies default to 1000 characters, diffs to 10000 characters, and rendered output to 100000 characters.
 `--full` expands bodies and diffs within the response and output ceilings.
 Diffs retain an unchanged source prefix sized to fit the serialized output, including escaping and metadata; `chars` reports the original length and `truncated` indicates omitted text.
-`pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline and accept cancellation.
+`pr checks` exits 8 for pending checks and 1 for failed or absent checks; watches require an explicit deadline.
+During check polling, SIGINT or SIGTERM aborts in-flight PR and status requests, including paginated responses, and returns `cancelled: true` with exit code 8.
+Cancellation preserves the last completed check result; before any completed result, it returns empty items and zero counts, with the head SHA if already read, otherwise null.
 Commits without statuses return an empty check result; watches continue waiting for checks to register until the deadline or cancellation.
 `--fields` refuses unknown names and fields without an evidenced Gitea equivalent, and cannot combine with detail expansion flags.
 PR statusCheckRollup explicitly identifies partial commit statuses, and `fullDatabaseId` is a numeric vendor ID rather than a GraphQL node ID.
@@ -157,6 +159,7 @@ Issue and label deletion require a complete collection and at least one remainin
 
 ### Pull requests
 
+`pr view` includes both user and team review requests in `reviewRequests`: users have `login` and `name`, while teams have `type: team`, `id` and `name`.
 Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
 Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
 PR creation, base edits, updates and merges support slash-containing branch names such as `work/topic` and `release/stable`, resolving exact Git refs rather than prefix matches.
