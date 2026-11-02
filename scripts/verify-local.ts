@@ -180,7 +180,7 @@ try {
   const packed = JSON.parse(await run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch], root)) as { filename: string }[];
   const tarball = join(scratch, packed[0]!.filename);
   packageSha256 = createHash('sha256').update(await readFile(tarball)).digest('hex');
-  const cache = await run('npm', ['config', 'get', 'cache'], scratch, 0, { HOME: process.env.HOME });
+  const cache = process.env.npm_config_cache ?? await run('npm', ['config', 'get', 'cache'], scratch, 0, { HOME: process.env.HOME });
   await run('npm', ['install', '--offline', '--cache', cache, '--prefix', join(scratch, 'prefix'), '--ignore-scripts', '--no-audit', '--no-fund', tarball]);
   const bin = join(scratch, 'prefix/node_modules/@knowttl/gitea-axi/dist/cli.js');
   const config = join(scratch, 'config.json');

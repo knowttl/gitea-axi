@@ -14,6 +14,7 @@ import { readHost } from './read-host.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3];
 const fixture = JSON.parse(await readFile(new URL('../test/fixtures/S2/reads.json', import.meta.url), 'utf8'));
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-axi-' + task + '-'));
 const canary = 'CANARY-S2-"/%-token';
 const base = '/api/v1/repos/sample/demo';
@@ -158,7 +159,7 @@ try {
     const dashboard = await invoke(['--repo', 'sample/demo']); assert.equal(dashboard.partial, false); assert.deepEqual(dashboard.sections.runs.items, []);
     mode = 'permission-section'; const partial = await invoke(['--repo', 'sample/demo']); assert.equal(partial.partial, true); assert.equal(partial.sections.labels.code, 'PERMISSION_DENIED'); assert.equal(partial.sections.labels.items, undefined);
     const count = requests.length; await invoke(['--help'], 0, { GITEA_AXI_TOKEN: 'invalid' }); assert.equal(requests.length, count);
-    for (const flag of ['--version', '-v', '-V']) assert.equal(await run(process.execPath, [bin, flag], { env }), '0.1.0\n');
+    for (const flag of ['--version', '-v', '-V']) assert.equal(await run(process.execPath, [bin, flag], { env }), version + '\n');
   } else if (task === 'S2.3') {
     for (const [limit, ids] of [['1', [3]], ['2', [3, 1]]]) {
       const result = await invoke(['issue', 'list', ...command, '--state', 'open', '--limit', limit]);

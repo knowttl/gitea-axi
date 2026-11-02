@@ -13,7 +13,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; error: { code: string; reason: string }; items: Row[]; downloads: Row[]; results: Row[] }
+interface Output { confirmation: string; help: string; steps: { payload: unknown }[]; preconditions: Row[]; error: { code: string; reason: string }; items: Row[]; downloads: Row[]; results: Row[] }
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3]!;
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-transfers-values-'));
@@ -33,6 +33,7 @@ const release = { id: 10, tag_name: 'v1', target_commitish: 'main', name: 'First
 let origin = '', foreignOrigin = '', bin = '', mode = '', journal = 0, writes = 0, nextId = 50, foreignRequests = 0;
 const foreign = createServer((_request, response) => { foreignRequests++; response.writeHead(200, { 'content-type': 'application/octet-stream' }).end(bytes); });
 const upstreamSecrets: { path: string; value: string }[] = [];
+let expectedSecret = secret;
 const server = createServer(async (request, response) => {
   const path = new URL(request.url!, origin).pathname, method = request.method!;
   requests.push({ method, path });
@@ -54,18 +55,19 @@ const server = createServer(async (request, response) => {
   if (method !== 'GET') writes++;
   if (method !== 'GET' && (mode === 'permission' || mode === 'attachment-permission' && assetRoute)) status = 403;
   else if (valueRoute) {
-    const [, collection, kind, inputName] = valueRoute;
+    const [, inputCollection, kind, inputName] = valueRoute;
+    const collection = inputCollection!.replace(/^(\/api\/v1\/orgs\/)([^/]+)/, (_, prefix: string, org: string) => prefix + org.toLowerCase());
     const name = inputName?.toUpperCase();
     if (!values.has(collection!)) values.set(collection!, new Map([['CONTROL', 'untouched']]));
     const rows = values.get(collection!)!;
     if (method === 'GET') data = name
       ? kind === 'variables' && rows.has(name) ? { name, data: rows.get(name) } : undefined
-      : [...rows].map(([name, data]) => kind === 'secrets' ? { name } : { name, data: collection!.startsWith('/api/v1/repos/') ? '' : data });
+      : [...rows].map(([name, data]) => kind === 'secrets' ? { name, created_at: '2026-11-02T00:00:00Z' } : { name, data: collection!.startsWith('/api/v1/repos/') ? '' : data });
     else if (method === 'DELETE') { rows.delete(name!); status = 204; }
     else {
       const payload = JSON.parse(body.toString()) as Row;
       if (kind === 'secrets') {
-        assert(payload.data === secret, 'Incorrect protected secret bytes');
+        assert(payload.data === expectedSecret, 'Incorrect protected secret bytes');
         upstreamSecrets.push({ path, value: String(payload.data) });
         rows.set(name!, String(payload.data));
         data = { data: payload.data, secret: payload.data };
@@ -156,6 +158,43 @@ try {
   env.GITEA_AXI_ORIGIN = origin; env.GITEA_AXI_TOKEN_ORIGIN = origin;
   const selected = ['--repo', 'sample/demo'];
   if (task === 'S4.3') {
+    // #30: short protected values must not corrupt trusted confirmation identifiers.
+    for (const selector of [selected, ['--org', 'team']]) {
+      journal++;
+      expectedSecret = '-';
+      const args = ['secret', 'set', 'SHORT', ...selector, '--input', '-', '--allow-write', selector === selected ? 'updateRepoSecret' : 'updateOrgSecret'];
+      const preview = await invoke([...args, '--preview'], 0, expectedSecret);
+      assert.match(preview.confirmation, /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/);
+      expect('Short-secret preview retains executable help ' + selector.join(' '), preview.help, 'Repeat the same command with --confirm ' + preview.confirmation + ' instead of --preview');
+      expect('Short-secret payload is structurally excluded ' + selector.join(' '), preview.steps[0]!.payload, '[REDACTED]');
+      expect('Untrusted response text remains redacted ' + selector.join(' '), preview.preconditions[0]!.created_at, '2026[REDACTED]11[REDACTED]02T00:00:00Z');
+      const execution = await invoke([...args, '--confirm', preview.confirmation], 0, expectedSecret);
+      expect('Short-secret response payload is discarded ' + selector.join(' '), execution.results, [null]);
+      expect('Short-secret confirmation sends exact protected bytes ' + selector.join(' '), upstreamSecrets.at(-1)!.value, expectedSecret);
+      expectedSecret = secret;
+    }
+    // #31: case-insensitive organization identity must share an unresolved effect guard.
+    for (const [kind, operation, input] of [
+      ['secret', 'updateOrgSecret', secret], ['variable', 'updateOrgVariable', 'guarded-value'],
+    ]) {
+      journal++;
+      if (kind === 'variable') values.set('/api/v1/orgs/team/actions/variables', new Map([['CONTROL', 'untouched'], ['CASE_GUARD', 'before']]));
+      const args = [kind!, 'set', 'CASE_GUARD', '--org', 'Team', ...(kind === 'secret' ? ['--input', '-'] : ['--body', input!]), '--allow-write', operation!];
+      const preview = await invoke([...args, '--preview'], 0, kind === 'secret' ? input : undefined);
+      const changedCase = args.map(value => value === 'Team' ? 'team' : value);
+      expect('Confirmation keeps exact organization casing ' + kind, (await invoke([...changedCase, '--confirm', preview.confirmation], 1, kind === 'secret' ? input : undefined)).error.code, 'CONFIRMATION_MISMATCH');
+      mode = 'permission';
+      expect('Uncertain organization write ' + kind, (await invoke([...args, '--confirm', preview.confirmation], 1, kind === 'secret' ? input : undefined)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      mode = '';
+      const before = writes;
+      expect('Named organization casing shares guard ' + kind, (await invoke([...changedCase, '--preview'], 1, kind === 'secret' ? input : undefined)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      const route = '/api/v1/orgs/TEAM/actions/' + (kind === 'secret' ? 'secrets' : 'variables') + '/CASE_GUARD';
+      expect('Raw organization casing shares guard ' + kind, (await invoke(['api', 'PUT', route, '--input', '-', '--allow-write', operation!, '--preview'], 1, JSON.stringify(kind === 'secret' ? { data: input } : { value: input }))).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      expect('Casing changes never redispatch ' + kind, writes, before);
+      await assertNoSecret(join(scratch, 'state-' + journal));
+    }
+    values.clear(); journal++;
+    const baselineJournal = journal;
     const secretFile = join(scratch, 'secret'); await writeFile(secretFile, secret, { mode: 0o600 });
     for (const [scope, selector, secretOp, deleteOp, variableOps] of [
       [base, selected, 'updateRepoSecret', 'deleteRepoSecret', ['createRepoVariable', 'updateRepoVariable', 'deleteRepoVariable']],
@@ -199,7 +238,7 @@ try {
     mode = 'changed-control'; journal++;
     const controlFailure = await execute(['variable', 'set', 'CONTROL_CHECK', ...selected, '--body', 'expected'], 'createRepoVariable', undefined, 1);
     expect('Variable control change cannot report success', controlFailure.error.code, 'WRITE_OUTCOME_UNKNOWN');
-    await assertNoSecret(join(scratch, 'state-0'));
+    await assertNoSecret(join(scratch, 'state-' + baselineJournal));
   } else {
     const source = join(scratch, 'payload.bin'); await writeFile(source, bytes);
     const second = join(scratch, 'second.bin'); await writeFile(second, bytes);
