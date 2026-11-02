@@ -175,7 +175,7 @@ export async function collect(client: Client, path: string, envelope?: string): 
     if (!Array.isArray(rows)) throw new CliError('INVALID_RESPONSE', 'Expected a Gitea list' + (envelope ? ' envelope ' + envelope : ''));
     for (const value of rows) {
       const row = object(value);
-      const id = /\/(?:tags|actions\/(?:secrets|variables))$/.test(path.split('?')[0]!) ? row.name : row.id ?? row.number ?? row.sha ?? row.ref ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
+      const id = /\/(?:tags|actions\/(?:secrets|variables))$/.test(path.split('?')[0]!) ? row.name : row.id ?? row.number ?? row.sha ?? row.ref ?? row.sub_url ?? row.filename ?? (row.user && row.content ? String(object(row.user).id) + ':' + row.content : undefined);
       if (typeof id !== 'number' && typeof id !== 'string') throw new CliError('INVALID_RESPONSE', 'List record has no identity');
       items.set(String(id), row);
     }

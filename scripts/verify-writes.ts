@@ -29,7 +29,10 @@ const issues: Row[] = [{ ...fixture.issues[0], number: 1, id: 101, title: 'Selec
 const control = structuredClone(issues[1]);
 const labels: Row[] = [{ ...fixture.label, id: 10, name: 'existing', color: 'aabbcc' }, { ...fixture.label, id: 11, name: 'keep', color: '112233' }];
 const comments: Row[] = [];
-const wiki = new Map(['Guide', 'guide', '01'].map(title => [title, { title, content_base64: '' }]));
+const wiki = new Map(['Guide', 'guide', '01'].map(title => [title, { title, sub_url: title, content_base64: '' }]));
+const wikiNames = new Map([['Renamed-guide', 'Renamed-guide.-'], ['100% Free', '100%25-Free'], ['200% Free', '200%25-Free'],
+  ['Design-notes now', 'Design-notes+now.-'], ['unnamed', 'unnamed'], ['Unsafe-traversal', 'Unsafe-traversal.-'], ['Unsafe-separator', 'Unsafe-separator.-']]);
+const repositories = new Map<number, Row>();
 const pinned = new Set([2]);
 let applied = 0;
 let disconnect = false;
@@ -59,15 +62,20 @@ const server = createServer(async (request, response) => {
   const payload = body ? JSON.parse(body) as Row : {};
   const parts = path.slice(base.length).split('/').filter(Boolean);
   const issue = issues.find(row => String(row.number) === parts[1]);
+  const repository = [...repositories.values()].find(row => path === '/api/v1/repos/' + row.full_name);
+  const pageName = new URL(request.url!, origin).pathname.split('/wiki/page/')[1];
   let data: unknown;
   let status = 200;
   if (method === 'GET') {
     if (path === '/api/v1/version') data = { version: '1.23.4' };
     else if (path === '/swagger.v1.json') data = { info: { version: '1.23.4' }, paths: { '/version': {} } };
     else if (path === base) data = { id: 10, full_name: 'sample/demo', default_branch: 'main' };
+    else if (repository) data = repository;
+    else if (/^\/api\/v1\/repositories\/\d+$/.test(path)) data = repositories.get(Number(path.split('/').at(-1)));
     else if (path === base + '/labels') data = labels;
     else if (path === base + '/milestones') data = [fixture.milestone];
-    else if (parts[0] === 'wiki' && parts[1] === 'page') data = wiki.get(parts[2]!);
+    else if (parts[0] === 'wiki' && parts[1] === 'page') data = wiki.get(pageName!);
+    else if (path === base + '/wiki/pages') data = [...wiki.values()];
     else if (path === base + '/issues/pinned') data = issues.filter(row => pinned.has(Number(row.number)));
     else if (parts[0] === 'issues' && parts[2] === 'comments') data = comments.filter(row => row.issue === Number(parts[1]));
     else if (parts[0] === 'issues' && parts[2] === 'labels') data = issue?.labels;
@@ -76,14 +84,18 @@ const server = createServer(async (request, response) => {
   } else {
     if (failComment && parts[2] === 'comments') { response.writeHead(503, { 'content-type': 'application/json' }).end('{}'); return; }
     applied++;
-    if (path === base + '/issues' && method === 'POST') {
+    if (repository && method === 'PATCH') {
+      repository.full_name = 'sample/' + payload.name; data = repository;
+    } else if (path === base + '/issues' && method === 'POST') {
       data = { ...fixture.issues[0], id: 200 + applied, number: 200 + applied, title: payload.title, body: payload.body ?? '', state: 'open',
         labels: labels.filter(row => (payload.labels as number[] ?? []).includes(Number(row.id))),
         assignees: (payload.assignees as string[] ?? []).map(login => ({ id: 50, login })), milestone: payload.milestone ? fixture.milestone : null };
       issues.push(data as Row);
     } else if (parts[0] === 'wiki' && parts[1] === 'page') {
-      data = { title: parts[2], content_base64: String(payload.content_base64) };
-      wiki.set(parts[2]!, data as { title: string; content_base64: string });
+      const title = String(payload.title ?? wiki.get(pageName!)!.title) || 'unnamed';
+      const sub_url = wikiNames.get(title) ?? pageName!;
+      const page = { title, sub_url, content_base64: String(payload.content_base64) };
+      wiki.delete(pageName!); wiki.set(sub_url, page); data = page;
     } else if (parts[0] === 'issues' && issue) {
       if (parts[2] === 'comments') {
         data = { id: 500 + applied, body: payload.body, user: { id: 1, login: 'synthetic' }, issue: issue.number };
@@ -314,6 +326,71 @@ try {
       const preview = await invoke([...args, '--preview']);
       await invoke([...args, '--confirm', preview.confirmation]);
       expect('String path identity remains distinct ' + page, wiki.get(page)!.content_base64, 'Ym9keQ==');
+    }
+    for (const [index, lost] of [false, true].entries()) {
+      const oldName = 'sample/rename-source-' + index, newName = 'sample/renamed-' + index, id = 900 + index;
+      repositories.set(id, { id, full_name: oldName, default_branch: 'main' });
+      const args = ['api', 'PATCH', 'repos/' + oldName, '--raw-field', 'name=renamed-' + index, '--allow-write', 'repoEdit'];
+      const preview = await invoke([...args, '--preview']);
+      const receiptPath = join(scratch, 'gitea-axi/write-receipts', preview.confirmation + '.json');
+      const before = JSON.parse(await readFile(receiptPath, 'utf8')) as { attempt: string; binding: string };
+      disconnect = lost;
+      const output = await invoke([...args, '--confirm', preview.confirmation], lost ? 1 : 0);
+      disconnect = false;
+      expect('Raw repository rename outcome ' + index, output.error?.code ?? 'completed', lost ? 'WRITE_OUTCOME_UNKNOWN' : 'completed');
+      expect('Repository old address disappears ' + index, (await invoke(['api', 'GET', 'repos/' + oldName], 1)).error.code, 'NOT_FOUND_OR_HIDDEN');
+      const effects = applied;
+      const reconciled = await invoke(['write', 'reconcile', preview.confirmation]);
+      expect('Repository rename reconciles stable resulting identity ' + index,
+        [reconciled.observations[0]!.path, (reconciled.observations[0]!.data as Row).id, (reconciled.observations[0]!.data as Row).full_name], ['/api/v1/repositories/' + id, id, newName]);
+      const after = JSON.parse(await readFile(receiptPath, 'utf8')) as { attempt: string; binding: string };
+      expect('Repository rename preserves attempted-effect identity ' + index, [after.attempt, after.binding, applied], [before.attempt, before.binding, effects]);
+      const journal = (await readFile(join(scratch, 'gitea-axi/writes.log'), 'utf8')).trim().split('\n').map(line => JSON.parse(line) as Row);
+      expect('Repository rename retains original dispatch journal ' + index, journal.find(row => row.confirmation === preview.confirmation)?.attempt, before.attempt);
+    }
+    for (const [index, scenario] of [
+      { title: 'Renamed-guide', result: 'Renamed-guide', sub_url: 'Renamed-guide.-', lost: false, suffix: '/wiki/page/Renamed-guide.-' },
+      { title: '100% Free', result: '100% Free', sub_url: '100%25-Free', lost: true, suffix: '/wiki/pages' },
+      { title: '200% Free', result: '200% Free', sub_url: '200%25-Free', lost: false, suffix: '/wiki/page/200%25-Free' },
+      { title: 'Design-notes now', result: 'Design-notes now', sub_url: 'Design-notes+now.-', lost: false, suffix: '/wiki/page/Design-notes+now.-' },
+      { title: '', result: 'unnamed', sub_url: 'unnamed', lost: false, suffix: '/wiki/page/unnamed' },
+    ].entries()) {
+      const old = 'RenameSource' + index;
+      wiki.set(old, { title: old, sub_url: old, content_base64: '' });
+      const args = ['api', 'PATCH', 'repos/sample/demo/wiki/page/' + old, '--raw-field', 'title=' + scenario.title,
+        '--raw-field', 'content_base64=cmVuYW1lZA==', '--allow-write', 'repoEditWikiPage'];
+      const preview = await invoke([...args, '--preview']);
+      const receiptPath = join(scratch, 'gitea-axi/write-receipts', preview.confirmation + '.json');
+      const before = JSON.parse(await readFile(receiptPath, 'utf8')) as { attempt: string; binding: string };
+      disconnect = scenario.lost;
+      const output = await invoke([...args, '--confirm', preview.confirmation], scenario.lost ? 1 : 0);
+      disconnect = false;
+      expect('Raw wiki rename outcome ' + index, output.error?.code ?? 'completed', scenario.lost ? 'WRITE_OUTCOME_UNKNOWN' : 'completed');
+      expect('Wiki old address disappears ' + index, (await invoke(['api', 'GET', 'repos/sample/demo/wiki/page/' + old], 1)).error.code, 'NOT_FOUND_OR_HIDDEN');
+      const effects = applied;
+      const reconciled = await invoke(['write', 'reconcile', preview.confirmation]);
+      const pages = reconciled.observations.flatMap(row => Array.isArray(row.data) ? row.data as Row[] : [row.data as Row]);
+      expect('Wiki rename reconciles resulting identity ' + index,
+        [reconciled.observations[0]!.path, pages.find(page => page.sub_url === scenario.sub_url)?.title], [base + scenario.suffix, scenario.result]);
+      const after = JSON.parse(await readFile(receiptPath, 'utf8')) as { attempt: string; binding: string };
+      expect('Wiki rename preserves attempted-effect identity ' + index, [after.attempt, after.binding, applied], [before.attempt, before.binding, effects]);
+      const journal = (await readFile(join(scratch, 'gitea-axi/writes.log'), 'utf8')).trim().split('\n').map(line => JSON.parse(line) as Row);
+      expect('Wiki rename retains original dispatch journal ' + index, journal.find(row => row.confirmation === preview.confirmation)?.attempt, before.attempt);
+    }
+    for (const [index, scenario] of [
+      { title: 'Unsafe-traversal', actual: 'Unsafe-traversal.-', sub_url: '%2e%2e' },
+      { title: 'Unsafe-separator', actual: 'Unsafe-separator.-', sub_url: 'part%2Fpage' },
+    ].entries()) {
+      const old = 'UnsafeSource' + index;
+      wiki.set(old, { title: old, sub_url: old, content_base64: '' });
+      const unsafeArgs = ['api', 'PATCH', 'repos/sample/demo/wiki/page/' + old, '--raw-field', 'title=' + scenario.title, '--raw-field', 'content_base64=cmVuYW1lZA==', '--allow-write', 'repoEditWikiPage'];
+      const unsafePreview = await invoke([...unsafeArgs, '--preview']);
+      corruptWrite = () => { wiki.get(scenario.actual)!.sub_url = scenario.sub_url; };
+      const beforeUnsafe = requests.length;
+      expect('Unsafe renamed identity preserves uncertain outcome ' + index, (await invoke([...unsafeArgs, '--confirm', unsafePreview.confirmation], 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      corruptWrite = undefined;
+      expect('Unsafe renamed identity is not followed ' + index, requests.slice(beforeUnsafe).filter(row => [base + '/wiki', base + '/wiki/page/part/page'].includes(row.path)), []);
+      expect('Unsafe reply preserves bounded reconciliation fallback ' + index, (await invoke(['write', 'reconcile', unsafePreview.confirmation])).observations[0]!.path, base + '/wiki/pages');
     }
   } else {
     const bodyFile = join(scratch, 'issue-body.txt');

@@ -3,7 +3,7 @@ import { constants, existsSync } from 'node:fs';
 import { mkdir, open, readdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
-import { canonicalPath, collect, effectFor, object, read, validate, validatePayload } from './api.js';
+import { canonicalPath, collect, effectFor, object, read, routeFor, validate, validatePayload } from './api.js';
 import type { Row } from './api.js';
 import { CliError } from './error.js';
 import { readPrivateFile, writePrivateFile } from './private-file.js';
@@ -17,7 +17,7 @@ import { verifyUploads } from './attachments.js';
 import { controlText } from './credentials.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown; local?: string; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
-export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
+export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; wikiRename?: true; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
 interface Observation { path: string; data: unknown }
 interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; guardVersion?: 2; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
 
@@ -303,6 +303,18 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
       const result = dispatched.local ? await executeLocal!(dispatched, results, id) :
         (await client.request(dispatched.path, false, { ...dispatched, ...(plan.sensitive ? { sensitive: true } : {}) })).data;
       results.push(result);
+      if (plan.wikiRename) {
+        const original = dispatched.path.split('?')[0]!;
+        const page = object(validate(original, result));
+        if (typeof page.sub_url !== 'string' || !page.sub_url) throw new CliError('INVALID_RESPONSE', 'Wiki rename returned no page identity');
+        // Gitea's sub_url is already escaped and may differ from the requested display title.
+        const renamed = original.slice(0, original.lastIndexOf('/') + 1) + page.sub_url;
+        const url = new URL(renamed, client.origin);
+        if (url.origin !== client.origin || url.pathname !== renamed || url.search || url.hash || routeFor(renamed).operation !== 'repoGetWikiPage') {
+          throw new CliError('INVALID_RESPONSE', 'Wiki rename returned an unsafe page identity');
+        }
+        receipt.reads = [renamed];
+      }
       if (plan.steps.some(step => step.assetParent === index)) {
         const parent = object(result);
         if (!Number.isSafeInteger(parent.id) || Number(parent.id) <= 0) throw new CliError('INVALID_RESPONSE', 'Parent creation returned no identity');
@@ -366,7 +378,15 @@ export async function rawWritePlan(client: Client, method: string, path: string,
   }
   if (verification.endsWith('/issues')) verification += '?state=all&type=issues';
   const preconditions = await observe(client, [verification]);
-  return { target: path, steps: [{ method, path, ...(payload === undefined ? {} : { payload }) }], reads: [verification], preconditions };
+  let reads = [verification];
+  const wikiRename = route.operation === 'repoEditWikiPage';
+  if (wikiRename) reads = [verification.slice(0, verification.lastIndexOf('/page/')) + '/pages'];
+  if (route.operation === 'repoEdit' && typeof object(payload).name === 'string' && object(payload).name !== '') {
+    const id = object(preconditions[0]!.data).id;
+    if (!Number.isSafeInteger(id) || Number(id) <= 0) throw new CliError('INVALID_RESPONSE', 'Repository rename requires an immutable repository identity');
+    reads = ['/api/v1/repositories/' + id];
+  }
+  return { target: path, steps: [{ method, path, ...(payload === undefined ? {} : { payload }) }], reads, preconditions, ...(wikiRename ? { wikiRename: true } : {}) };
 }
 
 const names = (value: unknown): string[] => [...new Set(Array.isArray(value) ? value.map(String) : [String(value)])];
