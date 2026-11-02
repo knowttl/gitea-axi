@@ -285,6 +285,9 @@ Each attempt is persisted before dispatch.
 API timeouts, interrupted requests and partial failures return `WRITE_OUTCOME_UNKNOWN`, completed/pending step information and an exact `gitea-axi write reconcile CONFIRMATION_ID` command.
 Dispatched local Git failures retain their specific error code and include reconciliation information; stack recovery follows the [metadata and recovery contract](docs/local-stack-contract.md).
 Reconciliation performs complete metadata reads for inspection and never repeats a mutation.
+Raw repository edits with a nonempty `name` verify and reconcile through the repository's immutable ID, so a rename does not depend on the old URL.
+Raw wiki edits use the returned escaped `sub_url` for verification and reconciliation; if the response is lost or its page identity is unusable, reconciliation reads the bounded wiki page list instead.
+These read targets preserve the original confirmation binding and attempted-effect identity.
 An unresolved dispatched attempt cannot be replayed by reusing its confirmation or obtaining another preview for the same effect.
 Replay guards also treat repository owner, repository name and organization name case variants as the same identity for named and raw writes.
 Unresolved organization attempts from older versions conservatively block all writes to the same organization at the same origin, including different names or payloads, and return the original attempt's reconciliation command.
