@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { constants, existsSync } from 'node:fs';
-import { mkdir, open, rm } from 'node:fs/promises';
+import { mkdir, open, readdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join } from 'node:path';
 import { canonicalPath, collect, effectFor, object, read, validate, validatePayload } from './api.js';
@@ -19,7 +19,7 @@ import { controlText } from './credentials.js';
 export interface WriteStep { method: string; path: string; payload?: unknown; local?: string; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
 export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
 interface Observation { path: string; data: unknown }
-interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
+interface Receipt { binding: string; origin: string; reads: string[]; states: string[]; operations: string[]; attempt: string; guardVersion?: 2; localTarget?: string; localGuards?: string[]; createdPull?: { id: number; number: number }; createdParent?: { id: number; number?: number } }
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
@@ -212,6 +212,23 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   const effectDigest = (value: unknown) => plan.sensitive ? createHmac('sha256', secret).update(canonical(value)).digest('hex') : digest(value);
   const attempt = effectDigest({ origin: client.origin, steps: effectSteps });
   const guards = [...new Set(effectSteps.filter((_, index) => !plan.steps[index]!.createdPull).map(step => join(root, effectDigest({ origin: client.origin, step }) + '.attempt')))];
+  const organization = (path: string) => /^\/api\/v1\/orgs\/([^/?]+)/.exec(canonicalPath(path))?.[1];
+  const organizations = new Set(effectSteps.map(step => organization(step.path)).filter(value => value !== undefined));
+  if (organizations.size) {
+    for (const name of await readdir(root)) {
+      if (!/^[a-f0-9]{64}\.attempt$/.test(name)) continue;
+      const previous = await readPrivateFile(join(root, name), true);
+      if (!/^[a-f0-9-]{36}$/.test(previous)) usage('Invalid persisted confirmation ID');
+      const receipt: Receipt = JSON.parse(await readPrivateFile(join(root, previous + '.json'), true));
+      if (receipt.guardVersion !== 2 && receipt.origin === client.origin &&
+          receipt.reads.some(path => {
+            const org = organization(path);
+            return org !== undefined && organizations.has(encodeURIComponent(decodeURIComponent(org).toLowerCase()));
+          })) {
+        throw new CliError('WRITE_OUTCOME_UNKNOWN', 'An attempt already exists; reconcile with ' + command(previous, options));
+      }
+    }
+  }
   for (const guard of guards) {
     if (existsSync(guard)) {
       const previous = await readPrivateFile(guard, true);
@@ -220,7 +237,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
   }
   if (options.preview) {
     const id = controlText(randomUUID());
-    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt,
+    const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt, guardVersion: 2,
       ...(plan.steps.every(step => step.local) ? { localTarget: plan.target, localGuards: guards.map(path => path.slice(root.length + 1, -8)) } : {}) };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
     return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
@@ -250,6 +267,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
       throw error;
     }
   }
+  receipt.guardVersion = 2;
   const results: unknown[] = [];
   const outcome = () => 'steps=' + receipt.states.join(',') + (receipt.createdPull ? '; created PR id=' + receipt.createdPull.id + ' number=' + receipt.createdPull.number : '') + (receipt.createdParent ? '; existing parent id=' + receipt.createdParent.id + (receipt.createdParent.number ? ' number=' + receipt.createdParent.number : '') : '') + '; reconcile with ' + command(id, options);
   for (const [index, step] of plan.steps.entries()) {

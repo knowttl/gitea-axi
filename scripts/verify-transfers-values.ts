@@ -1,9 +1,9 @@
 import './deny-network.ts';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -191,6 +191,50 @@ try {
       const route = '/api/v1/orgs/TEAM/actions/' + (kind === 'secret' ? 'secrets' : 'variables') + '/CASE_GUARD';
       expect('Raw organization casing shares guard ' + kind, (await invoke(['api', 'PUT', route, '--input', '-', '--allow-write', operation!, '--preview'], 1, JSON.stringify(kind === 'secret' ? { data: input } : { value: input }))).error.code, 'WRITE_OUTCOME_UNKNOWN');
       expect('Casing changes never redispatch ' + kind, writes, before);
+      await assertNoSecret(join(scratch, 'state-' + journal));
+    }
+    for (const kind of ['secret', 'variable']) for (const entry of ['named', 'raw']) {
+      journal++;
+      const operation = kind === 'secret' ? 'updateOrgSecret' : 'updateOrgVariable';
+      const input = kind === 'secret' ? secret : 'upgrade-value';
+      const payload = kind === 'secret' ? { data: input } : { value: input };
+      const route = '/api/v1/orgs/Team/actions/' + (kind === 'secret' ? 'secrets' : 'variables') + '/UPGRADE';
+      values.set('/api/v1/orgs/team/actions/variables', new Map([['CONTROL', 'untouched'], ['UPGRADE', 'before']]));
+      const named = [kind, 'set', 'UPGRADE', '--org', 'Team', ...(kind === 'secret' ? ['--input', '-'] : ['--body', input]), '--allow-write', operation];
+      const raw = ['api', 'PUT', route, '--input', '-', '--allow-write', operation];
+      const pending = [];
+      for (const casing of ['Team', 'team', 'TEAM']) for (const args of [named, raw]) {
+        const argv = args.map(value => value.replace('Team', casing));
+        const body = args === raw ? JSON.stringify(payload) : kind === 'secret' ? input : undefined;
+        pending.push({ argv, body, preview: await invoke([...argv, '--preview'], 0, body) });
+      }
+      const args = entry === 'named' ? named : raw;
+      const body = entry === 'raw' ? JSON.stringify(payload) : kind === 'secret' ? input : undefined;
+      const preview = await invoke([...args, '--preview'], 0, body);
+      mode = 'permission';
+      expect('Upgrade fixture dispatch is uncertain ' + kind + entry, (await invoke([...args, '--confirm', preview.confirmation], 1, body)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      mode = '';
+      const receipts = join(scratch, 'state-' + journal, 'write-receipts');
+      const receiptPath = join(receipts, preview.confirmation + '.json');
+      const receipt = JSON.parse(await readFile(receiptPath, 'utf8')) as Row;
+      delete receipt.guardVersion;
+      const legacyStep = { method: 'PUT', path: route, payload };
+      const legacyKey = await readFile(join(receipts, 'key'), 'utf8');
+      const legacyHash = (value: string) => kind === 'secret'
+        ? createHmac('sha256', legacyKey).update(value).digest('hex')
+        : createHash('sha256').update(value).digest('hex');
+      const stepBytes = JSON.stringify(legacyStep);
+      const guard = legacyHash('{"origin":' + JSON.stringify(origin) + ',"step":' + stepBytes + '}');
+      receipt.attempt = legacyHash('{"origin":' + JSON.stringify(origin) + ',"steps":[' + stepBytes + ']}');
+      const [currentGuard] = (await readdir(receipts)).filter(name => name.endsWith('.attempt'));
+      await rename(join(receipts, currentGuard!), join(receipts, guard + '.attempt'));
+      await writeFile(receiptPath, JSON.stringify(receipt), { mode: 0o600 });
+      const before = writes;
+      for (const { argv, body, preview } of pending) {
+        expect('Legacy guard blocks preview ' + kind + entry + argv.join(' '), (await invoke([...argv, '--preview'], 1, body)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+        expect('Legacy guard blocks confirmation ' + kind + entry + argv.join(' '), (await invoke([...argv, '--confirm', preview.confirmation], 1, body)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+      }
+      expect('Upgrade never redispatches ' + kind + entry, writes, before);
       await assertNoSecret(join(scratch, 'state-' + journal));
     }
     values.clear(); journal++;
