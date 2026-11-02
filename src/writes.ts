@@ -15,6 +15,7 @@ import type { WorkflowVerification } from './repo-workflows.js';
 import { actionValues, valuePlan, verifyValue } from './action-values.js';
 import { verifyUploads } from './attachments.js';
 import { controlText } from './credentials.js';
+import { writeOutput } from './output.js';
 
 export interface WriteStep { method: string; path: string; payload?: unknown; local?: string; createdPull?: true; assetParent?: number; upload?: { name: string; type: string; base64: string; sha256: string; size: number } }
 export interface WritePlan { target: string; steps: WriteStep[]; reads: string[]; preconditions: unknown; recoverLocal?: string[]; named?: boolean; wikiRename?: true; workflow?: WorkflowVerification; notes?: unknown; pull?: { expected: Row; action: string; repository: string }; sensitive?: boolean; value?: { path: string; name: string; action: string; expected?: string }; assets?: { path: string; before: Row[] } }
@@ -53,8 +54,8 @@ export async function reconcile(client: Client, id: string) {
   if (receipt.origin !== client.origin) throw new CliError('CONFIRMATION_MISMATCH', 'Reconciliation origin differs from the attempted write');
   const observations = await observe(client, receipt.reads);
   controlText(id);
-  return { confirmation: id, operations: receipt.operations, states: receipt.states, observations,
-    help: 'Inspect the exact identity and requested fields in these reads before authorizing any new attempt' };
+  return writeOutput({ confirmation: id, operations: receipt.operations, states: receipt.states, observations,
+    help: 'Inspect the exact identity and requested fields in these reads before authorizing any new attempt' });
 }
 
 async function observe(client: Client, paths: string[]) {
@@ -240,8 +241,8 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     const receipt: Receipt = { binding, origin: client.origin, reads: plan.reads, states: plan.steps.map(() => 'pending'), operations, attempt, guardVersion: 2,
       ...(plan.steps.every(step => step.local) ? { localTarget: plan.target, localGuards: guards.map(path => path.slice(root.length + 1, -8)) } : {}) };
     await writePrivateFile(join(root, id + '.json'), JSON.stringify(receipt));
-    return { confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
-      ...(plan.notes ? { notes: plan.notes } : {}), help: controlText('Repeat the same command with --confirm ' + id + ' instead of --preview') };
+    return writeOutput({ confirmation: id, origin: client.origin, target: plan.target, operations, steps: plan.steps.map(({ upload, ...step }) => ({ ...step, ...(plan.sensitive && step.payload !== undefined ? { payload: '[REDACTED]' } : {}), ...(upload ? { upload: { name: upload.name, type: upload.type, size: upload.size, sha256: upload.sha256 } } : {}) })), preconditions: plan.preconditions,
+      ...(plan.notes ? { notes: plan.notes } : {}), help: controlText('Repeat the same command with --confirm ' + id + ' instead of --preview') });
   }
   const id = String(options.confirm);
   if (!/^[a-f0-9-]{36}$/.test(id)) usage('Use the confirmation ID returned by --preview');
@@ -361,7 +362,7 @@ export async function write(client: Client, identity: { writes?: { allowWrites: 
     recovered.states = recovered.states.map(state => state === 'completed' ? state : 'recovered');
     await writePrivateFile(join(root, previous + '.json'), JSON.stringify(recovered));
   }
-  return { confirmation: id, states: receipt.states, results, observations, ...(plan.notes ? { notes: plan.notes } : {}), reconcile: command(id, options) };
+  return writeOutput({ confirmation: id, states: receipt.states, results, observations, ...(plan.notes ? { notes: plan.notes } : {}), reconcile: command(id, options) });
 }
 
 export async function rawWritePlan(client: Client, method: string, path: string, payload: unknown): Promise<WritePlan> {

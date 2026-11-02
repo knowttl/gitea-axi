@@ -20,7 +20,7 @@ function run(executable: string, args: string[], cwd = scratch): string {
 }
 
 // Published sources pinned by the admission inventory; no external fixture is needed at test time.
-const modules = ['main', 'api', 'reads', 'ci', 'search', 'writes', 'pulls', 'repo-workflows', 'releases',
+const modules = ['main', 'api', 'reads', 'ci', 'search', 'writes', 'output', 'pulls', 'repo-workflows', 'releases',
   'attachments', 'action-values', 'registry', 'credentials', 'repository', 'private-file', 'error', 'transport'];
 const data = ['generated/host-inventory.json', 'generated/routes.json', 'schemas/vendor.json', 'axi-credential.schema.json'];
 

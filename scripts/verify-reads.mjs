@@ -30,6 +30,8 @@ const nestedContentsFile = { ...contentsFile, name: 'main.ts', path: 'src/main.t
 const editorConfig = { indent_style: 'space', indent_size: '2' };
 const gitReferences = [{ ref: 'refs/heads/main', object: { sha: 'a'.repeat(40), type: 'commit', url: 'https://example.test/commit' } }];
 let mode = 'ok';
+let diffText = 'diff --git a/app.ts b/app.ts\n+' + 'x'.repeat(11000);
+let renderedChars = 0;
 let bin;
 let origin;
 let foreignRequests = 0;
@@ -84,7 +86,7 @@ const server = createServer((request, response) => {
   if (mode === 'wrong-type' && url.pathname === base) body = { ...fixture.repository, id: 'ten' };
   if (mode === 'secret' && url.pathname === '/api/v1/version') body = { version: canary + '|' + encodeURIComponent(canary), access_token: 'other-secret' };
   if (mode === 'envelope' && url.pathname.endsWith('/actions/tasks')) body = [];
-  if (url.pathname === base + '/pulls/7.diff') { response.writeHead(200, { 'content-type': 'text/plain' }).end('diff --git a/app.ts b/app.ts\n+' + 'x'.repeat(11000)); return; }
+  if (url.pathname === base + '/pulls/7.diff') { response.writeHead(200, { 'content-type': 'text/plain' }).end(diffText); return; }
   if (body === undefined) { response.writeHead(404, { 'content-type': 'application/json' }).end('{"message":"unknown fake route"}'); return; }
   response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
   if (url.pathname.endsWith('/statuses')) server.emit('check-read');
@@ -101,6 +103,7 @@ async function run(executable, argv, options = {}) {
 let env;
 const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
   const output = await run(process.execPath, [bin, ...argv], { code, env: { ...env, ...extra } });
+  renderedChars = output.length;
   for (const form of [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)]) assert(!output.includes(form), 'Canary escaped output');
   const result = decode(output);
   if (host && hosted && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
@@ -217,6 +220,17 @@ try {
     const cancelled = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })); assert.equal(cancelled.cancelled, true); assert.equal(cancelled.pending, 1);
     const diff = await invoke(['pr', 'diff', '7', ...command]); assert.equal(diff.truncated, true); assert.equal(diff.diff.length, 10000);
     assert.equal((await invoke(['pr', 'diff', '7', ...command, '--full'])).truncated, false);
+    const originalDiff = diffText;
+    for (const content of ['x'.repeat(120000), '"\n\\'.repeat(50000)]) {
+      diffText = 'diff --git a/app.ts b/app.ts\n+' + content;
+      const large = await invoke(['pr', 'diff', '7', ...command, '--full']);
+      assert(renderedChars <= 100000, 'Serialized full diff fits the output ceiling');
+      assert.equal(large.chars, diffText.length);
+      assert.equal(large.truncated, true);
+      assert(large.diff.length > 1000, 'Oversized diff retains useful patch text');
+      assert(diffText.startsWith(large.diff), 'Bounded diff is an unchanged source prefix');
+    }
+    diffText = originalDiff;
     for (const flags of [['--fields', 'unknown'], ['--fields', 'title', '--reviews']]) assert.equal((await invoke(['pr', 'view', '7', ...command, ...flags], 2)).error.code, 'USAGE');
   } else {
     assert.equal((await invoke(['api', 'GET', 'version'])).data.version, '1.23.4');
