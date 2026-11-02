@@ -13,7 +13,7 @@ import { decode } from '@toon-format/toon';
 import { readHost } from './read-host.mjs';
 
 type Row = Record<string, unknown>;
-interface Output { confirmation: string; error: { code: string; reason: string }; release: Row; notes: { from: string; to: string; commits: Row[] }; observations: { path: string; data: unknown }[]; items: Row[] }
+interface Output { confirmation: string; error: { code: string; reason: string }; release: Row; notes: { from: string; to: string; commits: Row[] }; observations: { path: string; data: unknown }[]; items: Row[]; flags: { flag: string; type: string; description?: string }[] }
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3]!;
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-repositories-releases-'));
@@ -163,6 +163,18 @@ try {
     const preview = await invoke([...args, '--preview']);
     expect('Confirmation binds repository payload', (await invoke([...args.map(value => value === 'Before' ? 'After' : value), '--confirm', preview.confirmation], 1)).error.code, 'CONFIRMATION_MISMATCH');
   } else {
+    const inventory = JSON.parse(await readFile(join(prefix, 'node_modules/@knowttl/gitea-axi/generated/host-inventory.json'), 'utf8')) as { commands: { path: string[]; flags: Record<string, { type: string; description?: string }> }[] };
+    for (const [family, limit] of [['release', 10], ['issue', 30], ['pr', 30], ['label', 30], ['repo', 30]] as const) {
+      const help = await invoke([family, 'list', '--help']);
+      const flag = help.flags.find(flag => flag.flag === '--limit')!;
+      expect(family + ' list help advertises its runtime default', flag.description, 'Maximum returned records, default ' + limit + ', maximum 1000');
+      expect(family + ' list inventory agrees with installed help', inventory.commands.find(command => command.path.join(' ') === family + ' list')!.flags.limit, { type: flag.type, description: flag.description });
+    }
+    const originalReleases = releases;
+    releases = Array.from({ length: 12 }, (_, index) => ({ ...originalReleases[0], id: 1000 + index, tag_name: 'bounded-' + index }));
+    expect('Release list default remains ten records', (await invoke(['release', 'list', ...selected])).items.length, 10);
+    expect('Release list explicit limit remains effective', (await invoke(['release', 'list', ...selected, '--limit', '3'])).items.length, 3);
+    releases = originalReleases;
     const control = structuredClone(releases[0]);
     await execute(['release', 'create', 'v1', ...selected, '--title', 'First', '--notes', 'Exact notes', '--draft', '--prerelease', '--target', 'main'], 'repoCreateRelease');
     expect('Release create exact fields', releases.at(-1), { id: 101, created_at: '2026-02-01T00:00:00Z', tag_name: 'v1', target_commitish: 'main', name: 'First', body: 'Exact notes', draft: true, prerelease: true });

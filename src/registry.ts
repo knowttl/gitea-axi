@@ -94,7 +94,7 @@ const definitions = [
   ['pr view', { ...repo, ...detail, reviews: { type: 'boolean' }, checks: { type: 'boolean' } }],
   ['pr checks', { ...repo, watch: { type: 'boolean' }, timeout: { type: 'string', description: 'Watch deadline seconds, required with --watch' }, interval: { type: 'string', description: 'Watch interval seconds, default 5' } }],
   ['pr diff', { ...repo, full: detail.full }],
-  ['release list', { ...repo, limit: list.limit, 'exclude-drafts': { type: 'boolean' }, 'exclude-pre-releases': { type: 'boolean' } }],
+  ['release list', { ...repo, limit: { ...list.limit, description: 'Maximum returned records, default 10, maximum 1000' }, 'exclude-drafts': { type: 'boolean' }, 'exclude-pre-releases': { type: 'boolean' } }],
   ['release view', { ...repo, full: detail.full }], ['api', { ...writeFlags,
     method: { type: 'string', short: 'X', description: 'HTTP method; cannot combine with a positional method' },
     field: { type: 'string', multiple: true, description: 'Repeatable key=value; numbers, booleans and null become JSON values' },

@@ -784,7 +784,7 @@ commands[128]:
         description: OWNER/NAME; otherwise a matching local origin remote
       limit:
         type: string
-        description: "Maximum returned records, default 30, maximum 1000"
+        description: "Maximum returned records, default 10, maximum 1000"
       "exclude-drafts":
         type: boolean
       "exclude-pre-releases":
