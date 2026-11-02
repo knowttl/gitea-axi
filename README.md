@@ -156,6 +156,8 @@ Issue and label deletion require a complete collection and at least one remainin
 
 Pull request mutations include `create`, `edit`, `close`, `reopen`, `comment`, `update-branch` and `merge`.
 Creation requires explicit `--title`, `--base` and `--head` branch names in the selected repository.
+PR creation, base edits, updates and merges support slash-containing branch names such as `work/topic` and `release/stable`, resolving exact Git refs rather than prefix matches.
+Branch resolution binds commit identities into preview and confirmation while preserving API path separator and traversal protections.
 Cross-repository heads, draft and project inputs remain unavailable.
 Create accepts repeatable `--reviewer` user names and `--team-reviewer` team names, plus issue-style assignees, labels and milestone selectors.
 Edit accepts `--base`, text fields and assignee/label deltas, plus repeatable `--add-reviewer`, `--remove-reviewer`, `--add-team-reviewer` and `--remove-team-reviewer` deltas.
@@ -167,6 +169,7 @@ If the reviewer step fails after creation, the error reports the created PR ID a
 Close with `--comment` records closure and comment as separate steps and reports partial outcomes without retrying.
 Successful writes verify the same PR identity, expected fields and memberships through fresh reads.
 Update-branch verifies that the resulting head contains both its previous head and base commits; conflicts never report completion.
+Verification stops once both commits are proven present, so older base history need not be traversed; it reads at most 1000 commits and refuses completion if that bound prevents proof.
 Merge requires exactly one of `--merge`, `--squash`, `--rebase` or `--method merge|squash|rebase`, and a full `--match-head-commit` SHA.
 It sends the vendor `head_commit_id` precondition and verifies the closed, merged PR, base branch tip and final commit topology.
 Merge commits retain the previous base and checked head as parents; squash uses one new commit on the previous base; rebase verifies the rewritten linear chain and original commit messages.

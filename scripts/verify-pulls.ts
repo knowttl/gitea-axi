@@ -41,6 +41,7 @@ const addCommit = (id: string, parents: string[], message: string) => commits.se
 function reset() {
   scenario++;
   pulls = [seed(), { ...seed(), id: 102, number: 2, title: 'Control' }]; comments = [];
+  branches.clear();
   branches.set('main', baseSHA); branches.set('feature', headSHA);
   commits.clear(); addCommit(oldSHA, [], 'common'); addCommit(baseSHA, [oldSHA], 'base'); addCommit(firstSHA, [oldSHA], 'first'); addCommit(headSHA, [firstSHA], 'feature');
 }
@@ -69,6 +70,7 @@ const server = createServer(async (request, response) => {
     else if (path.startsWith('/api/v1/users/')) data = [user, { id: 2, login: 'retained' }, { id: 4, login: 'new' }].find(row => row.login === path.slice('/api/v1/users/'.length));
     else if (path === base) data = { id: 10, full_name: 'sample/demo', default_branch: 'main' };
     else if (parts[0] === 'branches') data = { name: parts[1], commit: { id: branches.get(parts[1]!) } };
+    else if (parts[0] === 'git' && parts[1] === 'refs') data = [...branches].map(([name, sha]) => ({ ref: 'refs/heads/' + name, object: { sha, type: 'commit' } })).filter(row => row.ref.startsWith('refs/' + parts.slice(2).join('/')));
     else if (parts[0] === 'git' && parts[1] === 'commits') data = commits.get(parts[2]!);
     else if (parts[0] === 'labels') data = labels;
     else if (parts[0] === 'milestones') data = [milestone];
@@ -106,14 +108,15 @@ const server = createServer(async (request, response) => {
         data = [];
       } else if (pull && parts[2] === 'update') {
         const next = sha('updated-' + effects);
-        addCommit(next, mode === 'wrong-graph' ? [headSHA] : [headSHA, baseSHA], 'update');
-        (pull.head as Row).sha = next; branches.set('feature', next); data = null;
+        addCommit(next, mode === 'wrong-graph' ? [headSHA] : ['missing-head', 'base-descends-head'].includes(mode) ? [baseSHA] : [headSHA, baseSHA], 'update');
+        (pull.head as Row).sha = next; branches.set(String((pull.head as Row).ref), next); data = null;
       } else if (pull && parts[2] === 'merge') {
         const next = sha(String(payload.Do) + effects);
-        if (payload.Do === 'rebase') addCommit(rebasedFirstSHA, [branches.get('main')!], 'first');
-        const parents = payload.Do === 'merge' ? [branches.get('main')!, String((pull.head as Row).sha)] : payload.Do === 'rebase' ? [rebasedFirstSHA] : [branches.get('main')!];
+        const baseBranch = String((pull.base as Row).ref);
+        if (payload.Do === 'rebase') addCommit(rebasedFirstSHA, [branches.get(baseBranch)!], 'first');
+        const parents = payload.Do === 'merge' ? [branches.get(baseBranch)!, String((pull.head as Row).sha)] : payload.Do === 'rebase' ? [rebasedFirstSHA] : [branches.get(baseBranch)!];
         addCommit(next, mode === 'wrong-graph' ? [oldSHA] : parents, payload.Do === 'rebase' ? 'feature' : 'merged');
-        branches.set('main', next); Object.assign(pull, { state: 'closed', merged: true, merge_commit_sha: next }); data = null;
+        branches.set(baseBranch, next); Object.assign(pull, { state: 'closed', merged: true, merge_commit_sha: next }); data = null;
       } else if (pull && method === 'PATCH') {
         const { base: nextBase, assignees, labels: nextLabels, milestone: nextMilestone, ...fields } = payload;
         Object.assign(pull, fields);
@@ -166,6 +169,49 @@ try {
   origin = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
   env.GITEA_AXI_ORIGIN = origin; env.GITEA_AXI_TOKEN_ORIGIN = origin;
   if (task === 'S3.3') {
+    // #23: exact branch identities survive slash-containing head/base names.
+    branches.set('work/topic-extra', oldSHA); branches.set('work/topic', headSHA); branches.set('release/stable', baseSHA);
+    await execute(['create', '--title', 'Slash refs', '--body', 'Slash branch PR', '--head', 'work/topic', '--base', 'release/stable'], 'repoCreatePullRequest');
+    expect('Create resolves exact slash branches despite a prefix match', [(pulls.at(-1)!.head as Row).ref, (pulls.at(-1)!.head as Row).sha, (pulls.at(-1)!.base as Row).ref], ['work/topic', headSHA, 'release/stable']);
+    reset(); branches.set('work/topic-extra', oldSHA);
+    expect('A prefix-only Git ref is not the selected branch', (await invoke(['pr', 'create', ...selected, '--title', 'Missing branch', '--head', 'work/topic', '--base', 'main', '--allow-write', 'repoCreatePullRequest', '--preview'], 1)).error.code, 'NOT_FOUND_OR_HIDDEN');
+    reset(); branches.set('work/topic', headSHA);
+    const bound = ['pr', 'create', ...selected, '--title', 'Bound branch', '--body', 'Bound branch body', '--head', 'work/topic', '--base', 'main', '--allow-write', 'repoCreatePullRequest'];
+    const branchPreview = await invoke([...bound, '--preview']);
+    const moved = sha('moved-slash-head'); addCommit(moved, [headSHA], 'moved'); branches.set('work/topic', moved);
+    const beforeMoved = effects;
+    expect('Moved slash branch invalidates confirmation before writing', [(await invoke([...bound, '--confirm', branchPreview.confirmation], 1)).error.code, effects], ['CONFIRMATION_MISMATCH', beforeMoved]);
+    const beforeUnsafe = requests.length;
+    expect('Branch path traversal is refused before requests', (await invoke(['pr', 'create', ...selected, '--title', 'Unsafe branch', '--head', 'work/../topic', '--base', 'main', '--allow-write', 'repoCreatePullRequest', '--preview'], 2)).error.code, 'USAGE');
+    expect('Raw encoded branch separators remain refused', (await invoke(['api', 'GET', base + '/branches/work%2Ftopic'], 1)).error.code, 'READ_ONLY');
+    expect('Unsafe branch paths dispatch no requests', requests.length, beforeUnsafe);
+    reset(); branches.set('release/stable', baseSHA);
+    await execute(['edit', '1', '--base', 'release/stable'], 'repoEditPullRequest');
+    expect('Edit accepts a slash-containing base branch', (pulls[0]!.base as Row).ref, 'release/stable');
+    for (const style of ['merge', 'squash', 'rebase']) {
+      reset(); branches.set('work/topic', headSHA); branches.set('release/stable', baseSHA);
+      Object.assign(pulls[0]!, { head: { ref: 'work/topic', sha: headSHA }, base: { ref: 'release/stable', sha: baseSHA } });
+      await execute(['merge', '1', '--method', style, '--match-head-commit', headSHA], 'repoMergePullRequest');
+      expect(style + ' verifies the slash-containing base graph', [pulls[0]!.merged, branches.get('release/stable'), (pulls[0]!.head as Row).ref], [true, pulls[0]!.merge_commit_sha, 'work/topic']);
+    }
+    // #24: both immediate required parents suffice even over long base history.
+    reset(); branches.set('work/topic', headSHA); branches.set('release/stable', baseSHA);
+    Object.assign(pulls[0]!, { head: { ref: 'work/topic', sha: headSHA }, base: { ref: 'release/stable', sha: baseSHA } });
+    const history = Array.from({ length: 1100 }, (_, index) => sha('base-history-' + index));
+    history.forEach((id, index) => addCommit(id, [history[index + 1] ?? oldSHA], 'history'));
+    addCommit(baseSHA, [history[0]!], 'base');
+    const beforeHistory = requests.length;
+    await execute(['update-branch', '1'], 'repoUpdatePullRequest');
+    expect('Update over long history preserves both required parents', (commits.get(String((pulls[0]!.head as Row).sha))!.parents as Row[]).map(row => row.sha), [headSHA, baseSHA]);
+    expect('Update does not traverse past required base ancestry', requests.slice(beforeHistory).filter(row => history.includes(row.path.slice((base + '/git/commits/').length))).length, 0);
+    reset(); mode = 'base-descends-head'; addCommit(baseSHA, [headSHA], 'base contains previous head');
+    await execute(['update-branch', '1'], 'repoUpdatePullRequest');
+    expect('Update accepts the previous head through the required base', (commits.get(String((pulls[0]!.head as Row).sha))!.parents as Row[]).map(row => row.sha), [baseSHA]);
+    for (const [failure, name] of [['wrong-graph', 'intended base'], ['missing-head', 'previous PR head']]) {
+      reset(); mode = failure!;
+      expect('Update refuses a graph missing the ' + name, (await execute(['update-branch', '1'], 'repoUpdatePullRequest', 1)).error.code, 'WRITE_OUTCOME_UNKNOWN');
+    }
+    reset(); mode = '';
     const control = structuredClone(pulls[1]);
     const unchanged = structuredClone(pulls[0]);
     const beforeInvalid = requests.length;

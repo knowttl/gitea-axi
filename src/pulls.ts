@@ -13,7 +13,23 @@ const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b
 const delta = (previous: unknown[], add: unknown, remove: unknown) => [...new Set([...previous.map(String), ...names(add)])].filter(value => !names(remove).includes(value));
 const members = (pull: Row, field: string, key: string) => (pull[field] as unknown[] ?? []).map(row => object(row)[key]);
 
+function branchPath(base: string, branch: string): string {
+  const segments = branch.split('/');
+  if (segments.some(segment => !segment || segment === '.' || segment === '..') || /[\s\\\x00-\x1f\x7f]/.test(branch)) usage('Select a branch without unsafe path segments');
+  return base + '/git/refs/heads/' + segments.map(encodeURIComponent).join('/');
+}
+
+function branchSHA(value: unknown, branch: string): string {
+  if (!Array.isArray(value)) throw new CliError('INVALID_RESPONSE', 'Expected branch references');
+  const selected = value.map(object).find(row => row.ref === 'refs/heads/' + branch);
+  if (!selected) throw new CliError('NOT_FOUND_OR_HIDDEN', 'The selected branch is missing or hidden');
+  const commit = object(selected.object);
+  if (commit.type !== 'commit' || typeof commit.sha !== 'string' || !/^[a-f0-9]{40}$/.test(commit.sha)) throw new CliError('INVALID_RESPONSE', 'Expected an immutable branch commit identity');
+  return commit.sha;
+}
+
 export function validatePull(operation: string, options: Options) {
+  for (const ref of [options.head, options.base]) if (ref !== undefined) branchPath('', String(ref));
   if (operation === 'pr review') {
     if (['approve', 'request-changes', 'comment'].filter(key => options[key]).length !== 1) usage('Choose exactly one of --approve, --request-changes or --comment');
     gap('C043 unresolved: review wire events and atomic stale-head refusal lack vendor evidence; no review will be posted, including with --match-head-commit');
@@ -48,6 +64,7 @@ export async function pullPlan(client: Client, operation: string, base: string, 
     } else value = await read(client, path);
     preconditions[path] = value; reads.add(path); return value;
   };
+  const snapshotBranch = async (branch: string) => branchSHA(await snapshot(branchPath(base, branch), true), branch);
   const add = (method: string, path: string, payload?: unknown) => steps.push({ method, path, ...(payload === undefined ? {} : { payload }) });
   const before = action === 'create' ? undefined : object(await snapshot(path));
   const expected: Row = before ? { id: before.id, number: before.number, ...fields(before), merged: before.merged ?? false, headSHA: object(before.head).sha } :
@@ -87,12 +104,11 @@ export async function pullPlan(client: Client, operation: string, base: string, 
       payload.assignees = names(options.assignee);
       expected.reviewers = sorted(addedReviewers);
       expected.teams = sorted(names(options['team-reviewer']));
-      const head = object(await snapshot(base + '/branches/' + encodeURIComponent(String(options.head))));
-      expected.headSHA = object(head.commit).id;
+      expected.headSHA = await snapshotBranch(String(options.head));
     } else {
       if (options['add-assignee'] !== undefined || options['remove-assignee'] !== undefined) payload.assignees = delta(expected.assignees as unknown[], options['add-assignee'], options['remove-assignee']);
     }
-    if (options.base !== undefined) await snapshot(base + '/branches/' + encodeURIComponent(String(options.base)));
+    if (options.base !== undefined) await snapshotBranch(String(options.base));
     if (options.milestone !== undefined) {
       const list = await snapshot(base + '/milestones?state=all', true) as Row[];
       const selected = list.find(row => row.title === options.milestone);
@@ -137,11 +153,11 @@ export async function pullPlan(client: Client, operation: string, base: string, 
     if (options.subject !== undefined) payload.MergeTitleField = options.subject;
     if (options.body !== undefined) payload.MergeMessageField = options.body;
     if (style === 'rebase') await snapshot(path + '/commits', true);
-    await snapshot(base + '/branches/' + encodeURIComponent(String(expected.base)));
+    await snapshotBranch(String(expected.base));
     add('POST', path + '/merge', payload);
     expected.state = 'closed';
   } else if (action === 'update-branch') {
-    await snapshot(base + '/branches/' + encodeURIComponent(String(expected.base)));
+    await snapshotBranch(String(expected.base));
     add('POST', path + '/update');
   }
   if (action === 'comment' || action === 'close' && options.comment !== undefined) {
@@ -184,8 +200,8 @@ export async function verifyPull(client: Client, plan: WritePlan, results: unkno
     if (added.length !== 1 || added[0]!.id !== id || added[0]!.body !== object(step.payload).body || previous.some(old => !comments.some(row => equal(row, old)))) mismatch();
   }
   if (action !== 'merge' && action !== 'update-branch') return;
-  const branchPath = base + '/branches/' + encodeURIComponent(String(expected.base));
-  const baseSHA = object(object(before[branchPath]).commit).id;
+  const baseBranchPath = branchPath(base, String(expected.base));
+  const baseSHA = branchSHA(before[baseBranchPath], String(expected.base));
   const commit = async (sha: unknown) => {
     if (typeof sha !== 'string' || !/^[a-f0-9]{40}$/.test(sha)) return mismatch();
     const path = base + '/git/commits/' + sha;
@@ -195,21 +211,24 @@ export async function verifyPull(client: Client, plan: WritePlan, results: unkno
     return data;
   };
   if (action === 'update-branch') {
-    const head = await commit(object(pull.head).sha);
-    const pending = [head], visited = new Set<unknown>();
-    while (pending.length && visited.size < 1000) {
-      const current = pending.pop()!;
-      if (visited.has(current.sha)) continue;
+    const required = new Set<unknown>([baseSHA, expected.headSHA]);
+    if ([...required].some(sha => typeof sha !== 'string' || !/^[a-f0-9]{40}$/.test(sha))) mismatch();
+    const pending = [object(pull.head).sha], visited = new Set<unknown>();
+    for (let cursor = 0; cursor < pending.length && visited.size < 1000; cursor++) {
+      const sha = pending[cursor];
+      if (visited.has(sha)) continue;
+      const current = await commit(sha);
       visited.add(current.sha);
-      if (visited.has(baseSHA) && visited.has(expected.headSHA)) return;
-      for (const parent of members(current, 'parents', 'sha')) {
-        if (!visited.has(parent)) pending.push(await commit(parent));
-      }
+      required.delete(current.sha);
+      const parents = members(current, 'parents', 'sha');
+      for (const parent of parents) required.delete(parent);
+      if (!required.size) return;
+      pending.push(...parents.filter(parent => !visited.has(parent)));
     }
     mismatch();
   }
   if (pull.merged !== true || !pull.merge_commit_sha) mismatch();
-  const finalSHA = object(object(observation(branchPath)).commit).id;
+  const finalSHA = branchSHA(observation(baseBranchPath), String(expected.base));
   if (finalSHA !== pull.merge_commit_sha) mismatch();
   const final = await commit(finalSHA);
   const style = object(plan.steps[0]!.payload).Do;
