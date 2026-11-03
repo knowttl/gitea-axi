@@ -25,6 +25,7 @@ export const command = {
 export const limits = { timeoutMs: 30_000, responseBytes: 2_000_000 } as const;
 
 const globalFlags = {
+  json: { type: 'boolean', description: 'Emit JSON instead of TOON; help follows this format, version remains plain text' },
   origin: command.flags.origin, 'allow-insecure-http': command.flags['allow-insecure-http'], help: command.flags.help,
   config: { type: 'string', description: 'Absolute configuration path' },
   profile: { type: 'string', description: 'Select one file profile' },
@@ -156,7 +157,7 @@ for (const command of commands) {
   if (['repo create', 'repo fork'].includes(command.path.join(' '))) Object.assign(command.flags, workspace);
 }
 
-commands.push({ path: ['capabilities'], description: 'Inspect all baseline command IDs, flags, globals and PR fields without claiming full parity', flags: { help: globalFlags.help }, effect: 'local-read' });
+commands.push({ path: ['capabilities'], description: 'Inspect all baseline command IDs, flags, globals and PR fields without claiming full parity', flags: { help: globalFlags.help, json: globalFlags.json }, effect: 'local-read' });
 const refusedFlags: [string, string[]][] = [
   ['repo create', ['internal']],
   ['release create', ['latest', 'discussion-category']],

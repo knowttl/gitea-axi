@@ -97,8 +97,8 @@ try {
   const invoke = async (args: string[], code = 0) => {
     const stdout = await run(process.execPath, [bin, ...args, '--config', config], scratch, env, code);
     assert(!stdout.includes(canary));
-    const result = decode(stdout) as Record<string, unknown>;
-    if (host && !args.includes('--help') && (args[0] === 'search' && args[1] !== 'code' && code === 0 || args[0] === 'run' && args[1] === 'list')) {
+    const result = (args.includes('--json') ? JSON.parse(stdout) : decode(stdout)) as Record<string, unknown>;
+    if (host && !args.includes('--json') && !args.includes('--help') && (args[0] === 'search' && args[1] !== 'code' && code === 0 || args[0] === 'run' && args[1] === 'list')) {
       assert.deepEqual(await host.invoke(args, code), result);
     }
     return result;
@@ -132,7 +132,9 @@ try {
     assert.equal(((await invoke(['run', 'list', '--repo', 'sample/demo'], 1)).error as { code: string }).code, 'INVALID_RESPONSE');
   } else {
     for (const kind of ['issues', 'prs', 'repos', 'commits']) {
-      const output = await invoke(['search', kind, 'login', '--repo', 'sample/demo', '--limit', '1', ...(kind === 'issues' || kind === 'prs' ? ['--author', 'alice', '--assignee', 'alice', '--label', 'unknown,bug'] : kind === 'repos' ? ['--language', 'Go', '--stars', '>50'] : ['--author', 'alice'])]);
+      const args = ['search', kind, 'login', '--repo', 'sample/demo', '--limit', '1', ...(kind === 'issues' || kind === 'prs' ? ['--author', 'alice', '--assignee', 'alice', '--label', 'unknown,bug'] : kind === 'repos' ? ['--language', 'Go', '--stars', '>50'] : ['--author', 'alice'])];
+      const output = await invoke(args);
+      assert.deepEqual(await invoke([...args, '--json']), output, kind + ' JSON preserves search results');
       const expected = kind === 'repos' ? [{ id: 4, full_name: 'sample/demo', description: 'login tool' }] : kind === 'commits' ? [{ sha: 'match', message: 'login fix', author: user }] : [{ repository: 'sample/demo', number: 11, title: 'login bug', state: 'open' }];
       assert.deepEqual(output.items, expected);
       assert.equal(output.total, 1);

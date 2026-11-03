@@ -3,8 +3,12 @@ import { redact } from './credentials.js';
 import type { Row } from './api.js';
 
 export const maxOutputChars = 100_000;
+export function render(value: unknown, json = false): string {
+  const safe = redact(value);
+  return json ? JSON.stringify(safe) : encode(safe);
+}
 // Reserve the newline added by console.log.
-const fits = (value: unknown) => encode(redact(value)).length < maxOutputChars;
+const fits = (value: unknown, json: boolean) => render(value, json).length < maxOutputChars;
 
 function summary(value: unknown): unknown {
   if (Array.isArray(value)) return { summary: true, total_items: value.length };
@@ -16,12 +20,12 @@ function summary(value: unknown): unknown {
   return typeof value === 'string' ? { summary: true, total_chars: value.length } : value;
 }
 
-export function writeOutput(value: Row): Row {
+export function writeOutput(value: Row, json = false): Row {
   const displayed = { ...value };
   const truncated: string[] = [];
   // Keep requested effects complete; project only their verification context.
   for (const field of ['preconditions', 'observations', 'results']) {
-    if (fits(displayed)) return displayed;
+    if (fits(displayed, json)) return displayed;
     if (!(field in value)) continue;
     const context = value[field];
     if (field === 'observations' && Array.isArray(context)) {
@@ -38,14 +42,14 @@ export function writeOutput(value: Row): Row {
   return displayed;
 }
 
-export function diffOutput(text: string, full: boolean) {
+export function diffOutput(text: string, full: boolean, json = false) {
   const candidate = (length: number) => ({ diff: text.slice(0, length), chars: text.length, truncated: text.length > length,
     ...(text.length > length ? { help: full ? 'Diff is bounded to the rendered output ceiling' : 'Use --full for a larger bounded diff' } : {}) });
   let low = 0, high = Math.min(text.length, full ? maxOutputChars : 10_000);
-  if (fits(candidate(high))) return candidate(high);
+  if (fits(candidate(high), json)) return candidate(high);
   while (low < high) {
     const middle = Math.ceil((low + high) / 2);
-    if (fits(candidate(middle))) low = middle;
+    if (fits(candidate(middle), json)) low = middle;
     else high = middle - 1;
   }
   return candidate(low);

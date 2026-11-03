@@ -34,6 +34,9 @@ commands[128]:
         type: boolean
         default: false
         description: Show command help
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       config:
         type: string
         description: Absolute configuration path
@@ -47,6 +50,9 @@ commands[128]:
   - path[2]: issue,download
     description: issue download
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -91,6 +97,9 @@ commands[128]:
   - path[2]: pr,download
     description: pr download
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -135,6 +144,9 @@ commands[128]:
   - path[2]: release,download
     description: release download
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -179,6 +191,9 @@ commands[128]:
   - path[2]: secret,list
     description: secret list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -217,6 +232,9 @@ commands[128]:
   - path[2]: variable,list
     description: variable list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -251,6 +269,9 @@ commands[128]:
   - path[1]: dashboard
     description: Bounded repository dashboard with explicit partial results
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -280,6 +301,9 @@ commands[128]:
   - path[2]: auth,status
     description: auth status
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -305,6 +329,9 @@ commands[128]:
   - path[2]: profile,list
     description: profile list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -330,6 +357,9 @@ commands[128]:
   - path[2]: config,path
     description: config path
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -355,6 +385,9 @@ commands[128]:
   - path[1]: doctor
     description: doctor
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -380,6 +413,9 @@ commands[128]:
   - path[2]: repo,list
     description: repo list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -423,6 +459,9 @@ commands[128]:
   - path[2]: org,view
     description: org view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -448,6 +487,9 @@ commands[128]:
   - path[2]: issue,list
     description: issue list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -500,6 +542,9 @@ commands[128]:
   - path[2]: issue,view
     description: issue view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -538,6 +583,9 @@ commands[128]:
   - path[2]: label,list
     description: label list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -570,6 +618,9 @@ commands[128]:
   - path[2]: pr,list
     description: pr list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -634,6 +685,9 @@ commands[128]:
   - path[2]: pr,view
     description: pr view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -676,6 +730,9 @@ commands[128]:
   - path[2]: pr,checks
     description: pr checks
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -721,6 +778,9 @@ commands[128]:
   - path[2]: pr,diff
     description: pr diff
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -757,6 +817,9 @@ commands[128]:
   - path[2]: release,list
     description: release list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -793,6 +856,9 @@ commands[128]:
   - path[2]: release,view
     description: release view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -825,6 +891,9 @@ commands[128]:
   - path[1]: api
     description: api
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -894,6 +963,9 @@ commands[128]:
   - path[2]: write,reconcile
     description: write reconcile
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -919,6 +991,9 @@ commands[128]:
   - path[2]: issue,upload
     description: issue upload
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -962,6 +1037,9 @@ commands[128]:
   - path[2]: pr,upload
     description: pr upload
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1005,6 +1083,9 @@ commands[128]:
   - path[2]: release,upload
     description: release upload
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1048,6 +1129,9 @@ commands[128]:
   - path[2]: secret,set
     description: secret set
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1099,6 +1183,9 @@ commands[128]:
   - path[2]: secret,delete
     description: secret delete
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1143,6 +1230,9 @@ commands[128]:
   - path[2]: variable,set
     description: variable set
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1188,6 +1278,9 @@ commands[128]:
   - path[2]: variable,delete
     description: variable delete
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1228,6 +1321,9 @@ commands[128]:
   - path[2]: repo,create
     description: repo create
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1288,6 +1384,9 @@ commands[128]:
   - path[2]: repo,edit
     description: repo edit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1336,6 +1435,9 @@ commands[128]:
   - path[2]: repo,fork
     description: repo fork
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1387,6 +1489,9 @@ commands[128]:
   - path[2]: release,create
     description: release create
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1468,6 +1573,9 @@ commands[128]:
   - path[2]: release,edit
     description: release edit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1531,6 +1639,9 @@ commands[128]:
   - path[2]: release,delete
     description: release delete
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1569,6 +1680,9 @@ commands[128]:
   - path[2]: pr,create
     description: pr create
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1645,6 +1759,9 @@ commands[128]:
   - path[2]: pr,edit
     description: pr edit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1723,6 +1840,9 @@ commands[128]:
   - path[2]: pr,close
     description: pr close
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1763,6 +1883,9 @@ commands[128]:
   - path[2]: pr,reopen
     description: pr reopen
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1801,6 +1924,9 @@ commands[128]:
   - path[2]: pr,comment
     description: pr comment
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1849,6 +1975,9 @@ commands[128]:
   - path[2]: pr,update-branch
     description: pr update-branch
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1887,6 +2016,9 @@ commands[128]:
   - path[2]: pr,merge
     description: pr merge
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -1951,6 +2083,9 @@ commands[128]:
   - path[2]: pr,review
     description: pr review (unresolved vendor events and atomic stale-head refusal; no posting)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2002,6 +2137,9 @@ commands[128]:
   - path[2]: issue,create
     description: issue create
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2068,6 +2206,9 @@ commands[128]:
   - path[2]: issue,edit
     description: issue edit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2140,6 +2281,9 @@ commands[128]:
   - path[2]: issue,close
     description: issue close
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2188,6 +2332,9 @@ commands[128]:
   - path[2]: issue,reopen
     description: issue reopen
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2226,6 +2373,9 @@ commands[128]:
   - path[2]: issue,comment
     description: issue comment
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2274,6 +2424,9 @@ commands[128]:
   - path[2]: issue,delete
     description: issue delete
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2312,6 +2465,9 @@ commands[128]:
   - path[2]: issue,pin
     description: issue pin
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2350,6 +2506,9 @@ commands[128]:
   - path[2]: issue,unpin
     description: issue unpin
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2388,6 +2547,9 @@ commands[128]:
   - path[2]: label,create
     description: label create
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2432,6 +2594,9 @@ commands[128]:
   - path[2]: label,edit
     description: label edit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2476,6 +2641,9 @@ commands[128]:
   - path[2]: label,delete
     description: label delete
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2514,6 +2682,9 @@ commands[128]:
   - path[2]: run,list
     description: run list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2560,6 +2731,9 @@ commands[128]:
   - path[2]: run,view
     description: run view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2599,6 +2773,9 @@ commands[128]:
   - path[2]: run,watch
     description: run watch
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2632,6 +2809,9 @@ commands[128]:
   - path[2]: run,rerun
     description: run rerun (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2667,6 +2847,9 @@ commands[128]:
   - path[2]: run,cancel
     description: run cancel (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2696,6 +2879,9 @@ commands[128]:
   - path[2]: run,delete
     description: run delete (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2725,6 +2911,9 @@ commands[128]:
   - path[2]: run,download
     description: run download
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2758,6 +2947,9 @@ commands[128]:
   - path[2]: workflow,list
     description: workflow list
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2791,6 +2983,9 @@ commands[128]:
   - path[2]: workflow,view
     description: workflow view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2822,6 +3017,9 @@ commands[128]:
   - path[2]: workflow,run
     description: workflow run (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2855,6 +3053,9 @@ commands[128]:
   - path[2]: workflow,enable
     description: workflow enable (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2884,6 +3085,9 @@ commands[128]:
   - path[2]: workflow,disable
     description: workflow disable (pending shared write gate)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2913,6 +3117,9 @@ commands[128]:
   - path[2]: search,issues
     description: search issues
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -2975,6 +3182,9 @@ commands[128]:
   - path[2]: search,prs
     description: search prs
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3036,6 +3246,9 @@ commands[128]:
   - path[2]: search,repos
     description: search repos
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3100,6 +3313,9 @@ commands[128]:
   - path[2]: search,commits
     description: search commits
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3165,6 +3381,9 @@ commands[128]:
   - path[2]: search,code
     description: search code
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3222,6 +3441,9 @@ commands[128]:
   - path[2]: stack,view
     description: Owned local stack view
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3259,6 +3481,9 @@ commands[128]:
   - path[2]: stack,init
     description: Owned local stack init
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3298,6 +3523,9 @@ commands[128]:
   - path[2]: stack,add
     description: Owned local stack add
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3341,6 +3569,9 @@ commands[128]:
   - path[2]: stack,checkout
     description: Owned local stack checkout
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3378,6 +3609,9 @@ commands[128]:
   - path[2]: stack,push
     description: Owned local stack push
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3417,6 +3651,9 @@ commands[128]:
   - path[2]: stack,submit
     description: Owned local stack submit
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3463,6 +3700,9 @@ commands[128]:
   - path[2]: stack,sync
     description: Owned local stack sync
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3504,6 +3744,9 @@ commands[128]:
   - path[2]: stack,rebase
     description: Owned local stack rebase
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3558,6 +3801,9 @@ commands[128]:
   - path[2]: stack,link
     description: Owned local stack link
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3602,6 +3848,9 @@ commands[128]:
   - path[2]: stack,unstack
     description: Owned local stack unstack
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3641,6 +3890,9 @@ commands[128]:
   - path[2]: stack,merge
     description: Owned local stack merge
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3690,6 +3942,9 @@ commands[128]:
   - path[2]: stack,up
     description: Owned local stack up
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3727,6 +3982,9 @@ commands[128]:
   - path[2]: stack,down
     description: Owned local stack down
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3764,6 +4022,9 @@ commands[128]:
   - path[2]: stack,top
     description: Owned local stack top
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3801,6 +4062,9 @@ commands[128]:
   - path[2]: stack,bottom
     description: Owned local stack bottom
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3838,6 +4102,9 @@ commands[128]:
   - path[2]: stack,trunk
     description: Owned local stack trunk
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3875,6 +4142,9 @@ commands[128]:
   - path[2]: repo,clone
     description: repo clone in an explicit standalone workspace
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3916,6 +4186,9 @@ commands[128]:
   - path[2]: pr,checkout
     description: pr checkout in an explicit standalone workspace
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -3957,6 +4230,9 @@ commands[128]:
   - path[2]: pr,revert
     description: pr revert in an explicit standalone workspace
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4002,10 +4278,16 @@ commands[128]:
         type: boolean
         default: false
         description: Show command help
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
     effect: local-read
   - path[2]: discussion,list
     description: discussion list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4056,6 +4338,9 @@ commands[128]:
   - path[2]: discussion,view
     description: discussion view (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4102,6 +4387,9 @@ commands[128]:
   - path[2]: discussion,comment
     description: discussion comment (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4140,6 +4428,9 @@ commands[128]:
   - path[2]: gist,list
     description: gist list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4186,6 +4477,9 @@ commands[128]:
   - path[2]: gist,view
     description: gist view (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4236,6 +4530,9 @@ commands[128]:
   - path[2]: gist,edit
     description: gist edit (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4282,6 +4579,9 @@ commands[128]:
   - path[2]: gist,rename
     description: gist rename (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4312,6 +4612,9 @@ commands[128]:
   - path[2]: gist,create
     description: gist create (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4362,6 +4665,9 @@ commands[128]:
   - path[2]: gist,delete
     description: gist delete (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4392,6 +4698,9 @@ commands[128]:
   - path[2]: gist,clone
     description: gist clone (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4422,6 +4731,9 @@ commands[128]:
   - path[2]: issue,lock
     description: issue lock (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4452,6 +4764,9 @@ commands[128]:
   - path[2]: issue,unlock
     description: issue unlock (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4482,6 +4797,9 @@ commands[128]:
   - path[2]: issue,transfer
     description: issue transfer (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4516,6 +4834,9 @@ commands[128]:
   - path[3]: issue,subissue,add
     description: issue subissue add (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4546,6 +4867,9 @@ commands[128]:
   - path[3]: issue,subissue,remove
     description: issue subissue remove (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4576,6 +4900,9 @@ commands[128]:
   - path[3]: issue,subissue,list
     description: issue subissue list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4606,6 +4933,9 @@ commands[128]:
   - path[2]: pr,ready
     description: pr ready (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4640,6 +4970,9 @@ commands[128]:
   - path[2]: project,list
     description: project list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4682,6 +5015,9 @@ commands[128]:
   - path[2]: project,view
     description: project view (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4716,6 +5052,9 @@ commands[128]:
   - path[2]: project,item-list
     description: project item-list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4758,6 +5097,9 @@ commands[128]:
   - path[2]: project,field-list
     description: project field-list (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4796,6 +5138,9 @@ commands[128]:
   - path[2]: project,field-create
     description: project field-create (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4842,6 +5187,9 @@ commands[128]:
   - path[2]: project,field-delete
     description: project field-delete (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4876,6 +5224,9 @@ commands[128]:
   - path[2]: project,item-add
     description: project item-add (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4914,6 +5265,9 @@ commands[128]:
   - path[2]: project,item-create
     description: project item-create (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -4960,6 +5314,9 @@ commands[128]:
   - path[2]: project,item-edit
     description: project item-edit (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5038,6 +5395,9 @@ commands[128]:
   - path[2]: project,item-archive
     description: project item-archive (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5080,6 +5440,9 @@ commands[128]:
   - path[2]: project,item-delete
     description: project item-delete (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5118,6 +5481,9 @@ commands[128]:
   - path[2]: project,create
     description: project create (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5156,6 +5522,9 @@ commands[128]:
   - path[2]: project,edit
     description: project edit (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5206,6 +5575,9 @@ commands[128]:
   - path[2]: project,close
     description: project close (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5244,6 +5616,9 @@ commands[128]:
   - path[2]: project,copy
     description: project copy (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5290,6 +5665,9 @@ commands[128]:
   - path[2]: project,delete
     description: project delete (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5324,6 +5702,9 @@ commands[128]:
   - path[2]: setup,hooks
     description: setup hooks (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile
@@ -5354,6 +5735,9 @@ commands[128]:
   - path[1]: update
     description: update (compatibility gap)
     flags:
+      json:
+        type: boolean
+        description: "Emit JSON instead of TOON; help follows this format, version remains plain text"
       origin:
         type: string
         default: selected profile

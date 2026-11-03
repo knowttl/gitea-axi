@@ -148,7 +148,7 @@ async function invoke(args: string[], code = 0, extra: NodeJS.ProcessEnv = {}) {
   const output = await run(process.execPath, [bin, ...args], { ...env, ...extra }, code, scratch);
   renderedChars = output.length;
   assert(!output.includes(token), 'Credential must never escape output');
-  return decode(output) as unknown as Output;
+  return (args.includes('--json') ? JSON.parse(output) : decode(output)) as Output;
 }
 const selected = ['--repo', 'sample/demo'];
 async function execute(args: string[], operations: string) {
@@ -394,6 +394,10 @@ try {
       expect('Unsafe reply preserves bounded reconciliation fallback ' + index, (await invoke(['write', 'reconcile', unsafePreview.confirmation])).observations[0]!.path, base + '/wiki/pages');
     }
     const originalIssues = structuredClone(issues);
+    const literalOutput = await run(process.execPath, [bin, 'issue', 'create', ...selected, '--title', 'Literal format flag data', '--body', '--json', '--allow-write', 'issueCreateIssue', '--preview'], env, 0, scratch);
+    assert.throws(() => JSON.parse(literalOutput), SyntaxError, 'Payload data does not enable JSON output');
+    const literalJson = decode(literalOutput) as unknown as Output;
+    expect('A format flag used as payload remains data in default TOON output', literalJson.steps![0]!.payload.body, '--json');
     const unrelated = Array.from({ length: 20 }, (_, index) => ({ ...fixture.issues[0], id: 10000 + index, number: 10000 + index,
       title: 'Unrelated large issue ' + index, body: 'x'.repeat(8000), labels: [], assignees: [] }));
     issues.push(...unrelated);
@@ -412,6 +416,13 @@ try {
     expect('Readback summary retains collection size and path', [bounded.observations[0]!.path, (bounded.observations[0]!.data as Row).total_items], [base + '/issues?state=all&type=issues', issues.length]);
     const boundedReconcile = await invoke(['write', 'reconcile', bounded.confirmation]);
     expect('Reconciliation output remains bounded and truthful', [renderedChars <= 100000, boundedReconcile.truncated, (boundedReconcile.observations[0]!.data as Row).total_items], [true, true, issues.length]);
+    const jsonArgs = ['issue', 'create', ...selected, '--title', 'Bounded JSON mutation', '--body', requestedBody, '--allow-write', 'issueCreateIssue', '--json'];
+    const jsonPreview = await invoke([...jsonArgs, '--preview']);
+    expect('JSON preview is bounded and preserves requested payload', [renderedChars <= 100000, jsonPreview.truncated, jsonPreview.steps![0]!.payload.body], [true, true, requestedBody]);
+    const jsonWrite = await invoke([...jsonArgs, '--confirm', jsonPreview.confirmation]);
+    expect('JSON readback is bounded and verified', [renderedChars <= 100000, jsonWrite.results[0]!.body], [true, requestedBody]);
+    const jsonReconcile = await invoke(['write', 'reconcile', jsonWrite.confirmation, '--json']);
+    expect('JSON reconciliation retains bounded truthful context', [renderedChars <= 100000, jsonReconcile.truncated, (jsonReconcile.observations[0]!.data as Row).total_items], [true, true, issues.length]);
     const wrongArgs = ['issue', 'create', ...selected, '--title', 'Bounded mismatch', '--allow-write', 'issueCreateIssue'];
     const wrongPreview = await invoke([...wrongArgs, '--preview']);
     corruptWrite = () => { issues.at(-1)!.title = 'Unexpected large-context result'; };

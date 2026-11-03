@@ -11,7 +11,7 @@ export function validateSearch(kind: string, query: string, options: Options) {
   const allowed = kind === 'issues' || kind === 'prs' ? ['owner', 'state', 'label', 'assignee', 'author', 'sort', 'order', 'limit', 'fields', ...(kind === 'prs' ? ['draft'] : [])] :
     kind === 'repos' ? ['owner', 'sort', 'order', 'limit', 'language', 'stars', 'fields'] : ['author', 'sort', 'order', 'limit', 'revision', 'fields'];
   for (const key of Object.keys(options)) {
-    if (!['origin', 'allow-insecure-http', 'config', 'profile', 'hostname', 'repo'].includes(key) && !allowed.includes(key)) throw new CliError('CAPABILITY_GAP', '--' + key + ' is not evidenced for search ' + kind);
+    if (!['origin', 'allow-insecure-http', 'config', 'profile', 'hostname', 'repo', 'json'].includes(key) && !allowed.includes(key)) throw new CliError('CAPABILITY_GAP', '--' + key + ' is not evidenced for search ' + kind);
   }
   positive(options.limit, 1000, 1000);
   if (options.state && !['open', 'closed', 'all'].includes(String(options.state))) throw new CliError('USAGE', '--state must be open, closed or all', 2);
