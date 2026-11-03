@@ -27,6 +27,8 @@ export function validateLocal(operation: string, options: Options) {
   if (process.env.GITEA_AXI_HOST_WRITE_OPERATIONS !== undefined || process.env.GITEA_AXI_CREDENTIAL_REVISION !== undefined) {
     throw new CliError('READ_ONLY', 'Workspace workflows are standalone only');
   }
+  if (operation === 'repo create' && (!options.source || !options.push || options.clone)) usage('Workspace repository creation requires --source and --push without --clone');
+  if (operation === 'repo fork' && (!options.clone || options.source !== undefined || options.push)) usage('Workspace forks require --clone without --source or --push');
   if (operation.startsWith('stack ') && (options.repo || process.env.GH_REPO)) usage('Stack commands reject -R/--repo and GH_REPO; use the explicit local workspace');
   if (typeof options.workspace !== 'string' || !isAbsolute(options.workspace)) usage('--workspace requires an explicit absolute path');
   if (options.config !== undefined && !isAbsolute(String(options.config))) usage('--config must be absolute');
@@ -67,8 +69,7 @@ export async function localWorkflow(client: Client, identity: LocalIdentity, ope
   }
   if (operation === 'repo create' || operation === 'repo fork') {
     if (args.length > 1) usage('Select at most one repository');
-    if (operation === 'repo create' && (options.push || options.remote) && !options.source || options.push && !options.source) usage('--push and repository creation --remote require --source');
-    if (options.source && options.clone) usage('Choose --source or --clone');
+    const creating = operation === 'repo create';
     const apiOptions = { ...options };
     for (const key of ['source', 'push', 'remote', 'clone', 'workspace']) delete apiOptions[key];
     validateRepositoryWorkflow(operation, apiOptions);
@@ -80,30 +81,28 @@ export async function localWorkflow(client: Client, identity: LocalIdentity, ope
     const remote = String(options.remote ?? 'origin');
     if (!/^[A-Za-z0-9_-]+$/.test(remote)) usage('Select a simple remote name');
     const destination = join(workspace, destinationName.split('/')[1]!);
-    if (options.source || operation === 'repo fork' && options.remote && !options.clone) {
-      const sourcePath = String(options.source ?? workspace);
+    if (creating) {
+      const sourcePath = String(options.source);
       if (!isAbsolute(sourcePath)) usage('--source requires an absolute native repository root');
       source = await new Git(await realpath(sourcePath), identity.origin, identity.token).workspace();
       if (source.cwd !== workspace) usage('--source must equal the explicit --workspace');
       await source.clean();
-      if (options.push && !await source.run(['symbolic-ref', '--quiet', '--short', 'HEAD'], [0, 1])) usage('Publishing requires a named source branch');
+      if (!await source.run(['symbolic-ref', '--quiet', '--short', 'HEAD'], [0, 1])) usage('Publishing requires a named source branch');
       if ((await source.run(['remote'])).split('\n').includes(remote)) usage('Selected remote already exists; choose another --remote');
       preconditions = await source.snapshot();
-    } else if (options.clone) {
+    } else {
       if (existsSync(destination)) usage('Clone destination already exists');
       preconditions = { parent: workspace, contents: await readdir(workspace) };
-    } else usage('Workspace composite requires --source or --clone');
+    }
     return localEffect(client, identity, 'composite', options, git, preconditions,
-      { source: source?.cwd, remote, url, clone: Boolean(options.clone), push: Boolean(options.push) }, async () => {
+      { source: source?.cwd, remote, url, clone: !creating, push: creating }, async () => {
         if (source) {
           if (!same(await source.snapshot(), preconditions)) throw new CliError('CONFIRMATION_MISMATCH', 'Source changed after API creation; repository created, local publication stopped');
           await source.run(['remote', 'add', remote, url]);
-          if (options.push) {
-            const branch = await source.run(['symbolic-ref', '--short', 'HEAD']);
-            await source.run(['push', '--', url, 'refs/heads/' + branch + ':refs/heads/' + branch]);
-            if (!(await source.run(['ls-remote', '--', url, 'refs/heads/' + branch])).startsWith(await source.tip())) throw new CliError('READBACK_MISMATCH', 'Published head was not confirmed');
-          }
-          return { workspace, remote, published: Boolean(options.push), head: await source.tip() };
+          const branch = await source.run(['symbolic-ref', '--short', 'HEAD']);
+          await source.run(['push', '--', url, 'refs/heads/' + branch + ':refs/heads/' + branch]);
+          if (!(await source.run(['ls-remote', '--', url, 'refs/heads/' + branch])).startsWith(await source.tip())) throw new CliError('READBACK_MISMATCH', 'Published head was not confirmed');
+          return { workspace, remote, published: true, head: await source.tip() };
         }
         if (existsSync(destination)) throw new CliError('CONFIRMATION_MISMATCH', 'Clone destination appeared; API repository was created');
         await git.run(['clone', '--origin', remote, '--', url, destination]);

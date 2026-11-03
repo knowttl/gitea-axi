@@ -350,7 +350,9 @@ Local workflows require an explicit absolute `--workspace` and use native Git ar
 Select the native repository root, or an existing parent directory for cloning.
 `repo clone OWNER/NAME` clones into a new child directory of the selected parent and checks out the previewed default commit.
 `repo create --source /absolute/repo --push --remote NAME` publishes the current source branch with its complete history.
-`repo fork --clone` clones the verified fork, while `repo fork --remote NAME` configures a new remote in the workspace.
+Workspace repository creation requires both `--source` and `--push` and refuses `--clone`.
+`repo fork --clone` clones the verified fork; `--remote NAME` selects the clone's origin name.
+Workspace forks require `--clone` and refuse `--source` and `--push`.
 Existing remotes are never overwritten.
 Use a repository-local Git user name and email for workflows that create commits.
 Git credential helpers, hooks, transport rewrites and redirects are disabled or refused.
