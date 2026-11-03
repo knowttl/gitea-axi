@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.4](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.3...gitea-axi-v0.1.4) (2026-11-03)
+
+
+### Features
+
+* add optional JSON output ([#64](https://github.com/knowttl/gitea-axi/issues/64)) ([fd33e63](https://github.com/knowttl/gitea-axi/commit/fd33e63bb2da3ada3e2bea78237fb5c2c116cfeb))
+
+
+### Bug Fixes
+
+* remove static capabilities artifact ([#66](https://github.com/knowttl/gitea-axi/issues/66)) ([6fd4b0f](https://github.com/knowttl/gitea-axi/commit/6fd4b0f726284642fb36fae442fa1d57299fbaf0))
+* restrict workspace composites to publication and fork cloning ([#67](https://github.com/knowttl/gitea-axi/issues/67)) ([a431be5](https://github.com/knowttl/gitea-axi/commit/a431be5d4c34877c1ea416b4f2276401263de690))
+
 ## [0.1.3](https://github.com/knowttl/gitea-axi/compare/gitea-axi-v0.1.2...gitea-axi-v0.1.3) (2026-11-02)
 
 
