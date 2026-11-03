@@ -230,6 +230,34 @@ try {
 
   if (task === 'S6.1') {
     const parent = join(scratch, 'clones'); await mkdir(parent);
+    await createRepo('upstream/forkable'); await git(['push', bare('upstream/forkable'), 'main']);
+    const beforeModes = [requests.length, await git(['remote', '-v']), await git(['status', '--porcelain']), await git(['show-ref', '--heads']), await readdir(parent)];
+    for (const [args, workspace] of [
+      [['repo', 'create', 'source-only', '--public', '--source', source, '--remote', 'source-only'], source],
+      [['repo', 'create', 'clone-after-create', '--public', '--clone'], parent],
+      [['repo', 'fork', 'upstream/forkable', '--remote', 'configured-only'], source],
+      [['repo', 'fork', 'upstream/forkable', '--source', source, '--remote', 'source-fork'], source],
+      [['repo', 'fork', 'upstream/forkable', '--source', source, '--push', '--remote', 'published-fork'], source],
+    ] as const) {
+      check('Removed composite mode refuses ' + args.join(' '), (await invoke([...args, '--preview', '--allow-write', 'createCurrentUserRepo,createFork,gitea.local.composite'], 2, workspace)).error.code, 'USAGE');
+    }
+    check('Removed composites leave upstream and workspace untouched',
+      [requests.length, await git(['remote', '-v']), await git(['status', '--porcelain']), await git(['show-ref', '--heads']), await readdir(parent)], beforeModes);
+    for (const boundary of ['GITEA_AXI_CREDENTIAL_REVISION', 'GITEA_AXI_HOST_WRITE_OPERATIONS']) {
+      for (const [args, workspace] of [
+        [['repo', 'create', 'hosted-source', '--public', '--source', source, '--push'], source],
+        [['repo', 'fork', 'upstream/forkable', '--clone'], parent],
+      ] as const) {
+        const output = decode(await run(process.execPath, [bin, ...args, '--workspace', workspace, '--preview', '--allow-write', 'createCurrentUserRepo,createFork,gitea.local.composite'], scratch, 1, { [boundary]: 'synthetic-boundary' })) as unknown as Output;
+        check('Hosted workspace refusal remains active for ' + boundary + ' ' + args[1], output.error.code, 'READ_ONLY');
+      }
+    }
+    check('Hosted composite refusals dispatch no requests', requests.length, beforeModes[0]);
+    const boundArgs = ['repo', 'create', 'bound-publication', '--public', '--source', source, '--push', '--remote', 'bound-a', '--allow-write', 'createCurrentUserRepo,gitea.local.composite'];
+    const boundPreview = await invoke([...boundArgs, '--preview']);
+    const beforeBound = requests.filter(request => request.method !== 'GET').length;
+    check('Source publication confirmation binds the remote', (await invoke([...boundArgs.map(arg => arg === 'bound-a' ? 'bound-b' : arg), '--confirm', boundPreview.confirmation], 1)).error.code, 'CONFIRMATION_MISMATCH');
+    check('Changed publication confirmation mutates nothing', requests.filter(request => request.method !== 'GET').length, beforeBound);
     await execute(['repo', 'clone', 'sample/demo'], 'gitea.local.clone', parent);
     const clone = join(parent, 'demo'); await identity(clone);
     check('Clone checks out exact default commit', await git(['rev-parse', 'HEAD'], clone), baseHead);
@@ -246,9 +274,8 @@ try {
     await execute(['repo', 'create', 'published', '--public', '--source', source, '--push', '--remote', 'published'], 'createCurrentUserRepo,gitea.local.composite');
     check('Source publication preserves exact history', await tip('sample/published', 'three'), await git(['rev-parse', 'three']));
     check('Source publication excludes ambient annotated tags', await serviceGit('sample/published', ['for-each-ref', '--format=%(refname)']), 'refs/heads/three');
-    check('Conflicting remote refuses before repository creation', (await invoke(['repo', 'create', 'conflict', '--public', '--source', source, '--remote', 'published', '--preview', '--allow-write', 'createCurrentUserRepo,gitea.local.composite'], 2)).error.code, 'USAGE');
+    check('Conflicting remote refuses before repository creation', (await invoke(['repo', 'create', 'conflict', '--public', '--source', source, '--push', '--remote', 'published', '--preview', '--allow-write', 'createCurrentUserRepo,gitea.local.composite'], 2)).error.code, 'USAGE');
     check('Conflicting remote creates no repository', repos.has('sample/conflict'), false);
-    await createRepo('upstream/forkable'); await git(['push', bare('upstream/forkable'), 'main']);
     await execute(['repo', 'fork', 'upstream/forkable', '--clone'], 'createFork,gitea.local.composite', parent);
     check('Fork retains exact parent identity', (repos.get('sample/forkable')!.parent as Row).id, repos.get('upstream/forkable')!.id);
     check('Fork clone retains source commit', await git(['rev-parse', 'HEAD'], join(parent, 'forkable')), baseHead);
@@ -524,7 +551,7 @@ try {
     const beforeAdmission = requests.length;
     if (task === 'S6.1') {
       for (const args of [['repo', 'clone', 'sample/demo'], ['pr', 'checkout', '1'], ['pr', 'revert', '1']]) await host.refuse(args, 'INVALID_INPUT');
-      for (const args of [['repo', 'create', 'new', '--public', '--source', source], ['repo', 'fork', 'sample/demo', '--clone']]) await host.refuse(args, 'FLAG_BLOCKED');
+      for (const args of [['repo', 'create', 'new', '--public', '--source', source, '--push'], ['repo', 'fork', 'sample/demo', '--clone']]) await host.refuse(args, 'FLAG_BLOCKED');
     } else {
       for (const action of ['view', 'init', 'add', 'checkout', 'push', 'submit', 'sync', 'rebase', 'link', 'unstack', 'merge', 'up', 'down', 'top', 'bottom', 'trunk']) await host.refuse(['stack', action], 'INVALID_INPUT');
     }
