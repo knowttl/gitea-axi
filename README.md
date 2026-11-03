@@ -199,8 +199,7 @@ Boolean flags accept explicit `=true` and `=false`, including disabling issues o
 Fork takes a source through `--repo` or a positional OWNER/NAME and optionally `--org` for the destination.
 Verification checks the destination identity, requested fields and fork parent.
 Internal visibility refuses before mutation.
-Workspace flags (`--source`, `--push`, `--remote`, `--clone`) use the standalone Git workflows below and require explicit `--workspace` selection.
-Repository creation `--push` and `--remote` require `--source`.
+See [Local Git workflows and owned stacks](#local-git-workflows-and-owned-stacks) for supported workspace flag combinations and explicit `--workspace` selection.
 
 ### Releases
 
