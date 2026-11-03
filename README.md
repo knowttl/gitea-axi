@@ -331,7 +331,7 @@ Config files and file SecretRefs must be regular files; symlinks are refused.
 See [the credential schema](axi-credential.schema.json) for profile fields and env/file SecretRef shapes.
 `origin` and `tokenOrigin` must identify the same canonical origin.
 Inline tokens and secret arguments are refused.
-Resolved credentials are redacted from response and error string values before TOON serialization, including their JSON-escaped and URL-encoded forms.
+Resolved credentials are redacted from response and error string values before TOON or JSON serialization, including their JSON-escaped and URL-encoded forms.
 Redaction also masks recognized secret fields, secret query values, URL credentials, JWTs, private keys and account keys.
 Generated confirmation IDs and fixed confirmation/reconciliation instructions remain intact when they overlap a protected value; payloads and upstream response text remain subject to redaction.
 The complete environment profile uses `GITEA_AXI_ORIGIN`, `GITEA_AXI_TOKEN_ORIGIN` and a JSON SecretRef in `GITEA_AXI_TOKEN`.
