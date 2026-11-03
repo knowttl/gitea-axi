@@ -38,7 +38,8 @@ No agent paths, update channel, repository webhooks or telemetry are introduced.
 
 ## Generation and verification
 
-`npm run generate` compiles the current registry and regenerates help, the skill, the capabilities summary and host inventory.
+`npm run generate` compiles the current registry and regenerates help, the skill and host inventory.
+Use `gitea-axi capabilities --json` for the runtime capabilities summary; no static capabilities artifact is generated or packaged.
 The executable registry in `src/registry.ts` owns their command metadata; the retained Swagger owns the generated response schemas and route types produced by the same command.
 The classified raw-route registry combines the retained Swagger with effect classifications and multi-segment parameter annotations owned by `scripts/generate.mjs`.
 `npm run generate:check` compiles the current source and refuses stale generated artifacts.

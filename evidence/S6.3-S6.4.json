@@ -15,7 +15,7 @@
   "investigations": "Discussion/gist/Projects v2, issue transfer/subissues, draft transitions and HEAD remain explicit versioned contract gaps. The newer lock and Actions routes remain uncommissioned candidates. jq/template evaluators are deliberately unavailable. Review event values and atomic stale-head refusal remain unresolved; no review posting is performed.",
   "output": "Numeric fullDatabaseId is distinct from an unavailable GraphQL node id. statusCheckRollup explicitly identifies partial commit statuses. Command and flag acceptance do not count as complete semantic parity.",
   "selection": "-R aliases --repo. Hostname/GH_HOST selects only matching configured profiles and applies exact tokenOrigin and HTTP policy before secret resolution. Hosted invocations refuse credential/configuration overrides.",
-  "discovery": "Help, skill, capabilities summary and host inventory derive from the executable registry. A disposable source-registry drift fails the real freshness command; regeneration publishes the added command in help, skill and inventory.",
+  "discovery": "See docs/catalogue-contract.md#generation-and-verification for the current discovery generation contract. A disposable source-registry drift fails the real freshness command; regeneration publishes the added command in help, skill and inventory.",
   "effects": "Hook installation/repair, update and update --check refuse before configuration writes, credential resolution, network requests or package installation. Existing write workflows retain their shared effect policy, confirmation binding and secret-free journal.",
   "artium": {
     "fixtureRevision": "7a76e2c189c97c6fae4099830256d0d7fd1149b7",
