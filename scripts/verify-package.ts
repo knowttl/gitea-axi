@@ -33,7 +33,7 @@ try {
   const required = ['package.json', 'README.md', ...licenses, ...data, 'dist/cli.js', ...modules.map(name => `dist/${name}.js`)];
   const allowed = new Set([...required,
     ...['catalogue', 'git', 'local-workflows', 'stacks', 'vendor.generated'].map(name => `dist/${name}.js`),
-    'schemas/catalogue.json', 'schemas/responses.json', 'generated/SKILL.md', 'generated/help.txt', 'generated/capabilities.json']);
+    'schemas/catalogue.json', 'schemas/responses.json', 'generated/SKILL.md', 'generated/help.txt']);
   const packed = JSON.parse(run(npm, ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', scratch], root)) as { filename: string }[];
   assert.equal(packed.length, 1);
   const archive = packed[0];

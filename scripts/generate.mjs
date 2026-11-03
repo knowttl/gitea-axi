@@ -2,8 +2,6 @@ import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { command, commands, limits } from '../dist/registry.js';
 import { encode } from '@toon-format/toon';
-import { capabilityOutput } from '../dist/catalogue.js';
-import { prFields } from '../dist/reads.js';
 
 const check = process.argv.slice(2);
 assert(check.length === 0 || (check.length === 1 && check[0] === '--check'), 'Use --check or no arguments');
@@ -65,7 +63,6 @@ const artifacts = {
   'src/vendor.generated.ts': types,
   'schemas/responses.json': JSON.stringify(schemas, null, 2) + '\n',
   'generated/help.txt': help,
-  'generated/capabilities.json': JSON.stringify(capabilityOutput(commands, prFields), null, 2) + '\n',
   'generated/SKILL.md': [
     '---', 'name: gitea-axi',
     'description: Read Gitea repository context and perform explicitly authorized repository workflows using gitea-axi.', '---', '',
