@@ -3,40 +3,43 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
+
+interface Output { repository: { id: number }; server: { version: string }; error: { code: string; reason: string }; origin: string }
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const scratch = await mkdtemp(join(root, '.credential-check-'));
 const canary = 'CANARY-injected-"/%-token';
 const forms = [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)];
 const command = ['repo', 'view', '--repo', 'sample-owner/sample-repo'];
-const routes = {
-  '/api/v1/version': JSON.parse(await readFile(new URL('../evidence/fixtures/P-001.json', import.meta.url))),
-  '/swagger.v1.json': JSON.parse(await readFile(new URL('../evidence/fixtures/P-002.json', import.meta.url))),
-  '/api/v1/repos/sample-owner/sample-repo': JSON.parse(await readFile(new URL('../evidence/fixtures/P-004.json', import.meta.url))),
+const routes: Record<string, unknown> = {
+  '/api/v1/version': JSON.parse(await readFile(new URL('../evidence/fixtures/P-001.json', import.meta.url), 'utf8')),
+  '/swagger.v1.json': JSON.parse(await readFile(new URL('../evidence/fixtures/P-002.json', import.meta.url), 'utf8')),
+  '/api/v1/repos/sample-owner/sample-repo': JSON.parse(await readFile(new URL('../evidence/fixtures/P-004.json', import.meta.url), 'utf8')),
 };
 let echo = false;
 let requests = 0;
 const server = createServer((request, response) => {
   requests++;
   assert.equal(request.headers.authorization, 'token ' + canary);
-  let body = routes[request.url];
+  let body = routes[request.url!];
   if (echo && request.url === '/api/v1/version') body = { version: forms.join('|') };
   response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
 });
 try {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  const origin = 'http://127.0.0.1:' + server.address().port;
+  const origin = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
   const env = {
     NODE_OPTIONS: process.env.NODE_OPTIONS,
     PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, HOME: scratch, APPDATA: scratch, XDG_CONFIG_HOME: scratch,
     GITEA_AXI_ORIGIN: origin, GITEA_AXI_TOKEN_ORIGIN: origin,
     GITEA_AXI_TOKEN: JSON.stringify({ env: 'TEST_TOKEN' }), TEST_TOKEN: canary, GITEA_AXI_ALLOW_INSECURE_HTTP: 'true',
   };
-  async function invoke(extra = {}, code = 0, program) {
+  async function invoke(extra: NodeJS.ProcessEnv = {}, code = 0, program?: string) {
     const argv = program ? ['--input-type=module', '-e', program] : ['dist/cli.js', ...command];
     const child = spawn(process.execPath, argv, { cwd: root, env: { ...env, ...extra }, stdio: ['ignore', 'pipe', 'pipe'], timeout: 10_000 });
     let stdout = '';
@@ -46,7 +49,7 @@ try {
     const [actual] = await once(child, 'close');
     assert.equal(actual, code, stdout + stderr);
     assert.equal(stderr, '');
-    return decode(stdout);
+    return decode(stdout) as unknown as Output;
   }
   assert.deepEqual((await invoke()).repository, { id: 1008, full_name: 'sample-owner/sample-repo', default_branch: 'main' });
   echo = true;
@@ -98,6 +101,6 @@ try {
   console.log('Credential regression checks passed');
 } finally {
   server.closeAllConnections();
-  await new Promise(resolveClose => server.close(resolveClose));
+  await new Promise<void>(resolveClose => server.close(() => resolveClose()));
   await rm(scratch, { recursive: true, force: true });
 }

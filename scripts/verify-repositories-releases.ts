@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
 
 type Row = Record<string, unknown>;
 interface Output { confirmation: string; error: { code: string; reason: string }; release: Row; notes: { from: string; to: string; commits: Row[] }; observations: { path: string; data: unknown }[]; items: Row[]; flags: { flag: string; type: string; description?: string }[] }

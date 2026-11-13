@@ -5,10 +5,13 @@ import { once } from 'node:events';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { decode } from '@toon-format/toon';
 import { pathToFileURL } from 'node:url';
 
-export async function readHost({ host, bin, scratch, origin, token, artifactFixture = false }) {
+export async function readHost({ host, bin, scratch, origin, token, artifactFixture = false }: {
+  host: string; bin: string; scratch: string; origin: string; token: string; artifactFixture?: boolean;
+}) {
   let entry = bin;
   if (process.env.NODE_OPTIONS) {
     entry = join(scratch, 'network-entry.ts');
@@ -19,7 +22,7 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
   const replacement = 'CANARY-S2-replacement';
   await writeFile(bootstrap, password, { mode: 0o600 });
   const reservation = createServer(); reservation.listen(0, '127.0.0.1'); await once(reservation, 'listening');
-  const port = reservation.address().port; await new Promise(resolve => reservation.close(resolve));
+  const port = (reservation.address() as AddressInfo).port; await new Promise<void>(resolve => reservation.close(() => resolve()));
   const launcher = `const {serverDefaults,toolPaths,toolCredentialSchemaPaths}=await import('./dist/src/server/config.js');
     serverDefaults.host='127.0.0.1';serverDefaults.port=Number(process.env.TEST_PORT);serverDefaults.temporaryDirectory=process.env.TEST_SCRATCH+'/calls';
     if(process.env.TEST_ARTIFACT_FIXTURE==='true') {
@@ -43,8 +46,8 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
     TEST_ARTIFACT_FIXTURE: String(artifactFixture),
   } });
   let log = '';
-  const ready = new Promise((resolve, reject) => {
-    const consume = chunk => { log += chunk; if (log.split('\n').some(line => { try { return JSON.parse(line).event === 'listening'; } catch { return false; } })) resolve(); };
+  const ready = new Promise<void>((resolve, reject) => {
+    const consume = (chunk: Buffer) => { log += chunk; if (log.split('\n').some(line => { try { return JSON.parse(line).event === 'listening'; } catch { return false; } })) resolve(); };
     server.stdout.on('data', consume); server.stderr.on('data', consume);
     server.once('exit', code => reject(new Error('Fixture exited ' + code + ': ' + log)));
     AbortSignal.timeout(30000).addEventListener('abort', () => reject(new Error('Fixture startup deadline: ' + log)), { once: true });
@@ -56,7 +59,7 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
   try {
     await ready;
     const clientEnv = { PATH: process.env.PATH, NODE_OPTIONS: process.env.NODE_OPTIONS, HOME: scratch, XDG_CONFIG_HOME: join(scratch, 'client'), ARTIUM_AXI_URL: 'http://127.0.0.1:' + port, ARTIUM_AXI_TEST_HTTP: '1' };
-    async function client(args, input, expected = 0) {
+    async function client(args: string[], input?: string, expected = 0) {
       const child = spawn(process.execPath, [join(host, 'dist/cli/artium-axi.mjs'), ...args], { cwd: scratch, env: clientEnv, stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
       let stdout = '', stderr = '';
       child.stdout.on('data', bytes => { stdout += bytes; }); child.stderr.on('data', bytes => { stderr += bytes; });
@@ -67,39 +70,39 @@ export async function readHost({ host, bin, scratch, origin, token, artifactFixt
     await client(['login', '--username', 'fixture-admin', '--password-stdin'], password, 1);
     await client(['passwd', '--password-stdin'], replacement);
     await client(['login', '--username', 'fixture-admin', '--password-stdin'], replacement);
-    const session = JSON.parse(await readFile(join(scratch, 'client/artium-axi/session.json'), 'utf8'));
-    const headers = { 'content-type': 'application/json', authorization: 'Bearer ' + session.accessToken };
-    async function api(path, method = 'GET', body, expectedStatus) {
+    const session = JSON.parse(await readFile(join(scratch, 'client/artium-axi/session.json'), 'utf8')) as { accessToken: string };
+    const headers: Record<string, string> = { 'content-type': 'application/json', authorization: 'Bearer ' + session.accessToken };
+    async function api<T = unknown>(path: string, method = 'GET', body?: unknown, expectedStatus?: number): Promise<T> {
       const response = await fetch('http://127.0.0.1:' + port + path, { method, headers, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30000) });
       const value = response.status === 204 ? null : await response.json();
       if (expectedStatus === undefined) assert(response.ok, JSON.stringify(value));
       else assert.equal(response.status, expectedStatus, JSON.stringify(value));
-      return value;
+      return value as T;
     }
-    async function reauthenticate() { headers['x-artium-reauth-ticket'] = (await api('/v1/auth/reauth', 'POST', { password: replacement })).ticket; }
+    async function reauthenticate() { headers['x-artium-reauth-ticket'] = (await api<{ ticket: string }>('/v1/auth/reauth', 'POST', { password: replacement })).ticket; }
     await reauthenticate();
     const path = '/v1/admin/tools/gitea-axi';
-    const tool = await api(path);
+    const tool = await api<{ revision: number }>(path);
     await api(path + '/credential', 'PUT', { expectedRevision: 0, expectedToolRevision: tool.revision, value: { origin, tokenOrigin: origin, token, allowInsecureHttp: true } });
-    const configured = await api(path); await api(path, 'PATCH', { enabled: true, expectedRevision: configured.revision });
-    const role = await api('/v1/admin/roles', 'POST', { name: 'synthetic-reader' });
+    const configured = await api<{ revision: number }>(path); await api(path, 'PATCH', { enabled: true, expectedRevision: configured.revision });
+    const role = await api<{ id: string; revision: number }>('/v1/admin/roles', 'POST', { name: 'synthetic-reader' });
     await api('/v1/admin/roles/' + role.id + '/tools', 'PUT', { tools: ['gitea-axi'], expectedRevision: role.revision });
-    const user = (await api('/v1/admin/users')).users.find(user => user.username === 'fixture-admin');
+    const user = (await api<{ users: { id: string; revision: number; username: string }[] }>('/v1/admin/users')).users.find(user => user.username === 'fixture-admin')!;
     await api('/v1/admin/users/' + user.id + '/roles', 'PUT', { roleIds: [role.id], expectedRevision: user.revision });
-    assert.equal(decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])).repository.full_name, 'sample/demo');
-    return { close, api, reauthenticate, download: args => client(['download', ...args, '--password-stdin'], replacement),
-      grantWrites: async operations => {
+    assert.equal((decode(await client(['gitea-axi', 'repo', 'view', '--repo', 'sample/demo'])) as { repository: { full_name: string } }).repository.full_name, 'sample/demo');
+    return { close, api, reauthenticate, download: (args: string[]) => client(['download', ...args, '--password-stdin'], replacement),
+      grantWrites: async (operations: string[]) => {
         await reauthenticate();
-        const current = await api(path);
+        const current = await api<{ revision: number }>(path);
         await api(path + '/write-access', 'PATCH', { enabled: operations.length > 0, operations, expectedRevision: current.revision });
       },
-      invokeClient: async (args, code = 0, input) => decode(await client(['gitea-axi', ...args], input, code)),
-      refuse: async (args, code) => {
-      const value = await api('/v1/tools/gitea-axi/run', 'POST', { args }, 400);
+      invokeClient: async (args: string[], code = 0, input?: string): Promise<unknown> => decode(await client(['gitea-axi', ...args], input, code)),
+      refuse: async (args: string[], code: string) => {
+      const value = await api<{ error: { code: string } }>('/v1/tools/gitea-axi/run', 'POST', { args }, 400);
       assert.equal(value.error.code, code, JSON.stringify(value));
       return value;
-    }, invoke: async (args, code, input) => {
-      const value = await api('/v1/tools/gitea-axi/run', 'POST', { args, ...input });
+    }, invoke: async (args: string[], code: number, input?: Record<string, unknown>): Promise<unknown> => {
+      const value = await api<{ exitCode: number; stdout: string; stderr: string; truncated: { stdout: boolean } }>('/v1/tools/gitea-axi/run', 'POST', { args, ...input });
       assert.equal(value.exitCode, code, value.stdout + value.stderr);
       assert(!value.truncated.stdout, 'Hosted result was truncated');
       for (const form of [token, encodeURIComponent(token), JSON.stringify(token).slice(1, -1)]) assert(!(value.stdout + value.stderr).includes(form));

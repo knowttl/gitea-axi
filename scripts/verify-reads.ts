@@ -5,21 +5,35 @@ import { once } from 'node:events';
 import { watch } from 'node:fs';
 import { chmod, mkdtemp, readFile, writeFile, rm, symlink } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
+
+interface Output extends Record<string, unknown> {
+  repository: { id: number; full_name: string }; identity: { login: string };
+  error: { code: string; reason: string }; items: { id: number; number: number }[];
+  data: { id: number; version: string; info: { version: string }; access_token: string };
+  organization: { name: string }; comments: { body: string }[];
+  sections: { labels: { code: string; items: unknown }; runs: { items: unknown } };
+  reviews: { comments: { body: string }[] }[]; diff: string;
+}
+interface RunOptions {
+  cwd?: string; env?: NodeJS.ProcessEnv; timeout?: number; code?: number;
+  cancel?: boolean; cancelEvent?: string; signal?: NodeJS.Signals;
+}
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3];
-const fixture = JSON.parse(await readFile(new URL('../test/fixtures/S2/reads.json', import.meta.url), 'utf8'));
-const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const fixture = JSON.parse(await readFile(new URL('../test/fixtures/S2/reads.json', import.meta.url), 'utf8')) as typeof import('../test/fixtures/S2/reads.json');
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-axi-' + task + '-'));
 const canary = 'CANARY-S2-"/%-token';
 const base = '/api/v1/repos/sample/demo';
 const command = ['--repo', 'sample/demo'];
-const requests = [];
+const requests: { method: string | undefined; path: string | undefined }[] = [];
 const contentsFile = { name: 'README.md', path: 'README.md', type: 'file', content: 'eA==', encoding: 'base64', target: null, submodule_git_url: null };
 const contentsLink = { name: 'link', path: 'link', type: 'symlink', content: null, encoding: null, target: 'README.md', submodule_git_url: null };
 const contentsRoot = [{ name: 'src', path: 'src', type: 'dir', content: null, encoding: null, target: null, submodule_git_url: null, download_url: null }];
@@ -38,16 +52,16 @@ let heldClosed = false;
 let holdBody = false;
 let holdAfterPolls = 1;
 let watchPullReads = 0;
-let bin;
-let origin;
+let bin: string;
+let origin: string;
 let foreignRequests = 0;
-let host;
-const report = { task, channel: 'offline-fake', result: 'failed', hostedInvocations: 0, hostedRefusals: [], fixture: null };
+let host: Awaited<ReturnType<typeof readHost>> | undefined;
+const report: Record<string, unknown> & { hostedInvocations: number; hostedRefusals: { args: string[]; response: unknown }[] } = { task, channel: 'offline-fake', result: 'failed', hostedInvocations: 0, hostedRefusals: [], fixture: null };
 const foreign = createServer((_request, response) => { foreignRequests++; response.end('{}'); });
 const server = createServer((request, response) => {
   requests.push({ method: request.method, path: request.url });
   assert.equal(request.headers.authorization, 'token ' + canary);
-  const url = new URL(request.url, origin);
+  const url = new URL(request.url!, origin);
   if (mode === 'held-watch' && url.pathname === base + '/pulls/7') watchPullReads++;
   if (mode === 'held-watch' && watchPullReads >= holdAfterPolls && url.pathname === holdPath && (url.searchParams.get('page') ?? '1') === holdPage) {
     heldClosed = false;
@@ -56,13 +70,13 @@ const server = createServer((request, response) => {
     server.emit('watch-held');
     return;
   }
-  if (mode === 'redirect') { response.writeHead(302, { location: 'http://127.0.0.1:' + foreign.address().port }).end(); return; }
+  if (mode === 'redirect') { response.writeHead(302, { location: 'http://127.0.0.1:' + (foreign.address() as AddressInfo).port }).end(); return; }
   if (mode === 'html') { response.writeHead(200, { 'content-type': 'text/html' }).end('<h1>failure</h1>'); return; }
   if (/^(401|403|404|429)$/.test(mode)) {
     response.writeHead(Number(mode), { 'content-type': 'application/json', 'retry-after': '999' }).end(JSON.stringify({ message: 'repository scope denied ' + canary })); return;
   }
   if (mode === 'malformed') { response.writeHead(200, { 'content-type': 'application/json' }).end('{broken'); return; }
-  const paths = {
+  const paths: Record<string, unknown> = {
     '/api/v1/version': { version: '1.23.4' }, '/swagger.v1.json': { info: { version: '1.23.4' }, paths: { '/version': {} } },
     '/api/v1/user': fixture.user, '/api/v1/orgs/sample': { id: 2, name: 'sample' },
     '/api/v1/repos/search': { ok: true, data: [fixture.repository] }, '/api/v1/orgs/sample/repos': [fixture.repository],
@@ -86,12 +100,12 @@ const server = createServer((request, response) => {
     body = [fixture.statuses[2]];
     if (holdPage === '2' && watchPullReads >= holdAfterPolls) response.setHeader('link', `<${origin}${url.pathname}?limit=50&page=2>; rel="next"`);
   }
-  if (mode === 'invalid-contents' && body && url.pathname.startsWith(base + '/contents')) body = Array.isArray(body) ? body.map(row => ({ ...row, content: 42 })) : { ...body, content: 42 };
+  if (mode === 'invalid-contents' && body && url.pathname.startsWith(base + '/contents')) body = Array.isArray(body) ? body.map(row => ({ ...row, content: 42 })) : { ...body as object, content: 42 };
   if (mode === 'empty-contents' && url.pathname === base + '/contents/src') body = [];
   if (mode === 'invalid-contents-link' && url.pathname === base + '/contents/module') body = { ...contentsSubmodule, _links: { ...contentsSubmodule._links, git: 42 } };
   if (mode === 'invalid-download-url' && url.pathname === base + '/contents/module') body = { ...contentsSubmodule, download_url: 42 };
   if (['many-inline', 'inline-over-limit'].includes(mode) && url.pathname === base + '/pulls/7/reviews/12/comments') body = Array.from({ length: mode === 'many-inline' ? 50 : 1001 }, (_, index) => ({ ...fixture.inline[0], id: 13 + index, body: 'Line ' + index }));
-  if (mode === 'inline-hostile' && url.pathname === base + '/pulls/7/reviews/12/comments') response.setHeader('link', `<http://127.0.0.1:${foreign.address().port}${url.pathname}?page=2>; rel="next"`);
+  if (mode === 'inline-hostile' && url.pathname === base + '/pulls/7/reviews/12/comments') response.setHeader('link', `<http://127.0.0.1:${(foreign.address() as AddressInfo).port}${url.pathname}?page=2>; rel="next"`);
   if (url.pathname === base + '/issues') {
     const page = url.searchParams.get('page');
     body = page === '1' ? [fixture.issues[1]] : page === '2' ? [fixture.issues[0]] : [fixture.issues[2], fixture.issues[0]];
@@ -101,7 +115,7 @@ const server = createServer((request, response) => {
     if (url.pathname.endsWith('/issues') || url.pathname.endsWith('/pulls') || url.pathname.endsWith('/labels')) { body = []; response.removeHeader('link'); response.setHeader('x-total-count', '0'); }
   }
   if (mode === 'permission-section' && url.pathname.endsWith('/labels')) { response.writeHead(403, { 'content-type': 'application/json' }).end('{"message":"issue scope required"}'); return; }
-  if (mode === 'hostile' && url.pathname.endsWith('/issues')) response.setHeader('link', `<http://127.0.0.1:${foreign.address().port}${base}/issues?page=2>; rel="next"`);
+  if (mode === 'hostile' && url.pathname.endsWith('/issues')) response.setHeader('link', `<http://127.0.0.1:${(foreign.address() as AddressInfo).port}${base}/issues?page=2>; rel="next"`);
   if (mode === 'missing' && url.pathname === base) body = { id: 10, full_name: 'sample/demo' };
   if (mode === 'wrong-type' && url.pathname === base) body = { ...fixture.repository, id: 'ten' };
   if (mode === 'secret' && url.pathname === '/api/v1/version') body = { version: canary + '|' + encodeURIComponent(canary), access_token: 'other-secret' };
@@ -111,7 +125,7 @@ const server = createServer((request, response) => {
   response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
   if (url.pathname.endsWith('/statuses')) server.emit('check-read');
 });
-async function run(executable, argv, options = {}) {
+async function run(executable: string, argv: string[], options: RunOptions = {}) {
   const child = spawn(executable, argv, { cwd: options.cwd ?? scratch, env: options.env ?? process.env, stdio: ['ignore', 'pipe', 'pipe'], timeout: options.timeout ?? 120_000, killSignal: 'SIGKILL' });
   let stdout = '', stderr = '';
   child.stdout.on('data', bytes => { stdout += bytes; }); child.stderr.on('data', bytes => { stderr += bytes; });
@@ -120,13 +134,13 @@ async function run(executable, argv, options = {}) {
   assert.equal(code, options.code ?? 0, argv.join(' ') + '\n' + stdout + stderr);
   return stdout;
 }
-let env;
-const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
+let env: NodeJS.ProcessEnv;
+const invoke = async (argv: string[], code = 0, extra: NodeJS.ProcessEnv = {}, hosted = true) => {
   const output = await run(process.execPath, [bin, ...argv], { code, env: { ...env, ...extra } });
   renderedChars = output.length;
   for (const form of [canary, JSON.stringify(canary).slice(1, -1), encodeURIComponent(canary)]) assert(!output.includes(form), 'Canary escaped output');
-  const result = argv.includes('--json') ? JSON.parse(output) : decode(output);
-  if (host && hosted && !argv.includes('--json') && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]) && Object.keys(extra).length === 0) {
+  const result = (argv.includes('--json') ? JSON.parse(output) : decode(output)) as Output;
+  if (host && hosted && !argv.includes('--json') && ['repo', 'issue', 'pr', 'label', 'release', 'run', 'api', 'org', '--repo'].includes(argv[0]!) && Object.keys(extra).length === 0) {
     const hosted = await host.invoke(argv[0] === '--repo' ? ['dashboard', ...argv] : argv, code);
     report.hostedInvocations++;
     assert.deepEqual(hosted, result, 'Hosted and standalone read agree: ' + argv.join(' '));
@@ -135,7 +149,7 @@ const invoke = async (argv, code = 0, extra = {}, hosted = true) => {
 };
 try {
   await run('npm', ['run', 'build'], { cwd: root });
-  const [packed] = JSON.parse(await run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch], { cwd: root }));
+  const [packed] = JSON.parse(await run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch], { cwd: root })) as [{ filename: string }];
   report.packageSha256 = createHash('sha256').update(await readFile(join(scratch, packed.filename))).digest('hex');
   report.sourceHead = (await run('git', ['-C', root, 'rev-parse', 'HEAD'])).trim();
   report.sourceDirty = Boolean((await run('git', ['-C', root, 'status', '--porcelain'])).trim());
@@ -144,13 +158,13 @@ try {
   bin = join(prefix, 'node_modules/@knowttl/gitea-axi/dist/cli.js');
   foreign.listen(0, '127.0.0.1'); await once(foreign, 'listening');
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  origin = 'http://127.0.0.1:' + server.address().port;
+  origin = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
   env = { PATH: process.env.PATH, NODE_OPTIONS: process.env.NODE_OPTIONS, HOME: scratch, APPDATA: scratch, XDG_CONFIG_HOME: scratch, GITEA_AXI_ORIGIN: origin,
     GITEA_AXI_TOKEN_ORIGIN: origin, GITEA_AXI_TOKEN: JSON.stringify({ env: 'TEST_TOKEN' }), TEST_TOKEN: canary, GITEA_AXI_ALLOW_INSECURE_HTTP: 'true' };
   if (process.env.GITEA_AXI_ARTIUM_ROOT) {
     assert(process.env.GITEA_AXI_ARTIUM_MANIFEST, 'Hosted proof requires GITEA_AXI_ARTIUM_MANIFEST from the frozen fixture');
     const bytes = await readFile(process.env.GITEA_AXI_ARTIUM_MANIFEST);
-    const manifest = JSON.parse(bytes.toString('utf8'));
+    const manifest = JSON.parse(bytes.toString('utf8')) as { fixtureCommit: string };
     report.fixture = { revision: manifest.fixtureCommit, manifestSha256: createHash('sha256').update(bytes).digest('hex') };
     host = await readHost({ host: process.env.GITEA_AXI_ARTIUM_ROOT, bin, scratch, origin, token: canary });
   }
@@ -168,7 +182,7 @@ try {
     assert.equal((await invoke(['config', 'path', '--config', config])).path, config);
     assert.equal((await invoke(['doctor'])).identity.login, 'alice');
     const before = requests.length;
-    for (const [extra, code] of [[{ GITEA_AXI_TOKEN_ORIGIN: '' }, 'CONFIG_INVALID'], [{ GITEA_AXI_TOKEN_ORIGIN: 'https://wrong.test' }, 'AUTH_BINDING_MISMATCH'], [{ GITEA_AXI_ALLOW_INSECURE_HTTP: 'false' }, 'CONFIG_INVALID'], [{ GITEA_AXI_TOKEN: JSON.stringify(canary) }, 'CONFIG_INVALID']]) assert.equal((await invoke(['auth', 'status'], 1, extra)).error.code, code);
+    for (const [extra, code] of [[{ GITEA_AXI_TOKEN_ORIGIN: '' }, 'CONFIG_INVALID'], [{ GITEA_AXI_TOKEN_ORIGIN: 'https://wrong.test' }, 'AUTH_BINDING_MISMATCH'], [{ GITEA_AXI_ALLOW_INSECURE_HTTP: 'false' }, 'CONFIG_INVALID'], [{ GITEA_AXI_TOKEN: JSON.stringify(canary) }, 'CONFIG_INVALID']] as const) assert.equal((await invoke(['auth', 'status'], 1, extra)).error.code, code);
     assert.equal(requests.length, before);
     assert.equal((await invoke(['auth', 'status'], 1, { GITEA_AXI_ORIGIN: undefined, GITEA_AXI_TOKEN_ORIGIN: undefined, GITEA_AXI_TOKEN: undefined, GITEA_AXI_ALLOW_INSECURE_HTTP: undefined })).error.code, 'AUTH_REQUIRED');
     const token = join(scratch, 'token'); await writeFile(token, '\uFEFF' + canary + '\n', { mode: 0o600 });
@@ -186,20 +200,20 @@ try {
     await run(process.execPath, ['--input-type=module', '-e', `const {writePrivateFile}=await import(${JSON.stringify(writer)}); await writePrivateFile(${JSON.stringify(config)}, 'prior valid configuration');`]);
     const monitor = watch(scratch);
     const interrupted = spawn(process.execPath, ['--input-type=module', '-e', `const {writePrivateFile}=await import(${JSON.stringify(writer)}); await writePrivateFile(${JSON.stringify(config)}, 'x'.repeat(64000000));`], { stdio: 'ignore', timeout: 10000 });
-    monitor.on('change', (_event, name) => { if (name?.endsWith('.tmp')) interrupted.kill('SIGKILL'); });
+    monitor.on('change', (_event, name) => { if ((name as string | null)?.endsWith('.tmp')) interrupted.kill('SIGKILL'); });
     const [, signal] = await once(interrupted, 'close'); monitor.close();
     assert.equal(signal, 'SIGKILL'); assert.equal(await readFile(config, 'utf8'), 'prior valid configuration');
   } else if (task === 'S2.2') {
     assert.equal((await invoke(['repo', 'view', ...command])).repository.full_name, 'sample/demo');
     assert.deepEqual((await invoke(['repo', 'list'])).items, [{ id: 10, full_name: 'sample/demo', default_branch: 'main' }]);
-    assert.equal((await invoke(['repo', 'list', '--org', 'sample'])).items[0].id, 10);
+    assert.equal((await invoke(['repo', 'list', '--org', 'sample'])).items[0]!.id, 10);
     assert.equal((await invoke(['org', 'view', 'sample'])).organization.name, 'sample');
     await run('git', ['init', join(scratch, 'workspace')]);
     await run('git', ['-C', join(scratch, 'workspace'), 'remote', 'add', 'origin', origin + '/sample/demo.git']);
-    assert.equal(decode(await run(process.execPath, [bin, 'repo', 'view'], { cwd: join(scratch, 'workspace'), env })).repository.id, 10);
+    assert.equal((decode(await run(process.execPath, [bin, 'repo', 'view'], { cwd: join(scratch, 'workspace'), env })) as unknown as Output).repository.id, 10);
     await run('git', ['-C', join(scratch, 'workspace'), 'remote', 'set-url', 'origin', 'https://wrong.test/other/repo.git']);
-    assert.equal(decode(await run(process.execPath, [bin, 'repo', 'view'], { cwd: join(scratch, 'workspace'), env, code: 2 })).error.code, 'USAGE');
-    assert.equal(decode(await run(process.execPath, [bin, 'repo', 'view', ...command], { cwd: join(scratch, 'workspace'), env })).repository.id, 10);
+    assert.equal((decode(await run(process.execPath, [bin, 'repo', 'view'], { cwd: join(scratch, 'workspace'), env, code: 2 })) as unknown as Output).error.code, 'USAGE');
+    assert.equal((decode(await run(process.execPath, [bin, 'repo', 'view', ...command], { cwd: join(scratch, 'workspace'), env })) as unknown as Output).repository.id, 10);
     mode = 'empty';
     for (const family of ['issue', 'pr', 'label', 'release', 'run']) {
       const result = await invoke([family, 'list', ...command]); assert.deepEqual(result.items, []); assert.equal(result.total, family === 'release' ? null : 0); assert.equal(result.continuation, false);
@@ -219,7 +233,7 @@ try {
       assert.equal(await run(process.execPath, [bin, '--json', flag], { env }), version + '\n');
     }
   } else if (task === 'S2.3') {
-    for (const [limit, ids] of [['1', [3]], ['2', [3, 1]]]) {
+    for (const [limit, ids] of [['1', [3]], ['2', [3, 1]]] as const) {
       const result = await invoke(['issue', 'list', ...command, '--state', 'open', '--limit', limit]);
       assert.deepEqual(result.items.map(item => item.number), ids); assert.equal(result.continuation, limit === '1'); assert.equal(result.total, 2);
     }
@@ -228,7 +242,7 @@ try {
       assert.deepEqual(result.items.map(item => item.number), family === 'pr' ? [7] : [1]);
       assert.equal((await invoke([family, 'list', ...command, '--milestone', '999'], 2)).error.code, 'USAGE');
     }
-    assert.equal((await invoke(['issue', 'view', '1', ...command, '--comments'])).comments[0].body, 'Please verify');
+    assert.equal((await invoke(['issue', 'view', '1', ...command, '--comments'])).comments[0]!.body, 'Please verify');
     const review = { id: 12, author: { login: 'alice', name: 'Alice' }, state: 'APPROVED', dismissed: false, stale: false, body: 'Looks good', commit: { oid: 'abc123' }, submittedAt: '2026-02-04T00:00:00Z', comments: [{ id: 13, body: 'Nice', path: 'app.ts', position: 2, commit: { oid: 'abc123' } }] };
     const rollup = { head: 'abc123', items: [{ name: 'test', state: 'pending', description: null, url: null }, { name: 'lint', state: 'failure', description: null, url: null }, { name: 'build', state: 'success', description: 'Built', url: 'https://example.test/build' }], passed: 1, failed: 1, pending: 1, exitCode: 1 };
     Object.assign(rollup, { source: 'commit-statuses', partial: true });
@@ -245,36 +259,36 @@ try {
     // #6: the vendor returns all inline comments without pagination.
     mode = 'many-inline';
     const selectedReviews = await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews,latestReviews']);
-    assert.deepEqual(selectedReviews.reviews[0].comments.map(row => row.body), Array.from({ length: 50 }, (_, index) => 'Line ' + index));
+    assert.deepEqual(selectedReviews.reviews[0]!.comments.map(row => row.body), Array.from({ length: 50 }, (_, index) => 'Line ' + index));
     assert.deepEqual(selectedReviews.latestReviews, selectedReviews.reviews);
-    assert.equal((await invoke(['pr', 'view', '7', ...command, '--reviews'])).reviews[0].comments.length, 50);
+    assert.equal((await invoke(['pr', 'view', '7', ...command, '--reviews'])).reviews[0]!.comments.length, 50);
     mode = 'inline-over-limit';
     assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews'], 1)).error.code, 'RESPONSE_LIMIT');
     mode = 'inline-hostile';
     assert.equal((await invoke(['pr', 'view', '7', ...command, '--fields', 'reviews'], 1)).error.code, 'UNSAFE_PAGINATION');
     assert.equal(foreignRequests, 0);
     mode = 'ok';
-    for (const [state, code, counts] of [['ok', 1, [1, 1, 1]], ['passed', 0, [1, 0, 0]], ['pending', 8, [0, 0, 1]], ['absent', 1, [0, 0, 0]]]) {
+    for (const [state, code, counts] of [['ok', 1, [1, 1, 1]], ['passed', 0, [1, 0, 0]], ['pending', 8, [0, 0, 1]], ['absent', 1, [0, 0, 0]]] as const) {
       mode = state; const result = await invoke(['pr', 'checks', '7', ...command], code); assert.deepEqual([result.passed, result.failed, result.pending], counts);
     }
     mode = 'pending'; const deadline = await invoke(['pr', 'checks', '7', ...command, '--watch', '--timeout', '1', '--interval', '1'], 8); assert.equal(deadline.pending, 1);
     assert.equal((await invoke(['pr', 'checks', '7', ...command, '--json'], 8)).pending, 1);
-    const cancelled = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })); assert.equal(cancelled.cancelled, true);
+    const cancelled = (decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '10'], { env, code: 8, cancel: true })) as unknown as Output); assert.equal(cancelled.cancelled, true);
     mode = 'held-watch';
-    for (const [path, page, body] of [[base + '/pulls/7', '1', false], [base + '/commits/abc123/status', '1', false], [base + '/commits/abc123/statuses', '1', false], [base + '/commits/abc123/statuses', '2', false], [base + '/commits/abc123/status', '1', true], [base + '/commits/abc123/statuses', '2', true]]) {
+    for (const [path, page, body] of [[base + '/pulls/7', '1', false], [base + '/commits/abc123/status', '1', false], [base + '/commits/abc123/statuses', '1', false], [base + '/commits/abc123/statuses', '2', false], [base + '/commits/abc123/status', '1', true], [base + '/commits/abc123/statuses', '2', true]] as const) {
       holdPath = path; holdPage = page; holdBody = body;
-      for (const signal of ['SIGINT', 'SIGTERM']) {
+      for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         watchPullReads = 0;
-        const result = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 }));
+        const result = (decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 })) as unknown as Output);
         assert.equal(result.cancelled, true, signal + ' cancels stalled ' + path + ' page ' + page);
         assert.equal(result.exitCode, 8); assert.deepEqual(result.items, []);
         assert.equal(heldClosed, true, 'Cancellation closes the held HTTP request');
       }
     }
     holdAfterPolls = 2; holdPath = base + '/commits/abc123/status'; holdPage = '1'; holdBody = false;
-    for (const signal of ['SIGINT', 'SIGTERM']) {
+    for (const signal of ['SIGINT', 'SIGTERM'] as const) {
       watchPullReads = 0;
-      const result = decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30', '--interval', '1'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 }));
+      const result = (decode(await run(process.execPath, [bin, 'pr', 'checks', '7', ...command, '--watch', '--timeout', '30', '--interval', '1'], { env, code: 8, cancel: true, cancelEvent: 'watch-held', signal, timeout: 5000 })) as unknown as Output);
       assert.deepEqual([result.cancelled, result.exitCode, result.pending, result.head], [true, 8, 1, 'abc123']);
       assert.equal(heldClosed, true);
     }
@@ -304,7 +318,7 @@ try {
     assert.deepEqual((await invoke(['api', 'GET', base + '/contents/link'])).data, contentsLink);
     assert.deepEqual((await invoke(['api', 'GET', base + '/contents/module'])).data, contentsSubmodule);
     // #48/#11: root and entry-directory arrays preserve every documented entry.
-    for (const [path, entries] of [[base + '/contents', contentsRoot], [base + '/contents/src', contentsDirectory]]) {
+    for (const [path, entries] of [[base + '/contents', contentsRoot], [base + '/contents/src', contentsDirectory]] as const) {
       assert.deepEqual((await invoke(['api', 'GET', path])).data, entries);
     }
     mode = 'empty-contents';
@@ -327,7 +341,7 @@ try {
       [base + '/contents/src/%252e%252e/README.md', 2, 'USAGE'], [base + '/contents/src%2Fmain.ts', 1, 'READ_ONLY'],
       [base + '/branches/feature/topic', 1, 'READ_ONLY'], [base + '/commits/feature/topic/status', 1, 'READ_ONLY'],
       ['/api/v1/repos/sample/extra/demo/contents/README.md', 1, 'READ_ONLY'],
-    ]) assert.equal((await invoke(['api', 'GET', path], exitCode, {}, false)).error.code, code);
+    ] as const) assert.equal((await invoke(['api', 'GET', path], exitCode, {}, false)).error.code, code);
     assert.equal((await invoke(['api', 'POST', base + '/contents/src/main.ts', '--field', 'content=eA==', '--preview', '--allow-write', 'repoCreateFile'], 1, {}, false)).error.code, 'READ_ONLY');
     assert.equal(requests.length, beforePathRefusals);
     const before = requests.length;
@@ -352,12 +366,12 @@ try {
       ['%2e%2e/user', 2, 'USAGE', 'INVALID_INPUT'], ['user?token=canary', 2, 'USAGE', 'FLAG_BLOCKED'],
       ['repos/sample/demo/actions/runners/registration-token', 1, 'READ_ONLY', 'INVALID_INPUT'],
       ['unknown', 1, 'READ_ONLY', 'INVALID_INPUT'],
-    ]) {
+    ] as const) {
       assert.equal((await invoke(['api', path], exitCode, {}, false)).error.code, errorCode);
       if (host) report.hostedRefusals.push({ args: ['api', path], response: await host.refuse(['api', path], admissionCode) });
     }
     assert.equal(requests.length, before);
-    for (const [failure, code] of [['missing', 'INVALID_RESPONSE'], ['wrong-type', 'INVALID_RESPONSE'], ['malformed', 'INVALID_RESPONSE'], ['html', 'INVALID_RESPONSE'], ['401', 'AUTH_REQUIRED'], ['403', 'PERMISSION_DENIED'], ['404', 'NOT_FOUND_OR_HIDDEN'], ['429', 'RATE_LIMITED'], ['redirect', 'TRANSPORT_ERROR']]) {
+    for (const [failure, code] of [['missing', 'INVALID_RESPONSE'], ['wrong-type', 'INVALID_RESPONSE'], ['malformed', 'INVALID_RESPONSE'], ['html', 'INVALID_RESPONSE'], ['401', 'AUTH_REQUIRED'], ['403', 'PERMISSION_DENIED'], ['404', 'NOT_FOUND_OR_HIDDEN'], ['429', 'RATE_LIMITED'], ['redirect', 'TRANSPORT_ERROR']] as const) {
       mode = failure; assert.equal((await invoke(['api', 'repos/sample/demo'], 1)).error.code, code);
     }
     mode = 'secret'; assert.equal((await invoke(['api', 'version'])).data.version, '[REDACTED]|[REDACTED]'); assert.equal((await invoke(['api', 'version'])).data.access_token, '[REDACTED]');
@@ -368,7 +382,7 @@ try {
   console.log(task + ' passed: installed package, offline fake, ' + requests.length + ' authenticated requests; Artium: ' + (host ? 'verified' : 'skipped: Artium fixture not supplied'));
 } finally {
   if (host) await host.close();
-  for (const service of [server, foreign]) { service.closeAllConnections(); await new Promise(resolve => service.close(resolve)); }
+  for (const service of [server, foreign]) { service.closeAllConnections(); await new Promise<void>(resolve => service.close(() => resolve())); }
   report.authenticatedRequests = requests.length;
   const reportPath = process.env.GITEA_AXI_REPORT ?? scratch + '-report.json';
   await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');

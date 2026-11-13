@@ -4,55 +4,68 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { readFile, writeFile, mkdtemp, mkdir, realpath, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
 
+interface Output { server: { version: string; specification_version: string; specification_paths: number }; repository: unknown; error: { code: string } }
+interface Invocation { executable: string; argv: string[]; cwd: string }
+interface InventoryCommand {
+  path: string[]; effect: string; operations?: string[]; outcomes?: string[];
+  description: string; flags: Record<string, Record<string, unknown>>;
+}
+interface Report extends Record<string, unknown> {
+  runtime: Record<string, string>; invocations: Invocation[];
+  assertions: { name: string; actual: unknown; expected: unknown }[];
+  requests: { method: string | undefined; path: string | undefined }[];
+}
+
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
-if (args.length === 2 && args[0] === '--task' && ['S6.3', 'S6.4'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S6.3', 'S6.4'].includes(args[1]!)) {
   await import('./verify-discovery.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S6.1', 'S6.2'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S6.1', 'S6.2'].includes(args[1]!)) {
   await import('./verify-local.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S4.2', 'S4.3'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S4.2', 'S4.3'].includes(args[1]!)) {
   await import('./verify-transfers-values.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S3.5', 'S4.1'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S3.5', 'S4.1'].includes(args[1]!)) {
   await import('./verify-repositories-releases.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S3.3', 'S3.4'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S3.3', 'S3.4'].includes(args[1]!)) {
   await import('./verify-pulls.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S5.1', 'S5.2'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S5.1', 'S5.2'].includes(args[1]!)) {
   await import('./verify-stage-five.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S3.1', 'S3.2'].includes(args[1])) {
+if (args.length === 2 && args[0] === '--task' && ['S3.1', 'S3.2'].includes(args[1]!)) {
   await import('./verify-writes.ts');
   process.exit(0);
 }
-if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'].includes(args[1])) {
-  await import('./verify-reads.mjs');
+if (args.length === 2 && args[0] === '--task' && ['S2.1', 'S2.2', 'S2.3', 'S2.4'].includes(args[1]!)) {
+  await import('./verify-reads.ts');
   process.exit(0);
 }
 assert.deepEqual(args, ['--task', 'S1.1'], 'Select exactly --task S1.1; missing or empty scenario selection fails');
-const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
-const fixture = name => readJson(join(root, 'evidence', 'fixtures', name + '.json'));
-const scenario = await readJson(join(root, 'test/fixtures/S1.1/scenario.json'));
+const readJson = async <T = unknown>(path: string): Promise<T> => JSON.parse(await readFile(path, 'utf8')) as T;
+const fixture = <T>(name: string) => readJson<T>(join(root, 'evidence', 'fixtures', name + '.json'));
+const scenario = await readJson<typeof import('../test/fixtures/S1.1/scenario.json')>(join(root, 'test/fixtures/S1.1/scenario.json'));
 assert.equal(scenario.task, 'S1.1');
 assert.deepEqual(scenario.operations, ['OP-001', 'OP-002', 'OP-004']);
 assert.deepEqual(scenario.outcomes, ['AC-001', 'AC-002', 'AC-004']);
 assert.deepEqual(scenario.commands.map(command => command.id), ['C075']);
-assert.deepEqual(scenario.commands[0].capturedFlags, ['--repo']);
-const report = {
+assert.deepEqual(scenario.commands[0]!.capturedFlags, ['--repo']);
+const report: Report = {
   task: scenario.task, channel: 'offline-fake', platform: process.platform, arch: process.arch,
   runtime: { node: process.version, nodePin: (await readFile(join(root, '.nvmrc'), 'utf8')).trim() },
   artiumRevision: null, operations: scenario.operations, outcomes: scenario.outcomes,
@@ -61,8 +74,8 @@ const report = {
 };
 const scratch = await mkdtemp(join(tmpdir(), 'gitea-axi-S1.1-'));
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
-async function run(executable, argv, options = {}) {
+const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+async function run(executable: string, argv: string[], options: { cwd?: string; env?: NodeJS.ProcessEnv; code?: number } = {}) {
   const invocation = { executable, argv, cwd: options.cwd ?? root };
   report.invocations.push(invocation);
   const child = spawn(executable, argv, {
@@ -78,18 +91,18 @@ async function run(executable, argv, options = {}) {
   assert.equal(code, options.code ?? 0, `${executable} ${argv.join(' ')} failed\n${stdout}\n${stderr}`);
   return stdout;
 }
-function expect(name, actual, expected) {
+function expect(name: string, actual: unknown, expected: unknown) {
   assert.deepEqual(actual, expected, name);
   report.assertions.push({ name, actual, expected });
 }
-let server;
+let server: ReturnType<typeof createServer> | undefined;
 try {
-  const hashes = await readJson(join(root, 'evidence/hashes.json'));
+  const hashes = await readJson<Record<string, string>>(join(root, 'evidence/hashes.json'));
   assert.equal(Object.keys(hashes).length, 5, 'All retained evidence needs a hash');
   for (const [path, expected] of Object.entries(hashes)) {
     expect('evidence hash ' + path, sha256(await readFile(join(root, 'evidence', path))), expected);
   }
-  const pkg = await readJson(join(root, 'package.json'));
+  const pkg = await readJson<typeof import('../package.json')>(join(root, 'package.json'));
   report.runtime.packageManagerPin = pkg.packageManager;
   report.runtime.nodeMinimum = pkg.engines.node;
   report.runtime.npm = (await run(npm, ['--version'])).trim();
@@ -98,8 +111,8 @@ try {
   await run(npm, ['run', 'typecheck']);
   await run(npm, ['run', 'lint']);
   await run(npm, ['run', 'build']);
-  await run(process.execPath, ['scripts/verify-credentials.mjs']);
-  const packed = JSON.parse(await run(npm, ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch]));
+  await run(process.execPath, ['scripts/verify-credentials.ts']);
+  const packed = JSON.parse(await run(npm, ['pack', '--ignore-scripts', '--json', '--pack-destination', scratch])) as [{ filename: string; integrity: string }];
   assert.equal(packed.length, 1, 'Exactly one immutable tarball');
   const tarball = join(scratch, packed[0].filename);
   report.package = { name: pkg.name, version: pkg.version, sha256: sha256(await readFile(tarball)), integrity: packed[0].integrity };
@@ -115,22 +128,22 @@ try {
   };
   await run(npm, ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, '--prefix', prefix, tarball], { cwd: scratch, env });
   const installedRoot = join(prefix, 'node_modules', '@knowttl', 'gitea-axi');
-  const installedPkg = await readJson(join(installedRoot, 'package.json'));
+  const installedPkg = await readJson<typeof pkg>(join(installedRoot, 'package.json'));
   const bin = await realpath(join(installedRoot, installedPkg.bin['gitea-axi']));
   const binRelative = relative(prefix, bin);
   assert(!binRelative.startsWith('..') && !isAbsolute(binRelative), 'Installed bin must stay inside the disposable prefix');
   expect('installed package identity', [installedPkg.name, installedPkg.version], [pkg.name, pkg.version]);
   expect('shipped schema', await readJson(join(installedRoot, 'schemas/responses.json')), await readJson(join(root, 'schemas/responses.json')));
-  const inventory = await readJson(join(installedRoot, 'generated/host-inventory.json'));
+  const inventory = await readJson<{ commands: InventoryCommand[] }>(join(installedRoot, 'generated/host-inventory.json'));
   expect('shipped host inventory', inventory, await readJson(join(root, 'generated/host-inventory.json')));
   expect('host read classification', inventory.commands.filter(command => command.path.join(' ') === 'repo view').map(command => ({ path: command.path, effect: command.effect, operations: command.operations, outcomes: command.outcomes })), [{
     path: ['repo', 'view'], effect: 'read', operations: scenario.operations, outcomes: scenario.outcomes,
   }]);
-  const invoke = (argv, code = 0) => run(process.execPath, [bin, ...argv], { cwd: scratch, env, code });
+  const invoke = (argv: string[], code = 0) => run(process.execPath, [bin, ...argv], { cwd: scratch, env, code });
   for (const flag of ['--version', '-v', '-V']) {
     expect('installed version ' + flag, await invoke([flag]), pkg.version + '\n');
   }
-  const timings = { floor: [], version: [] };
+  const timings: { floor: number[]; version: number[] } = { floor: [], version: [] };
   for (let sample = 0; sample < 5; sample++) {
     let start = process.hrtime.bigint();
     await run(process.execPath, ['-e', 'console.log(1)'], { cwd: scratch, env });
@@ -139,26 +152,26 @@ try {
     await invoke(['--version']);
     timings.version.push(Number(process.hrtime.bigint() - start));
   }
-  const median = values => [...values].sort((a, b) => a - b)[2];
+  const median = (values: number[]) => [...values].sort((a, b) => a - b)[2]!;
   report.versionTiming = { ...timings, maximumFloorRatio: 4 };
   assert(median(timings.version) < 4 * median(timings.floor), 'Version fast path exceeds four times the same-run Node startup floor');
   const help = decode(await invoke(['repo', 'view', '--help']));
-  const repoCommand = inventory.commands.find(command => command.path.join(' ') === 'repo view');
+  const repoCommand = inventory.commands.find(command => command.path.join(' ') === 'repo view')!;
   expect('registry-derived installed help', help, { bin, command: 'gitea-axi repo view', description: repoCommand.description,
     flags: Object.entries(repoCommand.flags).map(([name, flag]) => ({ flag: '--' + name, ...flag })),
     examples: ['gitea-axi repo view --help', 'gitea-axi repo view --profile <name>'] });
-  const version = await fixture('P-001');
-  const specification = await fixture('P-002');
-  const repository = await fixture('P-004');
+  const version = await fixture<typeof import('../evidence/fixtures/P-001.json')>('P-001');
+  const specification = await fixture<typeof import('../evidence/fixtures/P-002.json')>('P-002');
+  const repository = await fixture<typeof import('../evidence/fixtures/P-004.json')>('P-004');
   let mode = 'success';
-  const routes = {
+  const routes: Record<string, unknown> = {
     '/api/v1/version': version,
     '/swagger.v1.json': specification,
     '/api/v1/repos/sample-owner/sample-repo': repository,
   };
   server = createServer((request, response) => {
     report.requests.push({ method: request.method, path: request.url });
-    if (request.method !== 'GET' || !(request.url in routes) || request.headers.authorization) {
+    if (request.method !== 'GET' || !(request.url! in routes) || request.headers.authorization) {
       response.writeHead(400, { 'content-type': 'application/json' }).end('{}');
       return;
     }
@@ -168,28 +181,28 @@ try {
     } else if (isRepository && mode === 'malformed') {
       response.writeHead(200, { 'content-type': 'application/json' }).end('{broken');
     } else {
-      const body = isRepository && mode === 'missing-branch' ? { ...repository, default_branch: null } : routes[request.url];
+      const body = isRepository && mode === 'missing-branch' ? { ...repository, default_branch: null } : routes[request.url!];
       response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(body));
     }
   });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  const origin = 'http://127.0.0.1:' + server.address().port;
+  const origin = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
   const command = ['repo', 'view', '--repo', 'sample-owner/sample-repo', '--origin', origin, '--allow-insecure-http'];
-  const output = decode(await invoke(command));
+  const output = decode(await invoke(command)) as unknown as Output;
   expect('AC-001 server version', output.server.version, scenario.expected.version);
   expect('AC-002 specification version', output.server.specification_version, scenario.expected.specificationVersion);
   expect('AC-002 exact specification path count', output.server.specification_paths, Object.keys(specification.paths).length);
   assert(output.server.specification_paths > 0, 'AC-002 paths must be non-empty');
   expect('AC-004 repository identity and default branch', output.repository, scenario.expected.repository);
-  expect('equals-form repository selector', decode(await invoke([
+  expect('equals-form repository selector', (decode(await invoke([
     'repo', 'view', '--repo=sample-owner/sample-repo', '--origin', origin, '--allow-insecure-http',
-  ])).repository, scenario.expected.repository);
+  ])) as unknown as Output).repository, scenario.expected.repository);
   for (const [failureMode, code] of [
     ['permission', 'PERMISSION_DENIED'], ['malformed', 'INVALID_RESPONSE'], ['missing-branch', 'INVALID_RESPONSE'],
   ]) {
-    mode = failureMode;
-    const failure = decode(await invoke(command, 1));
+    mode = failureMode!;
+    const failure = decode(await invoke(command, 1)) as unknown as Output;
     expect('failure ' + failureMode, failure.error.code, code);
     expect('failure has no repository ' + failureMode, failure.repository, undefined);
   }
@@ -201,16 +214,16 @@ try {
     ['repo', 'view', '--origin', origin, '--allow-insecure-http'],
     ['repo', 'view', '--repo', 'sample-owner/sample-repo', '--origin', origin],
   ]) {
-    expect('usage refusal', decode(await invoke(argv, 2)).error.code, 'USAGE');
+    expect('usage refusal', (decode(await invoke(argv, 2)) as unknown as Output).error.code, 'USAGE');
   }
   expect('usage errors dispatch no requests', report.requests.slice(beforeUsage), []);
   report.result = 'passed';
 } catch (error) {
   report.result = 'failed';
-  report.failure = error.message;
+  report.failure = (error as Error).message;
   throw error;
 } finally {
-  if (server) await new Promise((resolveClose, reject) => server.close(error => error ? reject(error) : resolveClose()));
+  if (server) await new Promise<void>((resolveClose, reject) => server!.close(error => error ? reject(error) : resolveClose()));
   const reportPath = resolve(process.env.GITEA_AXI_REPORT ?? scratch + '-report.json');
   await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
   console.log(`S1.1 ${report.result}; report: ${reportPath}`);

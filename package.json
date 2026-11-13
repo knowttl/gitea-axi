@@ -28,13 +28,13 @@
     "ignore": "7.0.13"
   },
   "scripts": {
-    "build": "tsc && node scripts/generate.mjs --check",
-    "generate": "tsc && node scripts/generate.mjs",
-    "generate:check": "tsc && node scripts/generate.mjs --check",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.tooling.json",
-    "lint": "eslint . && npm run generate:check",
-    "test": "node --import ./scripts/deny-network.ts scripts/verify-suite.mjs",
-    "check": "node scripts/check.mjs --offline"
+    "build": "tsc && node scripts/generate.ts --check",
+    "generate": "tsc && node scripts/generate.ts",
+    "generate:check": "tsc && node scripts/generate.ts --check",
+    "typecheck": "tsc && tsc -p tsconfig.tooling.json",
+    "lint": "eslint --flag unstable_native_nodejs_ts_config . && npm run generate:check",
+    "test": "node --import ./scripts/deny-network.ts scripts/verify-suite.ts",
+    "check": "node scripts/check.ts --offline"
   },
   "dependencies": {
     "@toon-format/toon": "2.3.1",
