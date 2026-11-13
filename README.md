@@ -387,7 +387,7 @@ See the [metadata and recovery contract](docs/local-stack-contract.md) for stack
 `stack rebase --preserve-dates` remains pending until upstream date semantics are evidenced.
 Submit/link `--open` refuse before effects because browser launch is prohibited outside authentication.
 Artium admission refuses every stack command and all local checkout/composite options.
-Run `node scripts/verify.mjs --task S6.1` and `node scripts/verify.mjs --task S6.2` for the installed-package fake Git/Gitea journeys.
+Run `node scripts/verify.ts --task S6.1` and `node scripts/verify.ts --task S6.2` for the installed-package fake Git/Gitea journeys.
 Artium checks remain opt-in through the frozen fixture selectors in [Development](#development); native Windows and live commissioning remain pending.
 
 ## Limitations
@@ -410,7 +410,7 @@ To build from source:
 npm ci --ignore-scripts
 npm run build
 node dist/cli.js repo view --help
-node scripts/verify.mjs --task S1.1
+node scripts/verify.ts --task S1.1
 ```
 
 The verification driver builds and packs the CLI, installs that tarball into an empty temporary prefix and invokes its installed bin from outside the source tree.
@@ -426,11 +426,11 @@ For S5, set `GITEA_AXI_REPORT_DIR` to an existing directory to retain `S5.1.json
 `npm test` first runs the package-contract check in `scripts/verify-package.ts`, then the native Git workspace checks in `scripts/verify-git.ts`, then the offline live-read regressions in `scripts/verify-live-reads.ts`, then the installed-package checks with local Gitea fakes for S1.1, S2.1 through S2.4, S3.1 through S3.5, S4.1 through S4.3, S5.1, S5.2 and S6.1 through S6.4 under an inherited outbound network guard.
 The package-contract check builds, packs and installs offline, validates the tarball file list and bin entry, smoke-tests the installed `--help` and `--version`, parses the consumed JSON artifacts and imports the modules Artium consumes from the installed package.
 Run it independently with `node --import ./scripts/deny-network.ts scripts/verify-package.ts`.
-Each S2 task also has an independent entrypoint, for example `node scripts/verify.mjs --task S2.3`.
-Run each S3 journey independently with `node scripts/verify.mjs --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
-Run the release journey with `node scripts/verify.mjs --task S4.1`.
-Run attachments with `node scripts/verify.mjs --task S4.2` and protected values with `node scripts/verify.mjs --task S4.3`.
-Run the S5 journeys independently with `node scripts/verify.mjs --task S5.1` and `node scripts/verify.mjs --task S5.2`.
+Each S2 task also has an independent entrypoint, for example `node scripts/verify.ts --task S2.3`.
+Run each S3 journey independently with `node scripts/verify.ts --task S3.1`, `S3.2`, `S3.3`, `S3.4` or `S3.5`.
+Run the release journey with `node scripts/verify.ts --task S4.1`.
+Run attachments with `node scripts/verify.ts --task S4.2` and protected values with `node scripts/verify.ts --task S4.3`.
+Run the S5 journeys independently with `node scripts/verify.ts --task S5.1` and `node scripts/verify.ts --task S5.2`.
 The S2 fixtures contain synthetic non-empty records authored against the retained schemas, with independent expected projections for supported selected PR fields and explicit capability refusals for the remaining fields.
 Run Artium hosted proof once per release or in one nightly batch; individual slices merge on this repository's gate, including the package-contract check and outbound network deny.
 Set `GITEA_AXI_ARTIUM_ROOT` to a built admission fixture containing this package's read inventory to repeat business reads through a real local Artium server, client, credential writer and runner.

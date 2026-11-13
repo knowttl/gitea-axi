@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
 
 type Row = Record<string, unknown>;
 interface Baseline { id: string; path: string; expectedOutcome: string; flags: { name: string }[] }
@@ -155,13 +155,13 @@ try {
   check('Contents permission failures remain explicit', ((await invoke(['api', 'GET', 'repos/sample/demo/contents', '--config', config, '--profile', 'test'], 1)).error as Row).code, 'PERMISSION_DENIED');
   denied = false;
   if (task === 'S6.3') {
-    await run(process.execPath, ['--import', fileURLToPath(new URL('deny-network.ts', import.meta.url)), 'scripts/verify.mjs', '--task', 'S2.3']);
+    await run(process.execPath, ['--import', fileURLToPath(new URL('deny-network.ts', import.meta.url)), 'scripts/verify.ts', '--task', 'S2.3']);
     assertions.push('Existing S2.3 installed journeys verify all 46 selected PR fields, numeric IDs and partial commit status rollups');
   } else {
     const pkg = JSON.parse(await readFile(join(installed, 'package.json'), 'utf8')) as { version: string };
     for (const flag of ['--version', '-v', '-V']) check('Offline version alias ' + flag, await run(process.execPath, [bin, flag], scratch, env), pkg.version + '\n');
     const copy = join(scratch, 'freshness'); await mkdir(copy);
-    for (const path of ['src', 'schemas', 'generated', 'evidence/docs', 'scripts/generate.mjs', 'tsconfig.json', 'package.json', 'axi-credential.schema.json']) await cp(join(root, path), join(copy, path), { recursive: true });
+    for (const path of ['src', 'schemas', 'generated', 'evidence/docs', 'scripts/generate.ts', 'tsconfig.json', 'package.json', 'axi-credential.schema.json']) await cp(join(root, path), join(copy, path), { recursive: true });
     await symlink(join(root, 'node_modules'), join(copy, 'node_modules'), 'dir');
     await writeFile(join(copy, 'src/registry.ts'), await readFile(join(copy, 'src/registry.ts'), 'utf8') + '\ncommands.push({path:["freshness-canary"],description:"Registry drift",flags:{},effect:"gap"});\n');
     const stale = await run('npm', ['run', 'generate:check'], copy, process.env, 1);

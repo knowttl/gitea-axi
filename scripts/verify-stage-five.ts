@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const task = process.argv[3]!;

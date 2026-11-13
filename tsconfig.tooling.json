@@ -5,7 +5,8 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "erasableSyntaxOnly": true
   },
-  "include": ["scripts/**/*.ts"]
+  "include": ["scripts/**/*.ts", "eslint.config.ts"]
 }

@@ -41,12 +41,12 @@ No agent paths, update channel, repository webhooks or telemetry are introduced.
 `npm run generate` compiles the current registry and regenerates help, the skill and host inventory.
 Use `gitea-axi capabilities --json` for the runtime capabilities summary; no static capabilities artifact is generated or packaged.
 The executable registry in `src/registry.ts` owns their command metadata; the retained Swagger owns the generated response schemas and route types produced by the same command.
-The classified raw-route registry combines the retained Swagger with effect classifications and multi-segment parameter annotations owned by `scripts/generate.mjs`.
+The classified raw-route registry combines the retained Swagger with effect classifications and multi-segment parameter annotations owned by `scripts/generate.ts`.
 `npm run generate:check` compiles the current source and refuses stale generated artifacts.
 The S6.4 check demonstrates refusal after adding a command to a disposable registry copy.
 The generated skill uses noninteractive npm package invocations and contains no live session state.
 
-Run `node scripts/verify.mjs --task S6.3` and `node scripts/verify.mjs --task S6.4` under the process-level outbound network deny.
+Run `node scripts/verify.ts --task S6.3` and `node scripts/verify.ts --task S6.4` under the process-level outbound network deny.
 These checks install an immutable tarball offline, exercise the actual bin, enumerate the retained command/flag outcomes and exercise safe gap refusals.
 S6.3 reuses the existing S2.3 installed journeys to verify all 46 field selections.
 Artium journeys are opt-in via GITEA_AXI_ARTIUM_ROOT and GITEA_AXI_ARTIUM_MANIFEST; their absence is reported as an explicit skip.

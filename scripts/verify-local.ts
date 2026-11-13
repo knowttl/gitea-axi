@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
 
 type Row = Record<string, unknown>;
 interface Output { confirmation: string; results: Row[]; error: { code: string; reason: string }; stack: { branches: string[]; trunk: string; pulls: { branch: string; head: string; state: string; merged: boolean }[] }; current: string; recovery: unknown }

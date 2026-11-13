@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decode } from '@toon-format/toon';
-import { readHost } from './read-host.mjs';
+import { readHost } from './read-host.ts';
 
 type Row = Record<string, unknown>;
 interface Output { confirmation: string; error: { code: string; reason: string }; states: string[]; observations: { path: string; data: unknown }[]; results: Row[]; truncated?: boolean; truncated_fields?: string[]; steps?: { payload: Row }[] }
